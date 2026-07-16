@@ -1,32 +1,37 @@
-# React + TypeScript + Vite
+# Ryan Peters — A Tiny World 🌍
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A portfolio that isn't a portfolio: a tiny interactive planet floating in a
+white sky. Visitors explore a small handcrafted world — walking a friendly
+avatar between little buildings that hold projects, experience, education,
+skills, and more — instead of scrolling a webpage.
 
-Currently, two official plugins are available:
+Inspired by the warmth and playfulness of Nintendo-era interfaces (think
+plaza floors and friendly characters), built entirely from original assets
+and primitive geometry.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Tech
 
-## React Compiler
+- **React + TypeScript + Vite**
+- **React Three Fiber + Drei** — the 3D world
+- **Zustand** — world state (read imperatively by the frame loop)
+- **Framer Motion + Tailwind CSS** — overlay UI only
+- No backend
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Run it
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Architecture notes
+
+- `src/lib/math/spherical.ts` — the single source of truth for living on a
+  sphere: lat/lon placement, surface orientation, great-circle travel.
+- `src/hooks/useAmbientLoop.ts` — one shared "heartbeat" clock drives every
+  ambient motion, so the whole world breathes together and
+  `prefers-reduced-motion` calms everything through one scale factor.
+- `src/scene/Planet.tsx` — the white plaza floor is a quad-sphere grid drawn
+  in the fragment shader (equal-angle cube projection): evenly sized
+  rounded-square tiles, no texture seams, no pole pinching.
+- Milestone-driven: world → avatar → movement → locations → delight → audio.
