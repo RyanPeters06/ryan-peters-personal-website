@@ -122,7 +122,11 @@ export function Avatar() {
       if (a.t > 1.0 && store.cameraFocus === null) {
         store.setCameraFocus({ lat: AVATAR_LAT, lon: AVATAR_LON })
       }
-      if (a.t > 3.4) {
+      // Wave only once the camera has actually arrived in front (with a
+      // generous timeout in case something holds it up) — never greet an
+      // empty sky.
+      const cameraClose = camera.position.distanceTo(avatarPose.position) < 6.5
+      if (a.t > 2.2 && (cameraClose || a.t > 8)) {
         store.setPhase('greeting')
         a.waveT = 0
       }
@@ -179,7 +183,9 @@ export function Avatar() {
     // ----- Integrate walking along a great circle -----------------------
     if (a.move > 0.003 && phase === 'exploring') {
       const angle = (WALK_SPEED * a.move * dt) / PLANET_RADIUS
-      _axis.crossVectors(pose.forward, pose.up).normalize()
+      // Axis order matters: up × forward advances the position *along*
+      // the facing direction (forward × up walks you backward).
+      _axis.crossVectors(pose.up, pose.forward).normalize()
       pose.position.applyAxisAngle(_axis, angle)
       pose.position.setLength(PLANET_RADIUS)
       pose.up.copy(pose.position).normalize()
@@ -195,7 +201,7 @@ export function Avatar() {
     }
 
     // ----- Walk cycle + breathing ---------------------------------------
-    a.stride += dt * 9.5 * a.move
+    a.stride += dt * 11 * a.move
     const swing = Math.sin(a.stride) * 0.55 * a.move
     if (legL.current && legR.current) {
       legL.current.rotation.x = swing

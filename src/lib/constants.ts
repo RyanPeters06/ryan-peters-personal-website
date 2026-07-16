@@ -4,33 +4,43 @@
  * world can be re-tuned from one place.
  */
 
-/** Radius of the planet sphere, in world units. Small on purpose — the
- *  horizon should curve visibly, like a handcrafted toy globe. */
-export const PLANET_RADIUS = 5
+/** Radius of the planet sphere, in world units. Large enough that the
+ *  walking horizon sits high and curves gently, while the intro shot
+ *  (which frames proportionally) still reads as a tiny toy globe. */
+export const PLANET_RADIUS = 24
 
 /** How far the idle cinematic camera orbits from the planet center. */
 export const CAMERA_ORBIT_RADIUS = PLANET_RADIUS * 4.3
 
-/** Camera distance when focused on the avatar or a location. */
-export const CAMERA_FOCUS_RADIUS = PLANET_RADIUS * 1.9
+/** Camera distance when focused on the avatar or a location — an
+ *  absolute offset above the surface (the subject is person-sized,
+ *  so this must not scale with the planet). */
+export const CAMERA_FOCUS_RADIUS = PLANET_RADIUS + 4.2
+
+/** Degrees of latitude the focus camera sits above its subject —
+ *  small, so the front shot is eye-level-ish rather than top-down. */
+export const FOCUS_LAT_OFFSET = 3
 
 /** Where the avatar lives (and spawns), in degrees. */
 export const AVATAR_LAT = 16
 export const AVATAR_LON = -20
 
 /** Walking speed along the surface, world units per second. */
-export const WALK_SPEED = 1.35
+export const WALK_SPEED = 1.6
 
-/** Third-person chase camera: behind and above the avatar. */
-export const CHASE_DISTANCE = 3.2
-export const CHASE_HEIGHT = 1.5
+/** Third-person chase camera: behind and above the avatar. Tuned so
+ *  the horizon sits ~40% up the frame with a gentle curve. */
+export const CHASE_DISTANCE = 4.5
+export const CHASE_HEIGHT = 1.6
+/** How far ahead of the avatar (along the ground) the camera looks. */
+export const CHASE_LOOK_AHEAD = 2.5
 
 /** Radians/second the idle camera drifts around the planet. */
 export const CAMERA_ORBIT_SPEED = 0.04
 
 /** Altitude band (above the surface) where clouds live. */
-export const CLOUD_ALTITUDE_MIN = 2.0
-export const CLOUD_ALTITUDE_MAX = 3.2
+export const CLOUD_ALTITUDE_MIN = 2.2
+export const CLOUD_ALTITUDE_MAX = 4.5
 
 /**
  * The world palette — soft, unsaturated, optimistic.

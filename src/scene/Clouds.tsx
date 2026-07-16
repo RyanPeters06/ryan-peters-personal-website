@@ -30,7 +30,7 @@ interface CloudSpec {
   puffs: { offset: [number, number, number]; scale: number }[]
 }
 
-const CLOUD_COUNT = 9
+const CLOUD_COUNT = 36
 
 function createCloudSpecs(): CloudSpec[] {
   const rng = makeRng(20260715)

@@ -34,7 +34,12 @@ export function Experience() {
     <Canvas
       shadows
       dpr={[1, 2]}
-      camera={{ position: [0, 6, CAMERA_ORBIT_RADIUS], fov: 42, near: 0.1, far: 100 }}
+      camera={{
+        position: [0, 6, CAMERA_ORBIT_RADIUS],
+        fov: 42,
+        near: 0.1,
+        far: CAMERA_ORBIT_RADIUS * 2.5,
+      }}
       // Flat tone mapping keeps the whites bright and airy — the pastel
       // palette needs no filmic compression.
       gl={{ toneMapping: NoToneMapping }}
