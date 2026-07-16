@@ -9,6 +9,7 @@ import { Lighting } from '@/scene/lighting/Lighting'
 import { Avatar } from '@/avatar/Avatar'
 import { CinematicCamera } from '@/camera/CinematicCamera'
 import { setAmbientScale, useAmbientDriver } from '@/hooks/useAmbientLoop'
+import { useMovementKeys } from '@/systems/movement/useMovementInput'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import { CAMERA_ORBIT_RADIUS, REDUCED_MOTION_SCALE } from '@/lib/constants'
 
@@ -28,6 +29,7 @@ function AmbientLoopDriver() {
  * Overlay UI lives *outside* (see App) — the canvas is only the world.
  */
 export function Experience() {
+  useMovementKeys()
   return (
     <Canvas
       shadows
