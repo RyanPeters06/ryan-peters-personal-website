@@ -28,6 +28,7 @@ const WORLD_UP = new Vector3(0, 1, 0)
 
 const _pos = new Vector3()
 const _focusLook = new Vector3()
+const _upTarget = new Vector3()
 const _desiredOff = new Vector3()
 const _currOff = new Vector3()
 const _a = new Vector3()
@@ -143,7 +144,15 @@ export function CinematicCamera() {
     lat.update(latTarget, dt)
     radius.update(radiusTarget, dt)
     look.current.lerp(lookTarget, 1 - Math.exp(-2.5 * dt))
-    camera.up.lerp(WORLD_UP, 1 - Math.exp(-3 * dt)).normalize()
+    // Level the camera against the right "up" for the shot: world Y for
+    // the whole-planet orbit, but the *local surface normal* when focused
+    // near the ground — otherwise the close shot arrives rolled sideways.
+    if (focus === null) {
+      camera.up.lerp(WORLD_UP, 1 - Math.exp(-3 * dt)).normalize()
+    } else {
+      latLonToVec3(focus.lat, focus.lon, 1, _upTarget)
+      camera.up.lerp(_upTarget, 1 - Math.exp(-3 * dt)).normalize()
+    }
 
     latLonToVec3(lat.value, lonRef.current, radius.value, _pos)
     camera.position.copy(_pos)

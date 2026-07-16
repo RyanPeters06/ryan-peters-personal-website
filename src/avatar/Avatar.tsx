@@ -284,15 +284,17 @@ export function Avatar() {
       head.current.rotation.z = 0
     }
 
-    // ----- Arms: wave during the greeting, swing while walking ----------
+    // ----- Arms: flappy hello during the greeting, swing while walking --
     if (armR.current && armL.current) {
-      let raise = 0
-      let wag = 0
+      let flap = 0
       if (a.waveT >= 0) {
         a.waveT += dt
-        raise = smoothstep(0, 0.45, a.waveT) * (1 - smoothstep(1.9, 2.4, a.waveT))
-        wag = Math.sin(a.waveT * 9) * 0.35 * smoothstep(0.35, 0.55, a.waveT) * raise
-        if (a.waveT > 2.5) {
+        // Both arms flap away from the sides: an envelope eases the
+        // greeting in and out while a raised cosine beats the flaps.
+        const env = smoothstep(0, 0.3, a.waveT) * (1 - smoothstep(2.0, 2.5, a.waveT))
+        const beat = 0.5 - 0.5 * Math.cos(a.waveT * 8)
+        flap = env * (0.35 + beat * 1.0)
+        if (a.waveT > 2.6) {
           a.waveT = -1
           if (useWorldStore.getState().phase === 'greeting') {
             store.setPhase('idle')
@@ -301,11 +303,13 @@ export function Avatar() {
         }
       }
       const armSwing = Math.sin(a.stride + Math.PI) * 0.4 * a.move
-      armR.current.rotation.z = -(REST_ARM_Z + raise * 2.2)
-      armR.current.rotation.x = a.waveT >= 0 ? wag : armSwing
-      armL.current.rotation.z = REST_ARM_Z + Math.sin(a.t * 2.0 + 1.2) * 0.03 * (1 - a.move)
-      armL.current.rotation.x = -armSwing
-      if (head.current) head.current.rotation.z = raise * 0.14
+      const idleSway = Math.sin(a.t * 2.0 + 1.2) * 0.03 * (1 - a.move)
+      armR.current.rotation.z = -(REST_ARM_Z + flap)
+      armL.current.rotation.z = REST_ARM_Z + flap + idleSway
+      armR.current.rotation.x = a.waveT >= 0 ? 0 : armSwing
+      armL.current.rotation.x = a.waveT >= 0 ? 0 : -armSwing
+      // A happy little head-bob rides on the flaps.
+      if (head.current) head.current.rotation.z = flap * 0.08
     }
   })
 
