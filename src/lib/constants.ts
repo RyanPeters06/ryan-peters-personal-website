@@ -18,6 +18,13 @@ export const CAMERA_FOCUS_RADIUS = PLANET_RADIUS * 1.9
 export const AVATAR_LAT = 16
 export const AVATAR_LON = -20
 
+/** Walking speed along the surface, world units per second. */
+export const WALK_SPEED = 1.35
+
+/** Third-person chase camera: behind and above the avatar. */
+export const CHASE_DISTANCE = 3.2
+export const CHASE_HEIGHT = 1.5
+
 /** Radians/second the idle camera drifts around the planet. */
 export const CAMERA_ORBIT_SPEED = 0.04
 
