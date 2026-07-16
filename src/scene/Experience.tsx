@@ -6,6 +6,7 @@ import { Planet } from '@/scene/Planet'
 import { PlanetShadow } from '@/scene/PlanetShadow'
 import { Clouds } from '@/scene/Clouds'
 import { Lighting } from '@/scene/lighting/Lighting'
+import { Avatar } from '@/avatar/Avatar'
 import { CinematicCamera } from '@/camera/CinematicCamera'
 import { setAmbientScale, useAmbientDriver } from '@/hooks/useAmbientLoop'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
@@ -44,6 +45,7 @@ export function Experience() {
         <Planet />
         <PlanetShadow />
         <Clouds />
+        <Avatar />
         <CinematicCamera />
       </Suspense>
     </Canvas>
