@@ -35,14 +35,15 @@ export function Lighting() {
 
   return (
     <>
-      {/* Even base illumination — keeps shadows from ever going dark. */}
-      <ambientLight intensity={0.95} color="#ffffff" />
+      {/* Generous, faintly blue base light: bright spring morning.
+          High ambient + soft key keeps shadows gentle and blue-gray. */}
+      <ambientLight intensity={1.35} color={PALETTE.ambient} />
 
-      {/* Warm key: the personal sun. */}
+      {/* Warm key: the personal sun, softened. */}
       <object3D ref={target} />
       <directionalLight
         ref={key}
-        intensity={1.4}
+        intensity={1.05}
         color={PALETTE.keyLight}
         castShadow
         shadow-mapSize={[1024, 1024]}
@@ -56,10 +57,10 @@ export function Lighting() {
       />
 
       {/* Cool fill from the opposite side, no shadows. */}
-      <directionalLight position={[-6, -2, -8]} intensity={0.35} color={PALETTE.fillLight} />
+      <directionalLight position={[-6, -2, -8]} intensity={0.4} color={PALETTE.fillLight} />
 
-      {/* Sky/ground bounce: white from above, cool floor tone below. */}
-      <hemisphereLight args={['#ffffff', PALETTE.groundLine, 0.4]} />
+      {/* Sky/ground bounce: pale blue from above, cool floor below. */}
+      <hemisphereLight args={['#e8f4ff', '#dfe9f0', 0.55]} />
     </>
   )
 }

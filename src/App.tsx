@@ -3,7 +3,7 @@ import { Overlay } from '@/ui/Overlay'
 
 export default function App() {
   return (
-    <div className="relative h-full w-full overflow-hidden bg-[#f5f8f9]">
+    <div className="relative h-full w-full overflow-hidden bg-white">
       <Experience />
       <Overlay />
     </div>

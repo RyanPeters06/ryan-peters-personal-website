@@ -56,18 +56,25 @@ export const CLOUD_SCALE = 2.2
  * White sky, gentle greens, pastel accents. No neon, ever.
  */
 export const PALETTE = {
-  sky: '#eef2f4',
-  /** The plaza floor: warm near-white tiles with soft gray seams. */
-  ground: '#f3f1ee',
-  groundLine: '#dcdcda',
+  /** Spring-morning sky: a soft white-to-blue gradient. */
+  skyTop: '#dff4ff',
+  skyMid: '#eef9ff',
+  skyHorizon: '#ffffff',
+  /** Fog: almost white with a hint of cyan. */
+  fog: '#f2fbff',
+  /** The plaza floor: cool near-white tiles reflecting the sky. */
+  ground: '#f8fafc',
+  groundLine: '#dce3e8',
   grass: '#8fce7f',
   grassLight: '#a5dc94',
   grassDark: '#7cbe6e',
   cloud: '#ffffff',
   cloudShade: '#eef4f6',
-  shadow: '#c9d4d2',
-  keyLight: '#fff7ec',
-  fillLight: '#eaf4ff',
+  /** Shadows lean blue-gray, never neutral gray. */
+  shadow: '#c5cfd9',
+  ambient: '#edf5ff',
+  keyLight: '#fff8ee',
+  fillLight: '#e8f2ff',
   /** The avatar: soft skin, warm hair, one pastel accent. */
   skin: '#f6cfae',
   hair: '#584639',
