@@ -120,6 +120,12 @@ export function greatCircleDistance(from: Vector3, to: Vector3, radius: number):
   return Math.acos(cos) * radius
 }
 
+/** Shortest signed distance (degrees) from one angle to another,
+ *  in [-180, 180] — so easing a longitude never takes the long way. */
+export function shortestAngleDeltaDeg(from: number, to: number): number {
+  return ((to - from + 540) % 360) - 180
+}
+
 /**
  * Exponential smoothing toward a target — frame-rate independent.
  * `lambda` is the responsiveness (higher = snappier). The workhorse

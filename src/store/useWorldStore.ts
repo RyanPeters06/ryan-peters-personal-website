@@ -8,7 +8,14 @@ import type { LatLon } from '@/lib/math/spherical'
  * `useWorldStore.getState()` (no React re-renders), while overlay UI
  * subscribes reactively with the hook form.
  */
+/** The experience's high-level moment: drifting in from the sky,
+ *  the avatar's hello, then everyday life on the planet. */
+export type WorldPhase = 'arriving' | 'greeting' | 'idle'
+
 interface WorldState {
+  phase: WorldPhase
+  setPhase: (phase: WorldPhase) => void
+
   /** Global audio mute. Audio itself arrives in a later milestone, but
    *  the contract exists from day one. */
   muted: boolean
@@ -23,6 +30,9 @@ interface WorldState {
 }
 
 export const useWorldStore = create<WorldState>()((set) => ({
+  phase: 'arriving',
+  setPhase: (phase) => set({ phase }),
+
   muted: false,
   toggleMuted: () => set((s) => ({ muted: !s.muted })),
 

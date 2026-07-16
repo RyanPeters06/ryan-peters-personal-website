@@ -11,6 +11,13 @@ export const PLANET_RADIUS = 5
 /** How far the idle cinematic camera orbits from the planet center. */
 export const CAMERA_ORBIT_RADIUS = PLANET_RADIUS * 4.3
 
+/** Camera distance when focused on the avatar or a location. */
+export const CAMERA_FOCUS_RADIUS = PLANET_RADIUS * 1.9
+
+/** Where the avatar lives (and spawns), in degrees. */
+export const AVATAR_LAT = 16
+export const AVATAR_LON = -20
+
 /** Radians/second the idle camera drifts around the planet. */
 export const CAMERA_ORBIT_SPEED = 0.04
 
@@ -35,6 +42,12 @@ export const PALETTE = {
   shadow: '#c9d4d2',
   keyLight: '#fff7ec',
   fillLight: '#eaf4ff',
+  /** The avatar: soft skin, warm hair, one pastel accent. */
+  skin: '#f6cfae',
+  hair: '#584639',
+  shirt: '#a9c9e8',
+  pants: '#8d99a6',
+  face: '#3d3833',
 } as const
 
 /** Edge length of one floor tile, in world units. */
