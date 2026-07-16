@@ -101,12 +101,11 @@ export function CinematicCamera() {
       // Level the horizon against the local ground, not world Y.
       camera.up.lerp(pose.up, 1 - Math.exp(-3 * dt)).normalize()
 
-      // Look at the ground a couple of steps ahead: this pitches the
-      // shot down just enough to put the horizon ~40% up the frame,
-      // with the avatar riding lower-middle.
+      // Look chest-high a step ahead: tuned (empirically) so the
+      // horizon sits ~40% up the frame and the avatar rides low-center.
       _focusLook
         .copy(pose.position)
-        .addScaledVector(pose.up, 0.1)
+        .addScaledVector(pose.up, 0.8)
         .addScaledVector(pose.forward, CHASE_LOOK_AHEAD + pose.moving * 0.8)
       look.current.lerp(_focusLook, 1 - Math.exp(-4 * dt))
       camera.lookAt(look.current)
@@ -138,7 +137,7 @@ export function CinematicCamera() {
         (1 - Math.exp(-2.5 * dt))
       latTarget = focus.lat + FOCUS_LAT_OFFSET + Math.sin(t * 0.1) * 0.4
       radiusTarget = CAMERA_FOCUS_RADIUS + Math.sin(t * 0.07) * 0.12
-      lookTarget = latLonToVec3(focus.lat, focus.lon, PLANET_RADIUS + 0.55, _focusLook)
+      lookTarget = latLonToVec3(focus.lat, focus.lon, PLANET_RADIUS + 0.62, _focusLook)
     }
 
     lat.update(latTarget, dt)

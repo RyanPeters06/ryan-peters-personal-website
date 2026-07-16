@@ -1,6 +1,6 @@
 import { useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { Group, Matrix4, MeshStandardMaterial, Vector3 } from 'three'
+import { DoubleSide, Group, Matrix4, MeshStandardMaterial, Vector3 } from 'three'
 import { useWorldStore } from '@/store/useWorldStore'
 import { expDamp } from '@/lib/math/spherical'
 import { avatarPose } from '@/systems/movement/avatarPose'
@@ -14,35 +14,39 @@ import {
 } from '@/lib/constants'
 
 /**
- * The resident of the tiny world: an original character inspired by the
- * friendliness of classic plaza avatars — big head, small body, stubby
- * limbs, built entirely from primitives. All animation is procedural
- * (no rig): breathing, blinking, looking around, the arrival wave, and
- * the walk cycle are code-driven transforms in the frame loop.
+ * The resident of the tiny world — an original character that speaks
+ * the visual language of classic plaza avatars without copying one:
+ * the head is ~58% of total height, the body a short tapered cylinder,
+ * the limbs thin capsules ending in oversized rounded shoes, and the
+ * face sits low on the head. Everything is primitives; all animation
+ * is procedural (breathing, blinking, glances, foot shifts, the wave,
+ * and the walk cycle are code-driven transforms in the frame loop).
  *
  * Movement: WASD/arrows, camera-relative, integrated as rotations of
  * the position vector around the planet — the avatar always walks a
  * great circle. Pose is published to `avatarPose` for the chase camera.
  */
 
-// --- Proportions (world units; ~1.05 tall ≈ 1.2 floor tiles) ---------
-const HEAD_R = 0.26
-const HEAD_Y = 0.76
-const TORSO_R = 0.155
-const TORSO_LEN = 0.2
-const TORSO_Y = 0.36
-const ARM_R = 0.048
-const ARM_LEN = 0.15
-const SHOULDER_X = 0.19
-const SHOULDER_Y = 0.45
-const LEG_R = 0.055
-const LEG_LEN = 0.11
-const HIP_Y = 0.23
-const LEG_X = 0.07
-const EYE_X = 0.088
-const EYE_Y = 0.03
+// --- Proportions (world units; ~1.0 tall, head ≈ 0.58 of it) ---------
+const HEAD_R = 0.29
+const HEAD_Y = 0.71
+const BODY_TOP_R = 0.115
+const BODY_BOTTOM_R = 0.15
+const BODY_H = 0.26
+const BODY_Y = 0.33
+const ARM_R = 0.03
+const ARM_LEN = 0.14
+const SHOULDER_X = 0.145
+const SHOULDER_Y = 0.4
+const LEG_R = 0.032
+const LEG_LEN = 0.05
+const HIP_Y = 0.2
+const LEG_X = 0.06
+const EYE_X = 0.095
+const EYE_Y = -0.02 // below head center — the face sits low
+const MOUTH_Y = -0.115
 
-const REST_ARM_Z = 0.1 // arms hang slightly away from the body
+const REST_ARM_Z = 0.12 // arms hang slightly away from the body
 
 const smoothstep = (a: number, b: number, x: number): number => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)))
@@ -70,6 +74,9 @@ interface AvatarAnim {
   waveT: number
   move: number
   stride: number
+  shiftAt: number
+  shiftT: number
+  shiftSide: number
 }
 
 export function Avatar() {
@@ -86,11 +93,16 @@ export function Avatar() {
 
   const materials = useMemo(
     () => ({
-      skin: new MeshStandardMaterial({ color: PALETTE.skin, roughness: 0.9 }),
-      hair: new MeshStandardMaterial({ color: PALETTE.hair, roughness: 0.95 }),
-      shirt: new MeshStandardMaterial({ color: PALETTE.shirt, roughness: 0.9 }),
+      skin: new MeshStandardMaterial({ color: PALETTE.skin, roughness: 0.75 }),
+      hair: new MeshStandardMaterial({
+        color: PALETTE.hair,
+        roughness: 0.9,
+        side: DoubleSide,
+      }),
+      shirt: new MeshStandardMaterial({ color: PALETTE.shirt, roughness: 0.85 }),
       pants: new MeshStandardMaterial({ color: PALETTE.pants, roughness: 0.9 }),
-      face: new MeshStandardMaterial({ color: PALETTE.face, roughness: 0.8 }),
+      shoe: new MeshStandardMaterial({ color: PALETTE.shoe, roughness: 0.8 }),
+      face: new MeshStandardMaterial({ color: PALETTE.face, roughness: 0.7 }),
     }),
     [],
   )
@@ -107,6 +119,9 @@ export function Avatar() {
     waveT: -1,
     move: 0,
     stride: 0,
+    shiftAt: 6,
+    shiftT: -1,
+    shiftSide: 1,
   })
 
   useFrame((_, rawDt) => {
@@ -200,18 +215,39 @@ export function Avatar() {
       placed.current.quaternion.setFromRotationMatrix(_basis)
     }
 
+    // ----- Foot shifts: tiny weight transfers while standing ------------
+    let shiftLift = 0
+    let shiftSway = 0
+    const standing = phase !== 'greeting' && a.move < 0.05
+    if (standing && a.shiftT < 0 && a.t >= a.shiftAt) {
+      a.shiftT = 0
+      a.shiftSide *= -1
+    }
+    if (a.shiftT >= 0) {
+      a.shiftT += dt
+      const p = a.shiftT / 0.55
+      const pulse = Math.sin(Math.min(p, 1) * Math.PI)
+      shiftLift = pulse * 0.22 * (1 - a.move)
+      shiftSway = a.shiftSide * pulse * 0.012 * (1 - a.move)
+      if (p >= 1) {
+        a.shiftT = -1
+        a.shiftAt = a.t + 3.5 + Math.random() * 4
+      }
+    }
+
     // ----- Walk cycle + breathing ---------------------------------------
     a.stride += dt * 11 * a.move
     const swing = Math.sin(a.stride) * 0.55 * a.move
     if (legL.current && legR.current) {
-      legL.current.rotation.x = swing
-      legR.current.rotation.x = -swing
+      legL.current.rotation.x = swing + (a.shiftSide < 0 ? shiftLift : 0)
+      legR.current.rotation.x = -swing + (a.shiftSide > 0 ? shiftLift : 0)
     }
     if (bodyGroup.current) {
       const breath = Math.sin(a.t * 2.0) * 0.014 * (1 - a.move)
       bodyGroup.current.scale.set(1 - breath * 0.5, 1 + breath, 1 - breath * 0.5)
       // Step bounce while walking, lazy sway while standing.
       bodyGroup.current.position.y = Math.abs(Math.sin(a.stride)) * 0.03 * a.move
+      bodyGroup.current.position.x = shiftSway
       bodyGroup.current.rotation.z = Math.sin(a.t * 0.7) * 0.015 * (1 - a.move)
       bodyGroup.current.rotation.x = 0.09 * a.move // gentle forward lean
     }
@@ -276,24 +312,43 @@ export function Avatar() {
   return (
     <group ref={placed}>
       <group ref={bodyGroup}>
-        {/* Legs (groups pivot at the hip so steps are rotations) */}
+        {/* Legs: stubby, ending in oversized rounded shoes */}
         <group ref={legL} position={[-LEG_X, HIP_Y, 0]}>
-          <mesh material={materials.pants} position={[0, -0.11, 0]} castShadow>
+          <mesh material={materials.pants} position={[0, -0.08, 0]} castShadow>
             <capsuleGeometry args={[LEG_R, LEG_LEN, 4, 10]} />
+          </mesh>
+          <mesh
+            material={materials.shoe}
+            position={[0, -0.15, 0.025]}
+            scale={[0.085, 0.05, 0.125]}
+            castShadow
+          >
+            <sphereGeometry args={[1, 16, 12]} />
           </mesh>
         </group>
         <group ref={legR} position={[LEG_X, HIP_Y, 0]}>
-          <mesh material={materials.pants} position={[0, -0.11, 0]} castShadow>
+          <mesh material={materials.pants} position={[0, -0.08, 0]} castShadow>
             <capsuleGeometry args={[LEG_R, LEG_LEN, 4, 10]} />
+          </mesh>
+          <mesh
+            material={materials.shoe}
+            position={[0, -0.15, 0.025]}
+            scale={[0.085, 0.05, 0.125]}
+            castShadow
+          >
+            <sphereGeometry args={[1, 16, 12]} />
           </mesh>
         </group>
 
-        {/* Torso */}
-        <mesh material={materials.shirt} position={[0, TORSO_Y, 0]} castShadow>
-          <capsuleGeometry args={[TORSO_R, TORSO_LEN, 4, 14]} />
+        {/* Body: a short tapered cylinder, softly rounded at the top */}
+        <mesh material={materials.shirt} position={[0, BODY_Y, 0]} castShadow>
+          <cylinderGeometry args={[BODY_TOP_R, BODY_BOTTOM_R, BODY_H, 22]} />
+        </mesh>
+        <mesh material={materials.shirt} position={[0, BODY_Y + BODY_H / 2, 0]}>
+          <sphereGeometry args={[BODY_TOP_R, 22, 10, 0, Math.PI * 2, 0, Math.PI / 2]} />
         </mesh>
 
-        {/* Arms (groups pivot at the shoulder) */}
+        {/* Arms: thin rounded capsules (groups pivot at the shoulder) */}
         <group ref={armL} position={[-SHOULDER_X, SHOULDER_Y, 0]} rotation={[0, 0, REST_ARM_Z]}>
           <mesh material={materials.shirt} position={[0, -ARM_LEN / 2 - ARM_R, 0]} castShadow>
             <capsuleGeometry args={[ARM_R, ARM_LEN, 4, 10]} />
@@ -305,39 +360,39 @@ export function Avatar() {
           </mesh>
         </group>
 
-        {/* Head */}
+        {/* Head: the star of the silhouette (~58% of total height) */}
         <group ref={head} position={[0, HEAD_Y, 0]}>
           <mesh material={materials.skin} castShadow>
-            <sphereGeometry args={[HEAD_R, 24, 18]} />
+            <sphereGeometry args={[HEAD_R, 28, 22]} />
           </mesh>
 
-          {/* Hair: a squashed cap shifted up-and-back, leaving the face open */}
-          <mesh material={materials.hair} position={[0, 0.075, -0.045]} scale={[1.04, 0.82, 1.04]}>
-            <sphereGeometry args={[HEAD_R * 0.98, 24, 18]} />
+          {/* Hair: one smooth cap, tilted slightly back so the brow stays open */}
+          <mesh material={materials.hair} rotation={[-0.22, 0, 0]} position={[0, 0.008, 0]}>
+            <sphereGeometry args={[HEAD_R * 1.02, 28, 20, 0, Math.PI * 2, 0, 1.55]} />
           </mesh>
 
-          {/* Eyes (group origin at eye height so blinks squash in place) */}
+          {/* Eyes: simple black ovals, set low on the face */}
           <group ref={eyes} position={[0, EYE_Y, 0]}>
-            <mesh material={materials.face} position={[-EYE_X, 0, HEAD_R * 0.88]} scale={[1, 1.35, 0.6]}>
-              <sphereGeometry args={[0.028, 10, 10]} />
+            <mesh material={materials.face} position={[-EYE_X, 0, HEAD_R * 0.9]} scale={[1, 1.45, 0.55]}>
+              <sphereGeometry args={[0.03, 12, 12]} />
             </mesh>
-            <mesh material={materials.face} position={[EYE_X, 0, HEAD_R * 0.88]} scale={[1, 1.35, 0.6]}>
-              <sphereGeometry args={[0.028, 10, 10]} />
+            <mesh material={materials.face} position={[EYE_X, 0, HEAD_R * 0.9]} scale={[1, 1.45, 0.55]}>
+              <sphereGeometry args={[0.03, 12, 12]} />
             </mesh>
           </group>
 
-          {/* Nose: the tiniest bump */}
-          <mesh material={materials.skin} position={[0, -0.03, HEAD_R * 0.97]}>
-            <sphereGeometry args={[0.022, 10, 8]} />
+          {/* Nose: the tiniest bump, between eyes and mouth */}
+          <mesh material={materials.skin} position={[0, -0.062, HEAD_R * 0.98]}>
+            <sphereGeometry args={[0.02, 10, 8]} />
           </mesh>
 
-          {/* Smile: a thin torus arc hugging the lower face */}
+          {/* Mouth: a small curved line */}
           <mesh
             material={materials.face}
-            position={[0, -0.075, HEAD_R * 0.86]}
-            rotation={[0.35, 0, Math.PI + (Math.PI - Math.PI * 0.62) / 2]}
+            position={[0, MOUTH_Y, HEAD_R * 0.88]}
+            rotation={[0.4, 0, Math.PI + (Math.PI - Math.PI * 0.5) / 2]}
           >
-            <torusGeometry args={[0.062, 0.009, 8, 24, Math.PI * 0.62]} />
+            <torusGeometry args={[0.05, 0.007, 8, 22, Math.PI * 0.5]} />
           </mesh>
         </group>
       </group>

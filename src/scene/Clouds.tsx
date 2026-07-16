@@ -108,8 +108,10 @@ export function Clouds() {
     [specs],
   )
 
+  // No castShadow: at plaza scale a cloud shadow reads as a giant
+  // stain on the floor, not a charming detail.
   return (
-    <Instances limit={puffTotal} castShadow>
+    <Instances limit={puffTotal}>
       <sphereGeometry args={[1, 12, 10]} />
       <meshStandardMaterial color={PALETTE.cloud} roughness={1} metalness={0} />
       {specs.map((spec, i) => (

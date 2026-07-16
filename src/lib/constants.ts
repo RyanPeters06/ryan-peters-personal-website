@@ -12,14 +12,13 @@ export const PLANET_RADIUS = 24
 /** How far the idle cinematic camera orbits from the planet center. */
 export const CAMERA_ORBIT_RADIUS = PLANET_RADIUS * 4.3
 
-/** Camera distance when focused on the avatar or a location — an
- *  absolute offset above the surface (the subject is person-sized,
- *  so this must not scale with the planet). */
-export const CAMERA_FOCUS_RADIUS = PLANET_RADIUS + 4.2
+/** Camera altitude when focused on the avatar: just above head
+ *  height, so the shot is a portrait — never a top-down view. */
+export const CAMERA_FOCUS_RADIUS = PLANET_RADIUS + 1.25
 
-/** Degrees of latitude the focus camera sits above its subject —
- *  small, so the front shot is eye-level-ish rather than top-down. */
-export const FOCUS_LAT_OFFSET = 3
+/** Degrees of latitude the focus camera stands away from its subject
+ *  along the ground (≈4 world units) — the portrait's distance. */
+export const FOCUS_LAT_OFFSET = 9
 
 /** Where the avatar lives (and spawns), in degrees. */
 export const AVATAR_LAT = 16
@@ -32,8 +31,9 @@ export const WALK_SPEED = 1.6
  *  the horizon sits ~40% up the frame with a gentle curve. */
 export const CHASE_DISTANCE = 4.5
 export const CHASE_HEIGHT = 1.6
-/** How far ahead of the avatar (along the ground) the camera looks. */
-export const CHASE_LOOK_AHEAD = 2.5
+/** How far ahead of the avatar (along the ground) the camera looks —
+ *  closer means more down-pitch, which lifts the horizon in frame. */
+export const CHASE_LOOK_AHEAD = 1.4
 
 /** Radians/second the idle camera drifts around the planet. */
 export const CAMERA_ORBIT_SPEED = 0.04
@@ -52,9 +52,9 @@ export const CLOUD_SCALE = 2.2
  */
 export const PALETTE = {
   sky: '#eef2f4',
-  /** The plaza floor: bright white tiles with soft gray seams. */
-  ground: '#ffffff',
-  groundLine: '#ccd4d9',
+  /** The plaza floor: warm near-white tiles with soft gray seams. */
+  ground: '#f3f1ee',
+  groundLine: '#dcdcda',
   grass: '#8fce7f',
   grassLight: '#a5dc94',
   grassDark: '#7cbe6e',
@@ -68,7 +68,8 @@ export const PALETTE = {
   hair: '#584639',
   shirt: '#a9c9e8',
   pants: '#8d99a6',
-  face: '#3d3833',
+  shoe: '#8a939b',
+  face: '#2e2c2a',
 } as const
 
 /** Edge length of one floor tile, in world units. */
