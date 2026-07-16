@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { Fog, Quaternion, Vector3 } from 'three'
+import { Fog, Vector3 } from 'three'
 import { getAmbientScale, getAmbientTime } from '@/hooks/useAmbientLoop'
 import { useSmoothValue } from '@/hooks/useSmoothValue'
 import { useWorldStore } from '@/store/useWorldStore'
@@ -29,13 +29,9 @@ const WORLD_UP = new Vector3(0, 1, 0)
 const _pos = new Vector3()
 const _focusLook = new Vector3()
 const _upTarget = new Vector3()
-const _desiredOff = new Vector3()
 const _currOff = new Vector3()
 const _a = new Vector3()
 const _b = new Vector3()
-const _qArc = new Quaternion()
-const _qStep = new Quaternion()
-const _qIdentity = new Quaternion()
 
 /**
  * The cinematic rig, in three moods:
@@ -83,23 +79,35 @@ export function CinematicCamera() {
     if (chasing) {
       const pose = avatarPose
 
-      _desiredOff
-        .copy(pose.up)
-        .multiplyScalar(CHASE_HEIGHT)
-        .addScaledVector(pose.forward, -CHASE_DISTANCE)
-
-      // Ease the current offset toward the desired one *by arc*: rotate
-      // its direction and damp its length separately, so the camera
-      // swings around the character instead of cutting through them.
+      // Decompose the current offset into the avatar's tangent frame —
+      // signed azimuth around their up axis (0 = directly behind),
+      // height above the ground, and horizontal distance — and ease
+      // each separately. The front→back transition is then a level
+      // sweep around the character's *side*, never a vault over their
+      // head, and each quantity settles without cross-talk.
       _currOff.copy(camera.position).sub(pose.position)
-      const currLen = Math.max(_currOff.length(), 1e-4)
-      _a.copy(_currOff).divideScalar(currLen)
-      _b.copy(_desiredOff).normalize()
-      _qArc.setFromUnitVectors(_a, _b)
-      _qStep.copy(_qIdentity).slerp(_qArc, 1 - Math.exp(-2.4 * dt))
-      const newLen = expDamp(currLen, _desiredOff.length(), 2.4, dt)
-      _a.applyQuaternion(_qStep).multiplyScalar(newLen)
-      camera.position.copy(pose.position).add(_a)
+      const vert = _currOff.dot(pose.up)
+      _a.copy(_currOff).addScaledVector(pose.up, -vert) // horizontal part
+      let hLen = _a.length()
+      if (hLen < 1e-4) {
+        _a.copy(pose.forward).negate()
+        hLen = 1e-4
+      } else {
+        _a.divideScalar(hLen)
+      }
+      _b.crossVectors(pose.up, pose.forward) // avatar's right
+      const azimuth = Math.atan2(_a.dot(_b), -_a.dot(pose.forward))
+
+      const azNew = azimuth * Math.exp(-2.6 * dt)
+      const vertNew = expDamp(vert, CHASE_HEIGHT, 2.6, dt)
+      const hLenNew = expDamp(hLen, CHASE_DISTANCE, 2.6, dt)
+
+      // Rebuild the offset: "behind" rotated by the eased azimuth.
+      _a.copy(pose.forward).negate().applyAxisAngle(pose.up, -azNew)
+      camera.position
+        .copy(pose.position)
+        .addScaledVector(_a, hLenNew)
+        .addScaledVector(pose.up, vertNew)
 
       // Level the horizon against the local ground, not world Y.
       camera.up.lerp(pose.up, 1 - Math.exp(-3 * dt)).normalize()

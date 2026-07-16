@@ -284,16 +284,20 @@ export function Avatar() {
       head.current.rotation.z = 0
     }
 
-    // ----- Arms: flappy hello during the greeting, swing while walking --
+    // ----- Arms: one-arm wave during the greeting, swing while walking --
+    // Rotation sign convention: for the RIGHT arm (at +x), a POSITIVE
+    // z-rotation swings the hanging arm outward/up away from the body;
+    // for the left arm it's negative. (Getting this backwards folds the
+    // arm invisibly *into* the torso — the classic hidden-wave bug.)
     if (armR.current && armL.current) {
-      let flap = 0
+      let raise = 0
+      let wag = 0
       if (a.waveT >= 0) {
         a.waveT += dt
-        // Both arms flap away from the sides: an envelope eases the
-        // greeting in and out while a raised cosine beats the flaps.
-        const env = smoothstep(0, 0.3, a.waveT) * (1 - smoothstep(2.0, 2.5, a.waveT))
-        const beat = 0.5 - 0.5 * Math.cos(a.waveT * 8)
-        flap = env * (0.35 + beat * 1.0)
+        // Raise the right arm up beside the head, wave the hand a few
+        // times side to side, then lower with follow-through.
+        raise = smoothstep(0, 0.4, a.waveT) * (1 - smoothstep(2.0, 2.5, a.waveT))
+        wag = Math.sin(a.waveT * 9) * 0.3 * smoothstep(0.35, 0.5, a.waveT) * raise
         if (a.waveT > 2.6) {
           a.waveT = -1
           if (useWorldStore.getState().phase === 'greeting') {
@@ -304,12 +308,12 @@ export function Avatar() {
       }
       const armSwing = Math.sin(a.stride + Math.PI) * 0.4 * a.move
       const idleSway = Math.sin(a.t * 2.0 + 1.2) * 0.03 * (1 - a.move)
-      armR.current.rotation.z = -(REST_ARM_Z + flap)
-      armL.current.rotation.z = REST_ARM_Z + flap + idleSway
+      armR.current.rotation.z = REST_ARM_Z + raise * 2.1 + wag
+      armL.current.rotation.z = -(REST_ARM_Z + idleSway)
       armR.current.rotation.x = a.waveT >= 0 ? 0 : armSwing
-      armL.current.rotation.x = a.waveT >= 0 ? 0 : -armSwing
-      // A happy little head-bob rides on the flaps.
-      if (head.current) head.current.rotation.z = flap * 0.08
+      armL.current.rotation.x = -armSwing
+      // The head tilts happily toward the waving arm.
+      if (head.current) head.current.rotation.z = -raise * 0.12
     }
   })
 
@@ -353,12 +357,12 @@ export function Avatar() {
         </mesh>
 
         {/* Arms: thin rounded capsules (groups pivot at the shoulder) */}
-        <group ref={armL} position={[-SHOULDER_X, SHOULDER_Y, 0]} rotation={[0, 0, REST_ARM_Z]}>
+        <group ref={armL} position={[-SHOULDER_X, SHOULDER_Y, 0]} rotation={[0, 0, -REST_ARM_Z]}>
           <mesh material={materials.shirt} position={[0, -ARM_LEN / 2 - ARM_R, 0]} castShadow>
             <capsuleGeometry args={[ARM_R, ARM_LEN, 4, 10]} />
           </mesh>
         </group>
-        <group ref={armR} position={[SHOULDER_X, SHOULDER_Y, 0]} rotation={[0, 0, -REST_ARM_Z]}>
+        <group ref={armR} position={[SHOULDER_X, SHOULDER_Y, 0]} rotation={[0, 0, REST_ARM_Z]}>
           <mesh material={materials.shirt} position={[0, -ARM_LEN / 2 - ARM_R, 0]} castShadow>
             <capsuleGeometry args={[ARM_R, ARM_LEN, 4, 10]} />
           </mesh>
@@ -370,55 +374,54 @@ export function Avatar() {
             <sphereGeometry args={[HEAD_R, 28, 22]} />
           </mesh>
 
-          {/* Hair: angular center-part style — a crown cap, a band over
-              the sides and nape, two pointed bangs framing an open
-              forehead, and little points at the temples. */}
+          {/* Hair: angular center-part style. One "hood" — a large cap
+              tilted back so its round opening frames the face — gives
+              full coverage over the crown, sides, and nape with no
+              seams. Two chunky pointed bangs sweep down-outward from a
+              center part, plus little points at the temples. */}
           <group>
-            {/* crown */}
-            <mesh material={materials.hair} position={[0, 0.02, -0.01]} scale={[1.04, 1, 1.04]}>
-              <sphereGeometry args={[HEAD_R, 28, 18, 0, Math.PI * 2, 0, 1.15]} />
-            </mesh>
-            {/* sides + nape (front edge tucked inside the head) */}
+            {/* hood */}
             <mesh
               material={materials.hair}
-              position={[0, 0.01, -0.05]}
-              scale={[1.045, 1.02, 0.97]}
+              position={[0, 0.012, -0.015]}
+              rotation={[-0.55, 0, 0]}
+              scale={[1.06, 1.05, 1.06]}
             >
-              <sphereGeometry args={[HEAD_R, 28, 18, 0, Math.PI * 2, 0.65, 1.15]} />
+              <sphereGeometry args={[HEAD_R, 30, 22, 0, Math.PI * 2, 0, 1.75]} />
             </mesh>
-            {/* pointed bangs sweeping down-outward from a center part */}
+            {/* chunky bangs framing an open center part */}
             <mesh
               material={materials.hair}
-              position={[-0.105, 0.1, HEAD_R * 0.87]}
-              rotation={[0.15, 0, Math.PI + 0.38]}
-              scale={[1, 1, 0.35]}
+              position={[-0.115, 0.1, HEAD_R * 0.82]}
+              rotation={[0.2, 0, Math.PI + 0.42]}
+              scale={[1, 1, 0.5]}
             >
-              <coneGeometry args={[0.1, 0.21, 6]} />
+              <coneGeometry args={[0.115, 0.23, 7]} />
             </mesh>
             <mesh
               material={materials.hair}
-              position={[0.105, 0.1, HEAD_R * 0.87]}
-              rotation={[0.15, 0, Math.PI - 0.38]}
-              scale={[1, 1, 0.35]}
+              position={[0.115, 0.1, HEAD_R * 0.82]}
+              rotation={[0.2, 0, Math.PI - 0.42]}
+              scale={[1, 1, 0.5]}
             >
-              <coneGeometry args={[0.1, 0.21, 6]} />
+              <coneGeometry args={[0.115, 0.23, 7]} />
             </mesh>
             {/* temple points in front of the ears */}
             <mesh
               material={materials.hair}
-              position={[-0.245, -0.01, 0.09]}
-              rotation={[0, 0, Math.PI + 0.12]}
-              scale={[0.45, 1, 1]}
+              position={[-0.24, 0, 0.1]}
+              rotation={[0, 0, Math.PI + 0.14]}
+              scale={[0.5, 1, 1]}
             >
-              <coneGeometry args={[0.05, 0.14, 6]} />
+              <coneGeometry args={[0.055, 0.16, 6]} />
             </mesh>
             <mesh
               material={materials.hair}
-              position={[0.245, -0.01, 0.09]}
-              rotation={[0, 0, Math.PI - 0.12]}
-              scale={[0.45, 1, 1]}
+              position={[0.24, 0, 0.1]}
+              rotation={[0, 0, Math.PI - 0.14]}
+              scale={[0.5, 1, 1]}
             >
-              <coneGeometry args={[0.05, 0.14, 6]} />
+              <coneGeometry args={[0.055, 0.16, 6]} />
             </mesh>
           </group>
 
