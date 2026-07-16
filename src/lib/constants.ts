@@ -17,12 +17,17 @@ export const CAMERA_ORBIT_RADIUS = PLANET_RADIUS * 4.3
 export const CAMERA_FOCUS_RADIUS = PLANET_RADIUS + 1.25
 
 /** Degrees of latitude the focus camera stands away from its subject
- *  along the ground (≈4 world units) — the portrait's distance. */
+ *  along the ground (≈4 world units) — the portrait's distance. The
+ *  camera stands on the equator side, the same side the far intro
+ *  view arrives from, so the push-in never flies past the subject. */
 export const FOCUS_LAT_OFFSET = 9
 
-/** Where the avatar lives (and spawns), in degrees. */
-export const AVATAR_LAT = 16
-export const AVATAR_LON = -20
+/** Where the avatar lives (and spawns), in degrees. Near the top of
+ *  the planet: there the surface "up" almost matches world up, so the
+ *  intro zoom needs no disorienting camera roll, and the far planet
+ *  view naturally frames him in front. */
+export const AVATAR_LAT = 75
+export const AVATAR_LON = 0
 
 /** Walking speed along the surface, world units per second. */
 export const WALK_SPEED = 1.6

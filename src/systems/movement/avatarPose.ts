@@ -19,9 +19,11 @@ export const avatarPose = {
   moving: 0,
 }
 
-// Initialize a coherent tangent frame at the spawn point.
+// Initialize a coherent tangent frame at the spawn point, facing
+// "south" (toward the equator, where the intro camera arrives from) —
+// the avatar greets the visitor without a big turn first.
 avatarPose.up.copy(avatarPose.position).normalize()
 avatarPose.forward
-  .set(1, 0, 0)
-  .addScaledVector(avatarPose.up, -avatarPose.up.x)
+  .set(0, -1, 0)
+  .addScaledVector(avatarPose.up, avatarPose.up.y)
   .normalize()
