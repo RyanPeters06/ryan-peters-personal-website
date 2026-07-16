@@ -1,0 +1,30 @@
+@import 'tailwindcss';
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  overscroll-behavior: none;
+  background: #f5f8f9;
+  font-family:
+    ui-rounded,
+    'Hiragino Maru Gothic ProN',
+    Quicksand,
+    Comfortaa,
+    Manjari,
+    'Arial Rounded MT',
+    'Arial Rounded MT Bold',
+    Calibri,
+    source-sans-pro,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The world is a game view — no accidental text selection. */
+canvas {
+  display: block;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
