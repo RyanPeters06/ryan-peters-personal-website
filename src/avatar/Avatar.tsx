@@ -119,14 +119,13 @@ export function Avatar() {
 
     // ----- Arrival timeline -------------------------------------------
     if (phase === 'arriving') {
-      if (a.t > 1.0 && store.cameraFocus === null) {
+      if (a.t > 0.4 && store.cameraFocus === null) {
         store.setCameraFocus({ lat: AVATAR_LAT, lon: AVATAR_LON })
       }
       // Wave only once the camera has actually arrived in front (with a
-      // generous timeout in case something holds it up) — never greet an
-      // empty sky.
+      // timeout in case something holds it up) — never greet an empty sky.
       const cameraClose = camera.position.distanceTo(avatarPose.position) < 6.5
-      if (a.t > 2.2 && (cameraClose || a.t > 8)) {
+      if (a.t > 1.2 && (cameraClose || a.t > 6)) {
         store.setPhase('greeting')
         a.waveT = 0
       }
@@ -148,7 +147,8 @@ export function Avatar() {
       _camFlat.addScaledVector(pose.up, -_camFlat.dot(pose.up))
       if (_camFlat.lengthSq() > 1e-8) {
         _camFlat.normalize()
-        _camRight.crossVectors(pose.up, _camFlat)
+        // Screen-right is viewDir x up (up x viewDir points LEFT).
+        _camRight.crossVectors(_camFlat, pose.up)
         _moveDir
           .set(0, 0, 0)
           .addScaledVector(_camFlat, input.z)

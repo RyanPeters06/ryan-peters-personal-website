@@ -7,6 +7,7 @@ import { latLonToVec3, surfaceQuaternion } from '@/lib/math/spherical'
 import {
   CLOUD_ALTITUDE_MAX,
   CLOUD_ALTITUDE_MIN,
+  CLOUD_SCALE,
   PALETTE,
   PLANET_RADIUS,
 } from '@/lib/constants'
@@ -83,7 +84,7 @@ function Cloud({ spec }: { spec: CloudSpec }) {
   })
 
   return (
-    <group ref={group}>
+    <group ref={group} scale={CLOUD_SCALE}>
       {spec.puffs.map((puff, i) => (
         // Slightly squashed puffs — friendlier than perfect spheres.
         <Instance

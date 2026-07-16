@@ -54,8 +54,8 @@ export function CinematicCamera() {
   const scene = useThree((s) => s.scene)
 
   const lonRef = useRef(-30)
-  const lat = useSmoothValue(24, 1.2)
-  const radius = useSmoothValue(CAMERA_ORBIT_RADIUS, 1.0)
+  const lat = useSmoothValue(24, 2.2)
+  const radius = useSmoothValue(CAMERA_ORBIT_RADIUS, 2.2)
   const look = useRef(IDLE_LOOK.clone())
 
   useFrame((_, rawDt) => {
@@ -135,7 +135,7 @@ export function CinematicCamera() {
       const lonTarget = focus.lon + Math.sin(t * 0.06) * 1
       lonRef.current +=
         shortestAngleDeltaDeg(lonRef.current, lonTarget) *
-        (1 - Math.exp(-1.4 * dt))
+        (1 - Math.exp(-2.5 * dt))
       latTarget = focus.lat + FOCUS_LAT_OFFSET + Math.sin(t * 0.1) * 0.4
       radiusTarget = CAMERA_FOCUS_RADIUS + Math.sin(t * 0.07) * 0.12
       lookTarget = latLonToVec3(focus.lat, focus.lon, PLANET_RADIUS + 0.55, _focusLook)
@@ -143,7 +143,7 @@ export function CinematicCamera() {
 
     lat.update(latTarget, dt)
     radius.update(radiusTarget, dt)
-    look.current.lerp(lookTarget, 1 - Math.exp(-1.8 * dt))
+    look.current.lerp(lookTarget, 1 - Math.exp(-2.5 * dt))
     camera.up.lerp(WORLD_UP, 1 - Math.exp(-3 * dt)).normalize()
 
     latLonToVec3(lat.value, lonRef.current, radius.value, _pos)

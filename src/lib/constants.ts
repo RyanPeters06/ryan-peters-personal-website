@@ -39,8 +39,12 @@ export const CHASE_LOOK_AHEAD = 2.5
 export const CAMERA_ORBIT_SPEED = 0.04
 
 /** Altitude band (above the surface) where clouds live. */
-export const CLOUD_ALTITUDE_MIN = 2.2
-export const CLOUD_ALTITUDE_MAX = 4.5
+export const CLOUD_ALTITUDE_MIN = 3.0
+export const CLOUD_ALTITUDE_MAX = 6.0
+
+/** Uniform scale applied to each cloud, so they read from orbit and
+ *  still feel like plump companions at walking level. */
+export const CLOUD_SCALE = 2.2
 
 /**
  * The world palette — soft, unsaturated, optimistic.
