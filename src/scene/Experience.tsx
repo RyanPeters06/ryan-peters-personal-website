@@ -7,6 +7,7 @@ import { PlanetShadow } from '@/scene/PlanetShadow'
 import { Clouds } from '@/scene/Clouds'
 import { Lighting } from '@/scene/lighting/Lighting'
 import { Avatar } from '@/avatar/Avatar'
+import { Locations } from '@/world/Locations'
 import { CinematicCamera } from '@/camera/CinematicCamera'
 import { setAmbientScale, useAmbientDriver } from '@/hooks/useAmbientLoop'
 import { useMovementKeys } from '@/systems/movement/useMovementInput'
@@ -52,6 +53,7 @@ export function Experience() {
         <Planet />
         <PlanetShadow />
         <Clouds />
+        <Locations />
         <Avatar />
         <CinematicCamera />
       </Suspense>

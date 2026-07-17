@@ -27,6 +27,10 @@ interface WorldState {
    */
   cameraFocus: LatLon | null
   setCameraFocus: (focus: LatLon | null) => void
+
+  /** Which location's pod the avatar is standing beside, if any. */
+  activeLocation: string | null
+  setActiveLocation: (id: string | null) => void
 }
 
 export const useWorldStore = create<WorldState>()((set) => ({
@@ -38,4 +42,7 @@ export const useWorldStore = create<WorldState>()((set) => ({
 
   cameraFocus: null,
   setCameraFocus: (cameraFocus) => set({ cameraFocus }),
+
+  activeLocation: null,
+  setActiveLocation: (activeLocation) => set({ activeLocation }),
 }))

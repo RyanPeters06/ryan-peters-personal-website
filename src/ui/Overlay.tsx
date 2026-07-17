@@ -1,4 +1,5 @@
 import { ControlsHint } from '@/ui/ControlsHint'
+import { LocationCard } from '@/ui/LocationCard'
 import { MuteButton } from '@/ui/MuteButton'
 
 /**
@@ -10,6 +11,7 @@ export function Overlay() {
   return (
     <div className="pointer-events-none absolute inset-0 z-10">
       <ControlsHint />
+      <LocationCard />
       <div className="absolute bottom-5 right-5">
         <MuteButton />
       </div>
