@@ -27,6 +27,16 @@ images to the repo).
   more than half the character. Ours: head ≈58% of ~1.0 units.
 
 ## UI Inspirations
+- **Wii channel icons** (Peter's reference, 2026-07-16): the definitive
+  statement of the pillow-shell principle — each icon is a thick
+  translucent molded-plastic rim around an inset white face, with the
+  glyph's single accent color *glowing through* the rim as a halo;
+  squircle radii ~30% of width; edges described entirely by highlights
+  (no outlines); tiny close diffuse shadows; generous spacing. Analysis
+  distilled into ART_DIRECTION → UI Philosophy (pillow-shell spec).
+  Remaining gap noted: subtle postprocessing bloom would complete the
+  "almost glowing" quality (needs @react-three/postprocessing —
+  awaiting Peter's approval).
 - Wii U app tiles: rounded squares, `rgba(255,255,255,0.72)` frost,
   1.5px white border, icon-over-label, springy scale-in. Exact spec in
   ART_DIRECTION → UI Philosophy (Peter, 2026-07-16).

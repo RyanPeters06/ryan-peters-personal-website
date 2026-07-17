@@ -64,7 +64,7 @@ export const PALETTE = {
   fog: '#f2fbff',
   /** The plaza floor: cool near-white tiles reflecting the sky. */
   ground: '#f8fafc',
-  groundLine: '#dce3e8',
+  groundLine: '#e3e9ed',
   grass: '#8fce7f',
   grassLight: '#a5dc94',
   grassDark: '#7cbe6e',
@@ -84,8 +84,9 @@ export const PALETTE = {
   face: '#2e2c2a',
 } as const
 
-/** Edge length of one floor tile, in world units. */
-export const TILE_SIZE = 0.85
+/** Edge length of one floor tile, in world units. Small — the floor
+ *  reads as a quiet UI surface supporting the world, not pavement. */
+export const TILE_SIZE = 0.42
 
 /** Multiplier applied to ambient world motion when the visitor prefers
  *  reduced motion. The world calms down but never freezes — a frozen

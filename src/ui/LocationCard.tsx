@@ -19,13 +19,16 @@ export function LocationCard() {
         {location && (
           <PlazaCard
             key={location.id}
-            className="pointer-events-auto w-[min(92vw,26rem)] px-6 py-6"
+            accent={location.accent}
+            className="pointer-events-auto w-[min(92vw,26rem)]"
           >
-            {/* Icon centered at the top, app-tile style */}
+            {/* Icon centered at the top — a miniature pillow tile */}
             <div className="mb-2 flex justify-center">
               <span
-                className="grid h-14 w-14 place-items-center rounded-2xl text-3xl"
-                style={{ backgroundColor: `${location.accent}55` }}
+                className="grid h-14 w-14 place-items-center rounded-2xl bg-white text-3xl"
+                style={{
+                  boxShadow: `0 0 14px ${location.accent}88, 0 4px 10px rgba(150,170,195,0.25), inset 0 1px 0 rgba(255,255,255,1)`,
+                }}
               >
                 {location.icon}
               </span>
@@ -40,7 +43,7 @@ export function LocationCard() {
               {location.items.map((item) => (
                 <li
                   key={item.title}
-                  className="rounded-2xl bg-[rgba(255,255,255,0.65)] px-4 py-3"
+                  className="rounded-2xl bg-[rgba(255,255,255,0.8)] px-4 py-3 shadow-[0_2px_8px_rgba(150,170,195,0.14),inset_0_1px_0_rgba(255,255,255,1)]"
                 >
                   {item.url ? (
                     <a

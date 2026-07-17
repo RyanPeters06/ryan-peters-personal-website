@@ -57,14 +57,15 @@ uniform float uFaceTiles;
 // Rounded corner radius (~22% of tile width) and seam half-width,
 // in tile-cell units.
 #define TILE_CORNER 0.22
-#define LINE_HALF 0.02
+#define LINE_HALF 0.018
 #define QUARTER_PI 0.7853981634
 
 // Quad-sphere tiling: project the surface direction onto its dominant
 // cube face, spread tiles by *angle* so they stay evenly sized.
-// Returns (d, uv.x, uv.y): the signed distance to the rounded-square
-// border, plus the in-cell coordinates for bevel shading.
-vec3 tileCell(vec3 dir) {
+// Returns (d, uv.x, uv.y, vary): signed distance to the rounded-square
+// border, in-cell coordinates for bevel shading, and a per-tile
+// pseudo-random value for quiet brightness variation.
+vec4 tileCell(vec3 dir) {
   vec3 a = abs(dir);
   vec2 t;
   if (a.x >= a.y && a.x >= a.z)      t = vec2(dir.z, dir.y) / a.x;
@@ -72,28 +73,30 @@ vec3 tileCell(vec3 dir) {
   else                               t = vec2(dir.x, dir.y) / a.z;
   vec2 cell = (atan(t) / QUARTER_PI * 0.5 + 0.5) * uFaceTiles;
   vec2 uv = fract(cell) - 0.5;
+  float vary = fract(sin(dot(floor(cell), vec2(127.1, 311.7))) * 43758.5453);
   vec2 q = abs(uv) - vec2(0.5 - TILE_CORNER);
   float d = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - TILE_CORNER;
-  return vec3(d, uv);
+  return vec4(d, uv, vary);
 }`,
       )
       .replace(
         '#include <color_fragment>',
         `#include <color_fragment>
 {
-  vec3 cellInfo = tileCell(normalize(vTileWorldPos));
+  vec4 cellInfo = tileCell(normalize(vTileWorldPos));
   float d = cellInfo.x;
   vec2 cuv = cellInfo.yz;
   float aa = fwidth(d);
-  // Soft, slightly blurred seams (wide feather on the outside edge).
+  // Whisper-soft seams: blurred, minimal contrast — the pattern
+  // quietly supports the world instead of describing pavement.
   float seam = 1.0 - smoothstep(LINE_HALF - aa, LINE_HALF + aa * 3.0, abs(d));
-  // A gentle band just inside each tile's border: darkened overall
-  // (faint inner shadow) and lightened along the top edge (subtle
-  // raised-button highlight).
+  // A very gentle bevel band just inside each tile's border.
   float band = smoothstep(-0.12, -0.015, d) * (1.0 - step(0.0, d));
   float bevel = band * cuv.y * 2.0;
   diffuseColor.rgb = mix(diffuseColor.rgb, uLineColor, clamp(seam, 0.0, 1.0));
-  diffuseColor.rgb *= 1.0 - band * 0.028 + bevel * 0.034;
+  diffuseColor.rgb *= 1.0 - band * 0.014 + bevel * 0.018;
+  // Quiet per-tile brightness variation (±1.2%) — handcrafted, alive.
+  diffuseColor.rgb *= 1.0 + (cellInfo.w - 0.5) * 0.024;
 }`,
       )
   }

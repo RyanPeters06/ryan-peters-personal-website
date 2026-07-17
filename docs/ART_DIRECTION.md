@@ -54,11 +54,14 @@ forbidden. All colors live in `src/lib/constants.ts` (`PALETTE`).
 
 ## Materials
 
+Everything is **premium molded plastic**: smooth, soft, clean, slightly
+glossy, rounded. Never rough, metallic, concrete, textured, or noisy.
+
 - Ground: roughness 0.5, shader-drawn tiles (see Environment).
-- Toy/plaza surfaces (pedestals, signs): roughness 0.15–0.35, white,
-  optionally `opacity 0.92` for subtle translucency. Never strong glass.
-- Character: matte-soft (roughness 0.75–0.9). Soft gradients from
-  lighting only — no painted detail.
+- Toy/plaza surfaces (pedestals, sign faces): roughness 0.12–0.3, white.
+  Translucent shells: opacity ~0.55 + accent emissive (see UI spec).
+- Characters: roughness 0.55–0.7 — soft plastic with gentle speculars.
+  Soft gradients from lighting only — no painted detail.
 
 ## Character Design
 
@@ -98,26 +101,35 @@ Speaks the visual language of a Mii **without being one**:
 
 ## UI Philosophy
 
-Floating cards only; the world is never blocked. **The Wii U overlay
-spec** (applies to location cards and hints):
+Floating cards only; the world is never blocked. **The pillow-shell
+spec** — every interactive object, 2D or 3D (cards, signs, buttons,
+future buildings), is built as a multi-layer molded-plastic icon:
 
-- Shape: rounded square, border radius **24–32px**.
-- Background: `rgba(255,255,255,0.72)` with **backdrop blur 18–24px**.
-- Border: `1.5px solid rgba(255,255,255,0.9)`.
-- Very subtle white outer glow + soft diffuse shadow.
+1. **Thick translucent outer rim** (~10% of width): frosted
+   `rgba(255,255,255,0.55)`, backdrop blur ~24px, edges described by
+   *highlights* (inset top light, inset bottom shade) — never outlines.
+   The object's accent color **glows through the rim** as a soft halo.
+2. **Inner white face** inset within the rim, gentle top-to-bottom
+   light gradient, radius ~24px (outer ~32px).
+3. Content floats on the face with generous padding.
+- Tiny, close, diffuse float shadow — objects hover 2mm, not 20.
+- One accent per object; identical white shells create cohesion.
 - Icon centered at top; text below in a rounded sans-serif.
 - Entrance: scale **0.92 → 1.0**, fade **0 → 1**, **320ms**,
-  easing `cubic-bezier(0.22, 1, 0.36, 1)` — like a Wii U app icon
-  coming to life.
+  easing `cubic-bezier(0.22, 1, 0.36, 1)` — an app icon coming to life.
+- In 3D: same construction (translucent RoundedBox shell, faintly
+  accent-tinted + accent emissive ~0.14, around an inset white face).
 
 No nav bar, no scrolling page, no hero section, no dashboard layouts.
 
 ## Environmental Details
 
-- Floor: **quad-sphere tile grid** drawn in-shader. Rounded-square tiles
-  (corner radius ~22% of width), blurred low-contrast seams, faint inner
-  shadow + subtle top-edge highlight so tiles read slightly raised —
-  a giant friendly menu screen, not a 3D-modeling grid.
+- Floor: **quad-sphere tile grid** drawn in-shader — a giant quiet UI
+  surface, not pavement. **Very small** rounded-square tiles
+  (`TILE_SIZE 0.42`, corner radius ~22%), whisper-soft blurred seams,
+  minimal contrast, a very gentle raised bevel, and ±1.2% per-tile
+  brightness variation so it feels handcrafted. The pattern quietly
+  supports the world; it never demands attention.
 - Clouds: plump bottom-aligned puff clusters, instanced, drifting slowly.
 - Future dressing (trees, benches, lamps) must pass the plaza test:
   rounded, toy-like, pastel, gently animated.

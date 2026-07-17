@@ -35,22 +35,26 @@ export function LocationPod({
   const near = useRef(false)
   const lift = useRef(0)
 
-  const materials = useMemo(
-    () => ({
-      pedestal: new MeshStandardMaterial({ color: '#ffffff', roughness: 0.25 }),
-      accent: new MeshStandardMaterial({
-        color: new Color(location.accent),
-        roughness: 0.35,
-      }),
-      sign: new MeshStandardMaterial({
-        color: '#ffffff',
-        roughness: 0.15,
+  const materials = useMemo(() => {
+    const accent = new Color(location.accent)
+    return {
+      pedestal: new MeshStandardMaterial({ color: '#ffffff', roughness: 0.18 }),
+      accent: new MeshStandardMaterial({ color: accent, roughness: 0.3 }),
+      // The sign's outer shell: translucent molded plastic, faintly
+      // tinted by the accent, which also glows from within (emissive)
+      // — color radiates from inside the object, like the reference.
+      signFrame: new MeshStandardMaterial({
+        color: new Color('#ffffff').lerp(accent, 0.3),
+        roughness: 0.12,
         transparent: true,
-        opacity: 0.92,
+        opacity: 0.55,
+        emissive: accent,
+        emissiveIntensity: 0.14,
       }),
-    }),
-    [location.accent],
-  )
+      // The inner white face inset within the shell.
+      signFace: new MeshStandardMaterial({ color: '#ffffff', roughness: 0.2 }),
+    }
+  }, [location.accent])
 
   useFrame((_, rawDt) => {
     const dt = Math.min(rawDt, 0.1)
@@ -101,17 +105,25 @@ export function LocationPod({
         castShadow
       />
 
-      {/* Floating sign: translucent rounded square, bobbing + turning */}
+      {/* Floating sign: a molded "pillow" icon — thick translucent
+          shell around an inset white face, accent glowing through. */}
       <group ref={sign} position={[0, 1.35, 0]}>
         <RoundedBox
-          args={[0.95, 0.95, 0.14]}
-          radius={0.1}
-          smoothness={4}
-          material={materials.sign}
+          args={[1.05, 1.05, 0.16]}
+          radius={0.15}
+          smoothness={5}
+          material={materials.signFrame}
           castShadow
         />
-        {/* Glyph sits just proud of the sign's front face */}
-        <group position={[0, 0, 0.1]}>{children}</group>
+        <RoundedBox
+          args={[0.8, 0.8, 0.12]}
+          radius={0.11}
+          smoothness={4}
+          position={[0, 0, 0.035]}
+          material={materials.signFace}
+        />
+        {/* Glyph floats on the inner face */}
+        <group position={[0, 0, 0.12]}>{children}</group>
       </group>
     </group>
   )

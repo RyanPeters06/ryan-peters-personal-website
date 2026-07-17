@@ -93,16 +93,17 @@ export function Avatar() {
 
   const materials = useMemo(
     () => ({
-      skin: new MeshStandardMaterial({ color: PALETTE.skin, roughness: 0.75 }),
+      // Premium molded plastic: smooth and slightly glossy, never matte.
+      skin: new MeshStandardMaterial({ color: PALETTE.skin, roughness: 0.6 }),
       hair: new MeshStandardMaterial({
         color: PALETTE.hair,
-        roughness: 0.9,
+        roughness: 0.7,
         side: DoubleSide,
       }),
-      shirt: new MeshStandardMaterial({ color: PALETTE.shirt, roughness: 0.85 }),
-      pants: new MeshStandardMaterial({ color: PALETTE.pants, roughness: 0.9 }),
-      shoe: new MeshStandardMaterial({ color: PALETTE.shoe, roughness: 0.8 }),
-      face: new MeshStandardMaterial({ color: PALETTE.face, roughness: 0.7 }),
+      shirt: new MeshStandardMaterial({ color: PALETTE.shirt, roughness: 0.55 }),
+      pants: new MeshStandardMaterial({ color: PALETTE.pants, roughness: 0.65 }),
+      shoe: new MeshStandardMaterial({ color: PALETTE.shoe, roughness: 0.55 }),
+      face: new MeshStandardMaterial({ color: PALETTE.face, roughness: 0.55 }),
     }),
     [],
   )

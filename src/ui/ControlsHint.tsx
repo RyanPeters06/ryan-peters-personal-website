@@ -23,7 +23,7 @@ export function ControlsHint() {
     <div className="pointer-events-none absolute inset-x-0 bottom-10 flex justify-center">
       <AnimatePresence>
         {phase === 'idle' && (
-          <PlazaCard className="px-8 py-5">
+          <PlazaCard>
             {/* Idle float, riding on top of the plaza entrance */}
             <motion.div
               animate={{ y: [0, -5, 0] }}
