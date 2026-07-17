@@ -133,9 +133,12 @@ export function CinematicCamera() {
     let lookTarget: Vector3
 
     if (focus === null) {
-      // Idle drift: constant slow orbit + breathing tilt.
+      // Idle drift: constant slow orbit + breathing tilt. During the
+      // title hold the drift slows to a near-still breath, so the
+      // world-anchored title keeps its composition.
+      const drift = phase === 'title' ? 0.25 : 1
       lonRef.current +=
-        CAMERA_ORBIT_SPEED * getAmbientScale() * dt * (180 / Math.PI) * 0.35
+        CAMERA_ORBIT_SPEED * getAmbientScale() * dt * (180 / Math.PI) * 0.35 * drift
       latTarget = 24 + Math.sin(t * 0.11) * 7
       radiusTarget = CAMERA_ORBIT_RADIUS * (1 + Math.sin(t * 0.07) * 0.02)
       lookTarget = IDLE_LOOK

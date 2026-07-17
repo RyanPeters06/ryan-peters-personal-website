@@ -9,6 +9,7 @@ import { Lighting } from '@/scene/lighting/Lighting'
 import { Avatar } from '@/avatar/Avatar'
 import { Locations } from '@/world/Locations'
 import { Crowd } from '@/world/Crowd'
+import { TitleWorld } from '@/scene/TitleWorld'
 import { CinematicCamera } from '@/camera/CinematicCamera'
 import { setAmbientScale, useAmbientDriver } from '@/hooks/useAmbientLoop'
 import { useMovementKeys } from '@/systems/movement/useMovementInput'
@@ -57,6 +58,7 @@ export function Experience() {
         <Locations />
         <Crowd />
         <Avatar />
+        <TitleWorld />
         <CinematicCamera />
       </Suspense>
     </Canvas>

@@ -20,11 +20,15 @@ session. This file always reflects the current state of the project.
   face and an accent that breathes/brightens on approach. Spec in
   ART_DIRECTION → World Architecture; all future landmarks follow it.
 - **Title sequence**: phase 'title' opens the experience — camera high
-  over the living world, "Ryan's Planet" blur-reveals out of the sky
-  (atmospheric type, no card), subtitle + "Click Anywhere to Explore";
-  click dissolves the title upward into the light while the descent
-  begins. Avatar arrival timers re-anchored to the moment the title
-  gives way.
+  over the living world (drift slowed to a breath), and "Ryan's
+  Planet" exists as REAL 3D text in the atmosphere above the crown
+  (scene/TitleWorld.tsx, bundled Quicksand Bold woff — the project's
+  one typeface asset). True parallax, clouds pass around it, soft
+  white outline-glow; staggered condense-in, and on click it releases
+  upward into the light while the descent begins. The DOM is only an
+  invisible click-catcher. Avatar arrival timers anchored to the
+  moment the title gives way. (Peter rejected the first DOM-overlay
+  version — titles must be tangible in the world.)
 - **The plaza crowd** (world/Crowd.tsx + world/Villager.tsx): ~24
   villagers at player height (Peter revised from the initial 60–70%
   spec) with varied pastel hair/shirt pools; 7 chat circles (members

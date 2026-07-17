@@ -147,17 +147,24 @@ are the same thing. Never a collection of imported 3D assets.
   scene?" → redesign. "Does this look born as part of this world?" →
   ship.
 
-## The Title — part of the place, not the interface
+## The Title — a tangible part of the place, never an overlay
 
-The opening shot holds high above the already-living planet; after the
-camera settles, **"Ryan's Planet"** reveals itself out of the bright
-atmosphere: soft rounded heavy type in blue-gray (#6d8494), lit by
-white radiance (layered text-glow, no hard shadow), blur-in + slow
-upward easing. Subtitle: "An Interactive Software Engineering
-Portfolio" / "Click Anywhere to Explore" — understated, the title is
-always focal. On click it dissolves upward into the light (blur + fade
-+ rise) while the camera is already descending. Calm and confident:
-no particles, no spin, no oversized glow, never a hard cut.
+**The title is scene geometry, not DOM.** "Ryan's Planet" is real 3D
+text (bundled Quicksand Bold — rounded, warm, timeless; the project's
+one typeface asset) floating in the atmosphere above the planet's
+crown at real depth (~70 units from the intro camera), billboarded to
+the visitor. Because it lives in the scene it inherits the world's
+life: true parallax under the camera's drift (which slows to a breath
+during the hold), clouds passing around it, and a soft white
+outline-glow that reads as sky light catching it. Color #6d8494;
+subtitle and "Click Anywhere to Explore" beneath, understated.
+
+Reveal: after the shot settles it condenses out of the bright sky —
+fade + slight scale + slow upward easing, staggered lines. Dissolve:
+on click it releases back into the light (glow widening, drifting
+upward, fading) while the camera is already descending. Calm and
+confident: no particles, no spin, no oversized glow, never a hard cut.
+The DOM contributes only an invisible click-catcher.
 
 ## Environmental Details
 
