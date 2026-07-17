@@ -50,17 +50,22 @@ capture the *feeling*, never copy assets, models, or trademarks.
    no clicks required, like greeting someone in a plaza.
 5. Nothing is modal. The world never stops being playable.
 
-## Areas of the World (portfolio sections as places)
+## Areas of the World (portfolio sections as architecture)
 
-| Area | Place | Status |
-|---|---|---|
-| Projects | Sculptural monument bearing a rounded `</>` mark | Built (placeholder content) |
-| Experience | A modern little office building | Planned |
-| Education | A university building | Planned |
-| Skills | A laboratory of little machines | Planned |
-| Contact | A small mailbox | Planned |
-| Resume | A backpack sitting on the ground | Planned |
-| Achievements | A tiny museum with pedestals | Planned |
+Every area is a landmark from ONE monument family (see ART_DIRECTION →
+World Architecture): a molded monolith grown from the plaza, identical
+construction, distinguished only by its pastel accent and the original
+symbol molded into its face — giant app icons become buildings.
+
+| Area | Molded symbol | Accent | Status |
+|---|---|---|---|
+| Projects | Rounded `</>` mark | Pastel blue | Built (placeholder content) |
+| Experience | Rounded briefcase mark | TBD pastel | Planned |
+| Education | Rounded graduation-cap mark | TBD pastel | Planned |
+| Skills | Rounded spark/bolt mark | TBD pastel | Planned |
+| Contact | Rounded envelope mark | TBD pastel | Planned |
+| Resume | Rounded document mark | TBD pastel | Planned |
+| Achievements | Rounded star mark | TBD pastel | Planned |
 
 ## How Visitors Should Feel
 

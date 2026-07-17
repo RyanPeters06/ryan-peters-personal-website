@@ -95,8 +95,10 @@ export function LocationPod({
         castShadow
         receiveShadow
       />
-      {/* The symbol, molded flush into the upper front face */}
-      <group position={[0, 1.25, 0.31]}>{children}</group>
+      {/* The symbol, molded into the upper front face: bar centers sit
+          just inside the surface so only a shallow rounded sliver
+          emerges — a two-shot molding, never an attachment. */}
+      <group position={[0, 1.25, 0.295]}>{children}</group>
     </group>
   )
 }

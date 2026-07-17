@@ -52,12 +52,29 @@ export function MuteButton() {
       onClick={toggleMuted}
       aria-label={muted ? 'Unmute sounds' : 'Mute sounds'}
       aria-pressed={muted}
-      className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full bg-white/95 shadow-[0_4px_16px_rgba(120,140,130,0.25)] outline-offset-4"
+      className="pointer-events-auto grid h-14 w-14 place-items-center rounded-[18px] bg-[rgba(255,255,255,0.55)] p-[5px] backdrop-blur-[24px] outline-offset-4"
+      style={{
+        boxShadow: [
+          '0 0 18px rgba(255,255,255,0.6)',
+          '0 8px 22px rgba(150,170,195,0.22)',
+          'inset 0 1.5px 3px rgba(255,255,255,0.95)',
+          'inset 0 -1.5px 3px rgba(160,180,200,0.28)',
+        ].join(', '),
+      }}
       whileHover={{ scale: 1.08 }}
       whileTap={{ scale: 0.9 }}
       transition={{ type: 'spring', stiffness: 400, damping: 17 }}
     >
-      <SpeakerIcon muted={muted} />
+      <span
+        className="grid h-full w-full place-items-center rounded-[13px]"
+        style={{
+          background:
+            'linear-gradient(to bottom, rgba(255,255,255,0.96), rgba(243,248,252,0.9))',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,1)',
+        }}
+      >
+        <SpeakerIcon muted={muted} />
+      </span>
     </motion.button>
   )
 }

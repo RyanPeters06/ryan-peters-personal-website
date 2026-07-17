@@ -53,17 +53,21 @@ Statuses: ✅ done · 🔨 in progress · ⬜ not started
   **Deps:** M1 (visual), M5 (placement makes sense around pods).
 
 ## M5 — Locations & Interaction System 🔨
-- **Objective:** portfolio sections exist as places.
-- **Done:** typed content layer (content/locations.ts); LocationPod
-  (plaza kiosk: pedestal + accent + bobbing translucent sign + glyph);
-  proximity hysteresis → activeLocation; Wii U-style overlay card.
-  First pod: **Projects**.
-- **Remaining:** real project content (placeholders now); remaining pods —
-  Experience, Education, Skills, Contact, Resume, Achievements — each
-  with a distinct primitive glyph/structure; spread placement + possibly
-  a subtle direction hint toward the nearest pod.
+- **Objective:** portfolio sections exist as places — as architecture.
+- **Done:** typed content layer (content/locations.ts); LocationPod as
+  a **monument** (one molded monolith growing from a floor swell, its
+  symbol molded flush into the face, accent breathing/brightening on
+  approach — spec in ART_DIRECTION → World Architecture); proximity
+  hysteresis → activeLocation; pillow-shell overlay card; title
+  sequence. First landmark: **Projects** (rounded `</>` mark).
+- **Remaining:** real project content (placeholders now); remaining
+  landmarks — Experience, Education, Skills, Contact, Resume,
+  Achievements — same monument family, each with its own accent +
+  molded symbol; spread placement + possibly a subtle direction hint
+  toward the nearest landmark.
 - **Files:** content/locations.ts, world/*, ui/LocationCard.
-- **Success:** a stranger finds and reads real content unprompted.
+- **Success:** a stranger finds and reads real content unprompted, and
+  every landmark is instantly recognizable as one design system.
   **Deps:** M3.
 
 ## M6 — Content Fill ⬜
