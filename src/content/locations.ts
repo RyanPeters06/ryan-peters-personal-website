@@ -13,6 +13,8 @@ export interface WorldLocation {
   id: string
   /** Name shown on the floating card. */
   name: string
+  /** Emoji icon centered at the top of the card. */
+  icon: string
   /** One-line flavor text under the name. */
   tagline: string
   /** Pastel accent for the pod and card trim. */
@@ -27,6 +29,7 @@ export const LOCATIONS: WorldLocation[] = [
   {
     id: 'projects',
     name: 'Projects',
+    icon: '💻',
     tagline: 'Things I have built',
     accent: '#a9c9e8',
     // Straight ahead of the spawn point — the first stroll finds it.

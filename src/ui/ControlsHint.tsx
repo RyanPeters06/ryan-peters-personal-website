@@ -1,21 +1,20 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useWorldStore } from '@/store/useWorldStore'
+import { PlazaCard } from '@/ui/PlazaCard'
 
 /** One rounded keycap, game-console style. */
-function Key({ label, wide = false }: { label: string; wide?: boolean }) {
+function Key({ label }: { label: string }) {
   return (
-    <span
-      className={`grid h-9 ${wide ? 'w-12' : 'w-9'} place-items-center rounded-xl border-b-4 border-[#c6cfd4] bg-[#eef2f4] text-sm font-bold text-[#5b6a72] shadow-sm`}
-    >
+    <span className="grid h-9 w-9 place-items-center rounded-xl border-b-4 border-[#c9d3da] bg-[rgba(255,255,255,0.85)] text-sm font-bold text-[#5b6a72] shadow-sm">
       {label}
     </span>
   )
 }
 
 /**
- * The "you can walk!" hint: pops up with a springy bounce once the
- * avatar finishes its hello, floats gently while waiting, and hops
- * away the moment the visitor takes their first step.
+ * The "you can walk!" hint: pops up in the plaza-card shell once the
+ * avatar finishes its hello, floats gently while waiting, and slips
+ * away on the visitor's first step.
  */
 export function ControlsHint() {
   const phase = useWorldStore((s) => s.phase)
@@ -24,17 +23,12 @@ export function ControlsHint() {
     <div className="pointer-events-none absolute inset-x-0 bottom-10 flex justify-center">
       <AnimatePresence>
         {phase === 'idle' && (
-          <motion.div
-            initial={{ y: 48, opacity: 0, scale: 0.8 }}
-            animate={{ y: 0, opacity: 1, scale: 1 }}
-            exit={{ y: 16, opacity: 0, scale: 0.9 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 19, delay: 0.5 }}
-          >
-            {/* Idle float, riding on top of the spring entrance */}
+          <PlazaCard className="px-8 py-5">
+            {/* Idle float, riding on top of the plaza entrance */}
             <motion.div
               animate={{ y: [0, -5, 0] }}
               transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
-              className="flex flex-col items-center gap-3 rounded-3xl bg-white/95 px-8 py-5 shadow-[0_8px_28px_rgba(120,140,130,0.28)]"
+              className="flex flex-col items-center gap-3"
             >
               <span className="text-sm font-semibold tracking-wide text-[#7a8890]">
                 Take a walk!
@@ -59,7 +53,7 @@ export function ControlsHint() {
                 </div>
               </div>
             </motion.div>
-          </motion.div>
+          </PlazaCard>
         )}
       </AnimatePresence>
     </div>

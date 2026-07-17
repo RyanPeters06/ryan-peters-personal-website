@@ -1,11 +1,13 @@
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
 import { LOCATIONS } from '@/content/locations'
 import { useWorldStore } from '@/store/useWorldStore'
+import { PlazaCard } from '@/ui/PlazaCard'
 
 /**
- * The floating card that greets you beside a pod: rounded, white,
- * soft-shadowed, springy — reads like a plaza notice, not a dashboard.
- * Walking away makes it hop off; the world stays fully playable.
+ * The card that greets you beside a pod — a Wii U application icon
+ * coming to life: frosted rounded square, icon centered at the top,
+ * rounded text below. Walking away dismisses it; the world stays
+ * fully playable underneath.
  */
 export function LocationCard() {
   const activeId = useWorldStore((s) => s.activeLocation)
@@ -15,24 +17,31 @@ export function LocationCard() {
     <div className="pointer-events-none absolute inset-x-0 bottom-8 flex justify-center">
       <AnimatePresence>
         {location && (
-          <motion.div
+          <PlazaCard
             key={location.id}
-            initial={{ y: 56, opacity: 0, scale: 0.85 }}
-            animate={{ y: 0, opacity: 1, scale: 1 }}
-            exit={{ y: 24, opacity: 0, scale: 0.9 }}
-            transition={{ type: 'spring', stiffness: 320, damping: 22 }}
-            className="pointer-events-auto w-[min(92vw,26rem)] rounded-3xl bg-white/95 px-6 py-5 shadow-[0_10px_32px_rgba(120,140,160,0.3)]"
+            className="pointer-events-auto w-[min(92vw,26rem)] px-6 py-6"
           >
-            <div
-              className="mb-1 inline-block rounded-full px-3 py-0.5 text-xs font-bold tracking-wide text-white"
-              style={{ backgroundColor: location.accent }}
-            >
-              {location.name}
+            {/* Icon centered at the top, app-tile style */}
+            <div className="mb-2 flex justify-center">
+              <span
+                className="grid h-14 w-14 place-items-center rounded-2xl text-3xl"
+                style={{ backgroundColor: `${location.accent}55` }}
+              >
+                {location.icon}
+              </span>
             </div>
-            <p className="mb-3 text-sm text-[#8a97a0]">{location.tagline}</p>
+            <h2 className="text-center text-lg font-bold text-[#54636e]">
+              {location.name}
+            </h2>
+            <p className="mb-4 text-center text-sm text-[#8a97a0]">
+              {location.tagline}
+            </p>
             <ul className="flex flex-col gap-2.5">
               {location.items.map((item) => (
-                <li key={item.title} className="rounded-2xl bg-[#f4f8fb] px-4 py-3">
+                <li
+                  key={item.title}
+                  className="rounded-2xl bg-[rgba(255,255,255,0.65)] px-4 py-3"
+                >
                   {item.url ? (
                     <a
                       href={item.url}
@@ -43,7 +52,9 @@ export function LocationCard() {
                       {item.title} ↗
                     </a>
                   ) : (
-                    <span className="text-sm font-semibold text-[#54636e]">{item.title}</span>
+                    <span className="text-sm font-semibold text-[#54636e]">
+                      {item.title}
+                    </span>
                   )}
                   <p className="mt-0.5 text-xs leading-relaxed text-[#93a1ab]">
                     {item.description}
@@ -51,7 +62,7 @@ export function LocationCard() {
                 </li>
               ))}
             </ul>
-          </motion.div>
+          </PlazaCard>
         )}
       </AnimatePresence>
     </div>
