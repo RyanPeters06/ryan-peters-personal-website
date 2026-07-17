@@ -389,39 +389,42 @@ export function Avatar() {
             >
               <sphereGeometry args={[HEAD_R, 30, 22, 0, Math.PI * 2, 0, 1.75]} />
             </mesh>
-            {/* chunky bangs framing an open center part */}
+            {/* Fringe: two soft rounded swooshes hugging the forehead,
+                sloping down-outward from an open center part. Ellipsoids
+                (not cones) so they merge with the hood's curves and read
+                as one hair mass — nothing pointy, nothing separate. */}
             <mesh
               material={materials.hair}
-              position={[-0.115, 0.1, HEAD_R * 0.82]}
-              rotation={[0.2, 0, Math.PI + 0.42]}
-              scale={[1, 1, 0.5]}
+              position={[-0.135, 0.135, 0.18]}
+              rotation={[-0.12, 0, 0.5]}
+              scale={[1.15, 0.65, 0.5]}
             >
-              <coneGeometry args={[0.115, 0.23, 7]} />
+              <sphereGeometry args={[0.115, 18, 14]} />
             </mesh>
             <mesh
               material={materials.hair}
-              position={[0.115, 0.1, HEAD_R * 0.82]}
-              rotation={[0.2, 0, Math.PI - 0.42]}
-              scale={[1, 1, 0.5]}
+              position={[0.135, 0.135, 0.18]}
+              rotation={[-0.12, 0, -0.5]}
+              scale={[1.15, 0.65, 0.5]}
             >
-              <coneGeometry args={[0.115, 0.23, 7]} />
+              <sphereGeometry args={[0.115, 18, 14]} />
             </mesh>
-            {/* temple points in front of the ears */}
+            {/* soft sideburn drops in front of the ears */}
             <mesh
               material={materials.hair}
-              position={[-0.24, 0, 0.1]}
-              rotation={[0, 0, Math.PI + 0.14]}
-              scale={[0.5, 1, 1]}
+              position={[-0.235, -0.01, 0.09]}
+              rotation={[0, 0, 0.15]}
+              scale={[0.35, 0.8, 0.5]}
             >
-              <coneGeometry args={[0.055, 0.16, 6]} />
+              <sphereGeometry args={[0.09, 14, 12]} />
             </mesh>
             <mesh
               material={materials.hair}
-              position={[0.24, 0, 0.1]}
-              rotation={[0, 0, Math.PI - 0.14]}
-              scale={[0.5, 1, 1]}
+              position={[0.235, -0.01, 0.09]}
+              rotation={[0, 0, -0.15]}
+              scale={[0.35, 0.8, 0.5]}
             >
-              <coneGeometry args={[0.055, 0.16, 6]} />
+              <sphereGeometry args={[0.09, 14, 12]} />
             </mesh>
           </group>
 
