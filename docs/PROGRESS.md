@@ -13,6 +13,18 @@ session. This file always reflects the current state of the project.
 ### Completed
 - `/docs` project brain created (this system). Root `CLAUDE.md` directs
   every future session to read `/docs` first.
+- **World-architecture philosophy** (Peter): landmarks are architecture,
+  not props. The Projects kiosk (pedestal + bobbing sign + computer
+  glyph) was replaced by a single molded monolith growing from a floor
+  swell, with an original rounded `</>` symbol molded flush into its
+  face and an accent that breathes/brightens on approach. Spec in
+  ART_DIRECTION → World Architecture; all future landmarks follow it.
+- **Title sequence**: phase 'title' opens the experience — camera high
+  over the living world, "Ryan's Planet" blur-reveals out of the sky
+  (atmospheric type, no card), subtitle + "Click Anywhere to Explore";
+  click dissolves the title upward into the light while the descent
+  begins. Avatar arrival timers re-anchored to the moment the title
+  gives way.
 - **The plaza crowd** (world/Crowd.tsx + world/Villager.tsx): ~24
   villagers at player height (Peter revised from the initial 60–70%
   spec) with varied pastel hair/shirt pools; 7 chat circles (members

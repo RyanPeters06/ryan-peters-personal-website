@@ -36,20 +36,25 @@ capture the *feeling*, never copy assets, models, or trademarks.
 
 ## The Visitor's Journey
 
-1. **Arrival:** the whole tiny planet floats in a white-blue sky. The
-   camera glides down to the character, who turns and waves hello.
-2. **The handoff:** the camera swings around behind him (classic third
+1. **The title:** the camera holds high above the already-living
+   planet (villagers wander, clouds drift) while "Ryan's Planet"
+   reveals itself out of the bright sky. One click, and the title
+   dissolves into the light as the camera begins its descent.
+2. **Arrival:** the camera glides down to the character, who turns
+   and waves hello.
+3. **The handoff:** the camera swings around behind him (classic third
    person); a springy keycap card teaches WASD/arrows.
-3. **Exploration:** the visitor strolls the planet. Destinations are
-   visible landmarks; approaching one springs up a translucent card with
-   its contents — no clicks required, like greeting someone in a plaza.
-4. Nothing is modal. The world never stops being playable.
+4. **Exploration:** the visitor strolls the planet. Destinations are
+   sculptural landmarks (see ART_DIRECTION → World Architecture);
+   approaching one springs up a translucent card with its contents —
+   no clicks required, like greeting someone in a plaza.
+5. Nothing is modal. The world never stops being playable.
 
 ## Areas of the World (portfolio sections as places)
 
 | Area | Place | Status |
 |---|---|---|
-| Projects | Plaza kiosk with a tiny computer glyph | Built (placeholder content) |
+| Projects | Sculptural monument bearing a rounded `</>` mark | Built (placeholder content) |
 | Experience | A modern little office building | Planned |
 | Education | A university building | Planned |
 | Skills | A laboratory of little machines | Planned |

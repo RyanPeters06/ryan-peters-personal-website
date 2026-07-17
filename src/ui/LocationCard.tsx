@@ -25,7 +25,7 @@ export function LocationCard() {
             {/* Icon centered at the top — a miniature pillow tile */}
             <div className="mb-2 flex justify-center">
               <span
-                className="grid h-14 w-14 place-items-center rounded-2xl bg-white text-3xl"
+                className="grid h-14 w-14 place-items-center rounded-2xl bg-white text-xl font-extrabold text-[#54636e]"
                 style={{
                   boxShadow: `0 0 14px ${location.accent}88, 0 4px 10px rgba(150,170,195,0.25), inset 0 1px 0 rgba(255,255,255,1)`,
                 }}

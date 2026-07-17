@@ -122,6 +122,43 @@ future buildings), is built as a multi-layer molded-plastic icon:
 
 No nav bar, no scrolling page, no hero section, no dashboard layouts.
 
+## World Architecture — landmarks are architecture, not props
+
+The environment must feel manufactured as ONE cohesive product by one
+industrial design team — a living interface where architecture and UI
+are the same thing. Never a collection of imported 3D assets.
+
+- Every landmark is **one continuous molded form** (a giant app icon
+  become architecture): a soft rounded monolith whose base sinks into a
+  gentle swell of the floor itself — it grows *from* the world.
+- Its identity symbol is **molded flush into the front face** (rounded
+  accent forms half-sunk into the body, like two-shot injection
+  molding) — never attached, never floating, never assembled.
+- No pedestals, no furniture, no miniature real-world objects (the
+  Projects landmark is a monolith bearing a rounded `</>` mark — NOT a
+  computer model).
+- The accent breathes as a soft emissive glow inside the body and
+  brightens on approach. Architecture doesn't hop or spin; its life is
+  light.
+- All landmarks share proportions (~1.7×2.2×0.66, radius 0.26),
+  materials, corner language, and construction — one family,
+  instantly recognizable, differing only in accent + symbol.
+- **The final test for every object:** "Does this look placed into the
+  scene?" → redesign. "Does this look born as part of this world?" →
+  ship.
+
+## The Title — part of the place, not the interface
+
+The opening shot holds high above the already-living planet; after the
+camera settles, **"Ryan's Planet"** reveals itself out of the bright
+atmosphere: soft rounded heavy type in blue-gray (#6d8494), lit by
+white radiance (layered text-glow, no hard shadow), blur-in + slow
+upward easing. Subtitle: "An Interactive Software Engineering
+Portfolio" / "Click Anywhere to Explore" — understated, the title is
+always focal. On click it dissolves upward into the light (blur + fade
++ rise) while the camera is already descending. Calm and confident:
+no particles, no spin, no oversized glow, never a hard cut.
+
 ## Environmental Details
 
 - Floor: **quad-sphere tile grid** drawn in-shader — a giant quiet UI

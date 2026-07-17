@@ -1,64 +1,61 @@
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
-import { Color, Group, MeshStandardMaterial } from 'three'
+import { Color, MeshStandardMaterial } from 'three'
 import type { WorldLocation } from '@/content/locations'
 import { useSphericalPosition } from '@/hooks/useSphericalPosition'
-import { getAmbientTime } from '@/hooks/useAmbientLoop'
 import { useWorldStore } from '@/store/useWorldStore'
 import { avatarPose } from '@/systems/movement/avatarPose'
 import { expDamp } from '@/lib/math/spherical'
+import { PALETTE } from '@/lib/constants'
 
-/** Walk inside this distance to "arrive" at a pod (with hysteresis so
- *  the card never flickers at the boundary). */
-const ENTER_DISTANCE = 2.6
-const EXIT_DISTANCE = 3.1
+/** Walk inside this distance to "arrive" (with hysteresis so the card
+ *  never flickers at the boundary). */
+const ENTER_DISTANCE = 3.0
+const EXIT_DISTANCE = 3.6
 
 /**
- * A plaza kiosk: the in-world doorway to one portfolio section.
+ * A landmark monument — architecture, not a prop.
  *
- * Speaks the plaza dialect — a glossy white rounded-square pedestal,
- * a pastel accent ring, and a gently bobbing, slowly turning,
- * slightly translucent rounded-square sign carrying a primitive glyph.
- * Walk up to it and it perks up; the overlay card does the reading.
+ * One continuous molded form: a soft rounded monolith that grows out
+ * of the plaza (its base is sunk into a gentle swell of the floor
+ * itself), like a giant app icon that became a building. The
+ * location's symbol is molded flush into its front face by the
+ * matching Symbol component; the accent breathes softly through the
+ * body and brightens when the visitor approaches. Nothing is
+ * assembled; everything was manufactured together.
  */
 export function LocationPod({
   location,
   children,
 }: {
   location: WorldLocation
-  /** Primitive glyph meshes, rendered on the front of the sign. */
+  /** The location's symbol, rendered flush against the front face. */
   children?: React.ReactNode
 }) {
   const { position, quaternion } = useSphericalPosition(location.lat, location.lon)
-  const sign = useRef<Group>(null)
   const near = useRef(false)
-  const lift = useRef(0)
+  const glow = useRef(0.04)
 
   const materials = useMemo(() => {
     const accent = new Color(location.accent)
     return {
-      pedestal: new MeshStandardMaterial({ color: '#ffffff', roughness: 0.18 }),
-      accent: new MeshStandardMaterial({ color: accent, roughness: 0.3 }),
-      // The sign's outer shell: translucent molded plastic, faintly
-      // tinted by the accent, which also glows from within (emissive)
-      // — color radiates from inside the object, like the reference.
-      signFrame: new MeshStandardMaterial({
-        color: new Color('#ffffff').lerp(accent, 0.3),
-        roughness: 0.12,
-        transparent: true,
-        opacity: 0.55,
+      // The monument body: premium soft-touch plastic with the accent
+      // breathing faintly from within.
+      body: new MeshStandardMaterial({
+        color: '#ffffff',
+        roughness: 0.16,
         emissive: accent,
-        emissiveIntensity: 0.14,
+        emissiveIntensity: 0.04,
       }),
-      // The inner white face inset within the shell.
-      signFace: new MeshStandardMaterial({ color: '#ffffff', roughness: 0.2 }),
+      // The floor swelling up to meet the monument — same finish as
+      // the ground, so it reads as the world, not as a pedestal.
+      swell: new MeshStandardMaterial({ color: PALETTE.ground, roughness: 0.5 }),
     }
   }, [location.accent])
 
   useFrame((_, rawDt) => {
     const dt = Math.min(rawDt, 0.1)
-    const t = getAmbientTime()
     const store = useWorldStore.getState()
 
     // --- proximity (only while the visitor is in control) -------------
@@ -72,59 +69,34 @@ export function LocationPod({
       if (store.activeLocation === location.id) store.setActiveLocation(null)
     }
 
-    // --- gentle life ----------------------------------------------------
-    if (sign.current) {
-      lift.current = expDamp(lift.current, near.current ? 0.22 : 0, 5, dt)
-      sign.current.position.y =
-        1.35 + lift.current + Math.sin(t * 1.1 + location.lon) * 0.06
-      sign.current.rotation.y = t * 0.35
-      const s = 1 + lift.current * 0.35
-      sign.current.scale.set(s, s, s)
-    }
+    // --- the accent breathes brighter as you approach -----------------
+    glow.current = expDamp(glow.current, near.current ? 0.1 : 0.04, 4, dt)
+    materials.body.emissiveIntensity = glow.current
   })
 
   return (
     <group position={position} quaternion={quaternion}>
-      {/* Pedestal: a glossy plaza tile riser */}
+      {/* The floor rising gently to meet the monument */}
       <RoundedBox
-        args={[1.5, 0.3, 1.5]}
-        radius={0.09}
+        args={[2.7, 0.14, 2.7]}
+        radius={0.07}
         smoothness={4}
-        position={[0, 0.15, 0]}
-        material={materials.pedestal}
+        position={[0, 0.03, 0]}
+        material={materials.swell}
+        receiveShadow
+      />
+      {/* The monument: one continuous molded form, base sunk into the world */}
+      <RoundedBox
+        args={[1.7, 2.2, 0.66]}
+        radius={0.26}
+        smoothness={6}
+        position={[0, 0.85, 0]}
+        material={materials.body}
         castShadow
         receiveShadow
       />
-      {/* Accent step: pastel rounded-square inset */}
-      <RoundedBox
-        args={[1.14, 0.12, 1.14]}
-        radius={0.06}
-        smoothness={4}
-        position={[0, 0.33, 0]}
-        material={materials.accent}
-        castShadow
-      />
-
-      {/* Floating sign: a molded "pillow" icon — thick translucent
-          shell around an inset white face, accent glowing through. */}
-      <group ref={sign} position={[0, 1.35, 0]}>
-        <RoundedBox
-          args={[1.05, 1.05, 0.16]}
-          radius={0.15}
-          smoothness={5}
-          material={materials.signFrame}
-          castShadow
-        />
-        <RoundedBox
-          args={[0.8, 0.8, 0.12]}
-          radius={0.11}
-          smoothness={4}
-          position={[0, 0, 0.035]}
-          material={materials.signFace}
-        />
-        {/* Glyph floats on the inner face */}
-        <group position={[0, 0, 0.12]}>{children}</group>
-      </group>
+      {/* The symbol, molded flush into the upper front face */}
+      <group position={[0, 1.25, 0.31]}>{children}</group>
     </group>
   )
 }

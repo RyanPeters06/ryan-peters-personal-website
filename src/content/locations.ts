@@ -29,7 +29,7 @@ export const LOCATIONS: WorldLocation[] = [
   {
     id: 'projects',
     name: 'Projects',
-    icon: '💻',
+    icon: '</>',
     tagline: 'Things I have built',
     accent: '#a9c9e8',
     // Straight ahead of the spawn point — the first stroll finds it.
