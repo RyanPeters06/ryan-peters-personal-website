@@ -13,6 +13,15 @@ session. This file always reflects the current state of the project.
 ### Completed
 - `/docs` project brain created (this system). Root `CLAUDE.md` directs
   every future session to read `/docs` first.
+- **The plaza crowd** (world/Crowd.tsx + world/Villager.tsx): ~24
+  villagers at player height (Peter revised from the initial 60–70%
+  spec) with varied pastel hair/shirt pools; 7 chat circles (members
+  ring the center facing inward, nodding, with little Warawara hops) +
+  6 free wanderers. Everyone strolls at 0.5 u/s: wanderers roam POI to
+  POI; circle members occasionally walk out, pause, and walk home to
+  rejoin the chat, so the plaza gently reshuffles. Deterministic seed;
+  shared GPU resources; per-villager state machines; reduced-motion
+  aware.
 - **M2/M3 shipped and iterated with Peter:** avatar redesigned to deep
   Mii language (head ≈58%, oversized shoes, low face, hood + swoosh
   fringe hair after two rejected iterations: bowl cut, pointy cone

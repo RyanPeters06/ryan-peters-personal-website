@@ -38,10 +38,14 @@ Statuses: ✅ done · 🔨 in progress · ⬜ not started
 - **Success:** full lap of the planet feels natural; controls not
   inverted (see ARCHITECTURE sign conventions). **Deps:** M2.
 
-## M4 — World Dressing 🔨 (partially — atmosphere done)
+## M4 — World Dressing 🔨 (atmosphere + crowd done)
 - **Objective:** the walks between destinations feel rewarding.
 - **Done:** spring-morning atmosphere (gradient dome, blue ambient,
-  personal sun, per-shot fog).
+  personal sun, per-shot fog). **Background crowd** (~24 villagers,
+  player-height, varied pastel hair/shirts, chat circles facing inward
+  with nods and hops; everyone takes slow strolls between destinations —
+  circle members walk out and return home. Deterministic seed, shared
+  geometry/material pools).
 - **Remaining:** benches, lamps, little trees/planters, path hints —
   all rounded/toy-like, instanced, gently animated.
 - **Files:** world/* (new props), scene/lighting.

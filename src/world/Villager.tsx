@@ -1,0 +1,307 @@
+import { useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
+import {
+  CapsuleGeometry,
+  CylinderGeometry,
+  Group,
+  Matrix4,
+  MeshStandardMaterial,
+  SphereGeometry,
+  Vector3,
+} from 'three'
+import { getAmbientScale } from '@/hooks/useAmbientLoop'
+import { latLonToVec3 } from '@/lib/math/spherical'
+import { PLANET_RADIUS } from '@/lib/constants'
+
+/**
+ * One background villager — a simplified cousin of the player's
+ * character (same visual language, fewer parts) living its own tiny
+ * life: chatting in a circle, bouncing softly, or strolling between
+ * places at a peaceful pace. Everything is deterministic per spec.
+ */
+
+// ---- Shared GPU resources (one set for the whole crowd) --------------
+export const VILLAGER_HAIR = ['#584639', '#3d3833', '#7a5a3a', '#8a8f96', '#5c4a63']
+export const VILLAGER_SHIRTS = [
+  '#f2b8c6', '#a9c9e8', '#b8e6c9', '#f7dfa8',
+  '#d8c6ef', '#a8dde0', '#f6c8a8', '#c9d2f0',
+]
+
+const GEO = {
+  head: new SphereGeometry(0.26, 16, 12),
+  hood: new SphereGeometry(0.27, 16, 12, 0, Math.PI * 2, 0, 1.75),
+  body: new CylinderGeometry(0.115, 0.15, 0.26, 14),
+  bodyCap: new SphereGeometry(0.115, 14, 7, 0, Math.PI * 2, 0, Math.PI / 2),
+  arm: new CapsuleGeometry(0.03, 0.11, 4, 8),
+  leg: new CapsuleGeometry(0.04, 0.07, 4, 8),
+  shoe: new SphereGeometry(1, 10, 8),
+  eye: new SphereGeometry(0.026, 8, 8),
+}
+
+const MAT = {
+  skin: new MeshStandardMaterial({ color: '#f6cfae', roughness: 0.75 }),
+  pants: new MeshStandardMaterial({ color: '#8d99a6', roughness: 0.9 }),
+  shoe: new MeshStandardMaterial({ color: '#8a939b', roughness: 0.8 }),
+  face: new MeshStandardMaterial({ color: '#2e2c2a', roughness: 0.7 }),
+  hair: VILLAGER_HAIR.map((c) => new MeshStandardMaterial({ color: c, roughness: 0.9 })),
+  shirt: VILLAGER_SHIRTS.map((c) => new MeshStandardMaterial({ color: c, roughness: 0.85 })),
+}
+
+export interface VillagerSpec {
+  id: number
+  lat: number
+  lon: number
+  /** ~1.0 — villagers stand the same height as the player. */
+  scale: number
+  hair: number
+  shirt: number
+  /** Point to face while chatting (group center), or null for wanderers. */
+  chatCenter: Vector3 | null
+  /** Wanderers occasionally stroll to another destination. */
+  wanderer: boolean
+  /** Personal random phase so the crowd never moves in sync. */
+  seed: number
+  /** Destinations wanderers may stroll between. */
+  pois: { lat: number; lon: number }[]
+}
+
+const WALK_SPEED = 0.5 // slow and peaceful — a third of the player's pace
+
+// Scratch (safe: used synchronously within one callback)
+const _dir = new Vector3()
+const _axis = new Vector3()
+const _right = new Vector3()
+const _basis = new Matrix4()
+
+interface VillagerState {
+  t: number
+  pos: Vector3
+  fwd: Vector3
+  up: Vector3
+  mode: 'idle' | 'walk'
+  target: Vector3
+  nextWalkAt: number
+  /** Out on a stroll, away from the home spot / chat circle. */
+  away: boolean
+  /** Currently walking back to the home spot. */
+  goingHome: boolean
+  stride: number
+  move: number
+  hopAt: number
+  hopT: number
+}
+
+export function Villager({ spec }: { spec: VillagerSpec }) {
+  const root = useRef<Group>(null)
+  const body = useRef<Group>(null)
+  const head = useRef<Group>(null)
+  const legL = useRef<Group>(null)
+  const legR = useRef<Group>(null)
+  const armL = useRef<Group>(null)
+  const armR = useRef<Group>(null)
+
+  const st = useRef<VillagerState | null>(null)
+  if (st.current === null) {
+    const pos = latLonToVec3(spec.lat, spec.lon, PLANET_RADIUS)
+    const up = pos.clone().normalize()
+    // Initial facing: chat centers face the group; others face "south".
+    const fwd = spec.chatCenter
+      ? spec.chatCenter.clone().sub(pos)
+      : new Vector3(0, -1, 0)
+    fwd.addScaledVector(up, -fwd.dot(up))
+    if (fwd.lengthSq() < 1e-6) fwd.set(1, 0, 0).addScaledVector(up, -up.x)
+    fwd.normalize()
+    st.current = {
+      t: spec.seed * 10,
+      pos,
+      fwd,
+      up,
+      mode: 'idle',
+      target: new Vector3(),
+      // Stagger departures: wanderers leave soon, chatters linger first.
+      nextWalkAt: spec.seed * 10 + (spec.wanderer ? 3 + spec.seed * 8 : 9 + spec.seed * 22),
+      away: false,
+      goingHome: false,
+      stride: 0,
+      move: 0,
+      hopAt: spec.seed * 10 + 2 + spec.seed * 5,
+      hopT: -1,
+    }
+  }
+
+  useFrame((_, rawDt) => {
+    const s = st.current!
+    // Ambient-scaled time: reduced motion calms the crowd too.
+    const dt = Math.min(rawDt, 0.1) * getAmbientScale()
+    s.t += dt
+    s.up.copy(s.pos).normalize()
+
+    // ---- decide -------------------------------------------------------
+    // Everyone strolls. Wanderers roam POI to POI forever; chat-circle
+    // members occasionally walk out somewhere, pause, then walk home and
+    // rejoin the conversation — circles dissolve and reform.
+    if (s.mode === 'idle' && s.t >= s.nextWalkAt) {
+      if (!spec.wanderer && s.away) {
+        latLonToVec3(spec.lat, spec.lon, PLANET_RADIUS, s.target)
+        s.goingHome = true
+      } else {
+        const poi = spec.pois[Math.floor((s.t * 7.31 + spec.seed * 13) % spec.pois.length)]
+        // Small deterministic jitter so villagers don't stack on a point.
+        latLonToVec3(
+          poi.lat + Math.sin(spec.seed * 12.9 + s.t) * 3,
+          poi.lon + Math.cos(spec.seed * 7.7 + s.t) * 3,
+          PLANET_RADIUS,
+          s.target,
+        )
+        s.away = true
+        s.goingHome = false
+      }
+      s.mode = 'walk'
+    }
+
+    // ---- act ----------------------------------------------------------
+    let moveTarget = 0
+    if (s.mode === 'walk') {
+      _dir.copy(s.target).sub(s.pos)
+      _dir.addScaledVector(s.up, -_dir.dot(s.up))
+      const remaining = _dir.length()
+      if (remaining < 0.45) {
+        s.mode = 'idle'
+        if (s.goingHome) {
+          // Back with the group — settle in and chat a good while.
+          s.away = false
+          s.goingHome = false
+          s.nextWalkAt = s.t + 18 + ((spec.seed * 53) % 22)
+        } else {
+          s.nextWalkAt = s.t + 6 + ((spec.seed * 31) % 12)
+        }
+      } else {
+        _dir.divideScalar(remaining)
+        s.fwd.lerp(_dir, 1 - Math.exp(-4 * dt)).normalize()
+        moveTarget = 1
+        _axis.crossVectors(s.up, s.fwd).normalize()
+        s.pos.applyAxisAngle(_axis, (WALK_SPEED * dt) / PLANET_RADIUS)
+        s.pos.setLength(PLANET_RADIUS)
+        s.up.copy(s.pos).normalize()
+      }
+    } else if (spec.chatCenter && !s.away) {
+      // Chat posture: at home, keep facing the group's center.
+      _dir.copy(spec.chatCenter).sub(s.pos)
+      _dir.addScaledVector(s.up, -_dir.dot(s.up))
+      if (_dir.lengthSq() > 1e-6) {
+        s.fwd.lerp(_dir.normalize(), 1 - Math.exp(-2 * dt))
+      }
+    }
+    s.fwd.addScaledVector(s.up, -s.fwd.dot(s.up)).normalize()
+    s.move += (moveTarget - s.move) * (1 - Math.exp(-6 * dt))
+
+    // ---- write transform ------------------------------------------------
+    if (root.current) {
+      _right.crossVectors(s.up, s.fwd)
+      _basis.makeBasis(_right, s.up, s.fwd)
+      root.current.position.copy(s.pos)
+      root.current.quaternion.setFromRotationMatrix(_basis)
+    }
+
+    // ---- little life ----------------------------------------------------
+    s.stride += dt * 9 * s.move
+    const swing = Math.sin(s.stride) * 0.5 * s.move
+    if (legL.current && legR.current) {
+      legL.current.rotation.x = swing
+      legR.current.rotation.x = -swing
+    }
+    if (armL.current && armR.current) {
+      armL.current.rotation.x = -swing * 0.7
+      armR.current.rotation.x = swing * 0.7
+    }
+    if (body.current) {
+      // Warawara bounce: idle villagers give a happy little hop sometimes.
+      if (s.mode === 'idle' && s.hopT < 0 && s.t >= s.hopAt) s.hopT = 0
+      let hop = 0
+      if (s.hopT >= 0) {
+        s.hopT += dt
+        const p = s.hopT / 0.45
+        hop = Math.sin(Math.min(p, 1) * Math.PI) * 0.05
+        if (p >= 1) {
+          s.hopT = -1
+          s.hopAt = s.t + 3 + ((spec.seed * 47) % 9)
+        }
+      }
+      const breath = Math.sin(s.t * 1.8 + spec.seed * 6) * 0.015 * (1 - s.move)
+      body.current.scale.set(1 - breath * 0.5, 1 + breath, 1 - breath * 0.5)
+      body.current.position.y = hop + Math.abs(Math.sin(s.stride)) * 0.025 * s.move
+    }
+    if (head.current) {
+      // Chatting villagers nod along; everyone glances gently.
+      const nod =
+        spec.chatCenter && !s.away ? Math.sin(s.t * 2.1 + spec.seed * 9) * 0.05 : 0
+      head.current.rotation.x = nod + Math.sin(s.t * 1.1 + spec.seed * 4) * 0.02
+      head.current.rotation.y = Math.sin(s.t * 0.5 + spec.seed * 8) * 0.14
+    }
+  })
+
+  const hairMat = MAT.hair[spec.hair % MAT.hair.length]
+  const shirtMat = MAT.shirt[spec.shirt % MAT.shirt.length]
+
+  return (
+    <group ref={root} scale={spec.scale}>
+      <group ref={body}>
+        {/* legs + shoes */}
+        <group ref={legL} position={[-0.06, 0.18, 0]}>
+          <mesh geometry={GEO.leg} material={MAT.pants} position={[0, -0.07, 0]} />
+          <mesh
+            geometry={GEO.shoe}
+            material={MAT.shoe}
+            position={[0, -0.13, 0.02]}
+            scale={[0.075, 0.045, 0.11]}
+          />
+        </group>
+        <group ref={legR} position={[0.06, 0.18, 0]}>
+          <mesh geometry={GEO.leg} material={MAT.pants} position={[0, -0.07, 0]} />
+          <mesh
+            geometry={GEO.shoe}
+            material={MAT.shoe}
+            position={[0, -0.13, 0.02]}
+            scale={[0.075, 0.045, 0.11]}
+          />
+        </group>
+
+        {/* body */}
+        <mesh geometry={GEO.body} material={shirtMat} position={[0, 0.31, 0]} castShadow />
+        <mesh geometry={GEO.bodyCap} material={shirtMat} position={[0, 0.44, 0]} />
+
+        {/* arms */}
+        <group ref={armL} position={[-0.14, 0.38, 0]} rotation={[0, 0, -0.12]}>
+          <mesh geometry={GEO.arm} material={shirtMat} position={[0, -0.1, 0]} />
+        </group>
+        <group ref={armR} position={[0.14, 0.38, 0]} rotation={[0, 0, 0.12]}>
+          <mesh geometry={GEO.arm} material={shirtMat} position={[0, -0.1, 0]} />
+        </group>
+
+        {/* head */}
+        <group ref={head} position={[0, 0.69, 0]}>
+          <mesh geometry={GEO.head} material={MAT.skin} castShadow />
+          <mesh
+            geometry={GEO.hood}
+            material={hairMat}
+            position={[0, 0.012, -0.015]}
+            rotation={[-0.55, 0, 0]}
+            scale={[1.02, 1.02, 1.02]}
+          />
+          <mesh
+            geometry={GEO.eye}
+            material={MAT.face}
+            position={[-0.09, -0.02, 0.235]}
+            scale={[1, 1.4, 0.55]}
+          />
+          <mesh
+            geometry={GEO.eye}
+            material={MAT.face}
+            position={[0.09, -0.02, 0.235]}
+            scale={[1, 1.4, 0.55]}
+          />
+        </group>
+      </group>
+    </group>
+  )
+}
