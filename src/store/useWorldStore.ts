@@ -8,9 +8,10 @@ import type { LatLon } from '@/lib/math/spherical'
  * `useWorldStore.getState()` (no React re-renders), while overlay UI
  * subscribes reactively with the hook form.
  */
-/** The experience's high-level moment: drifting in from the sky, the
- *  avatar's hello, standing ready (controls hint up), then walking. */
-export type WorldPhase = 'arriving' | 'greeting' | 'idle' | 'exploring'
+/** The experience's high-level moment: the title over the living
+ *  world, drifting in from the sky, the avatar's hello, standing
+ *  ready (controls hint up), then walking. */
+export type WorldPhase = 'title' | 'arriving' | 'greeting' | 'idle' | 'exploring'
 
 interface WorldState {
   phase: WorldPhase
@@ -34,7 +35,7 @@ interface WorldState {
 }
 
 export const useWorldStore = create<WorldState>()((set) => ({
-  phase: 'arriving',
+  phase: 'title',
   setPhase: (phase) => set({ phase }),
 
   muted: false,

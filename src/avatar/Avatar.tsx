@@ -64,6 +64,8 @@ const _basis = new Matrix4()
 /** Mutable animation state kept outside React. */
 interface AvatarAnim {
   t: number
+  /** When the 'arriving' phase began (the title can last any time). */
+  arriveT0: number
   blinkAt: number
   blinkT: number
   lookYaw: number
@@ -110,6 +112,7 @@ export function Avatar() {
 
   const anim = useRef<AvatarAnim>({
     t: 0,
+    arriveT0: -1,
     blinkAt: 1.6,
     blinkT: -1,
     lookYaw: 0,
@@ -133,15 +136,17 @@ export function Avatar() {
     const { phase } = store
     const pose = avatarPose
 
-    // ----- Arrival timeline -------------------------------------------
+    // ----- Arrival timeline (clock starts when the title gives way) ----
     if (phase === 'arriving') {
-      if (a.t > 0.4 && store.cameraFocus === null) {
+      if (a.arriveT0 < 0) a.arriveT0 = a.t
+      const elapsed = a.t - a.arriveT0
+      if (elapsed > 0.15 && store.cameraFocus === null) {
         store.setCameraFocus({ lat: AVATAR_LAT, lon: AVATAR_LON })
       }
       // Wave only once the camera has actually arrived in front (with a
       // timeout in case something holds it up) — never greet an empty sky.
       const cameraClose = camera.position.distanceTo(avatarPose.position) < 6.5
-      if (a.t > 1.2 && (cameraClose || a.t > 6)) {
+      if (elapsed > 1.0 && (cameraClose || elapsed > 6)) {
         store.setPhase('greeting')
         a.waveT = 0
       }
