@@ -3,13 +3,12 @@ import { useFrame } from '@react-three/fiber'
 import { Instance, Instances } from '@react-three/drei'
 import { Group } from 'three'
 import { getAmbientTime } from '@/hooks/useAmbientLoop'
-import { latLonToVec3, surfaceQuaternion } from '@/lib/math/spherical'
 import {
   CLOUD_ALTITUDE_MAX,
   CLOUD_ALTITUDE_MIN,
   CLOUD_SCALE,
   PALETTE,
-  PLANET_RADIUS,
+  TABLEAU_WALK_RADIUS,
 } from '@/lib/constants'
 
 /** Deterministic [0,1) sequence so the sky looks the same every visit. */
@@ -22,25 +21,29 @@ function makeRng(seed: number): () => number {
 }
 
 interface CloudSpec {
-  lat: number
-  lon0: number
+  /** Distance from the island's center, world units. */
+  radius: number
+  angle0: number
   altitude: number
-  /** degrees of longitude per ambient second */
+  /** degrees per ambient second, orbiting the island's center */
   driftSpeed: number
   bobPhase: number
   puffs: { offset: [number, number, number]; scale: number }[]
 }
 
 const CLOUD_COUNT = 36
+const DEG2RAD = Math.PI / 180
 
 function createCloudSpecs(): CloudSpec[] {
   const rng = makeRng(20260715)
   return Array.from({ length: CLOUD_COUNT }, (_, i) => {
     const puffCount = 3 + Math.floor(rng() * 3)
     return {
-      // Spread across both hemispheres, denser near the "temperate" bands.
-      lat: (rng() * 2 - 1) * 62,
-      lon0: (i / CLOUD_COUNT) * 360 + rng() * 30,
+      // A distant ring AROUND the stage, never over it: clouds live
+      // well beyond the walk limit, hugging the island's edge like the
+      // reference — slowly circling the plaza.
+      radius: TABLEAU_WALK_RADIUS + 4 + rng() * 8,
+      angle0: (i / CLOUD_COUNT) * 360 + rng() * 30,
       altitude:
         CLOUD_ALTITUDE_MIN + rng() * (CLOUD_ALTITUDE_MAX - CLOUD_ALTITUDE_MIN),
       driftSpeed: 1.1 + rng() * 1.4,
@@ -68,8 +71,8 @@ function createCloudSpecs(): CloudSpec[] {
   })
 }
 
-/** One cloud: an animated group of puff instances drifting along a
- *  line of latitude, bobbing gently. */
+/** One cloud: an animated group of puff instances drifting in a ring
+ *  around the island, bobbing gently. */
 function Cloud({ spec }: { spec: CloudSpec }) {
   const group = useRef<Group>(null)
 
@@ -77,10 +80,13 @@ function Cloud({ spec }: { spec: CloudSpec }) {
     const g = group.current
     if (!g) return
     const t = getAmbientTime()
-    const lon = spec.lon0 + t * spec.driftSpeed
+    const angle = (spec.angle0 + t * spec.driftSpeed) * DEG2RAD
     const bob = Math.sin(t * 0.4 + spec.bobPhase) * 0.12
-    latLonToVec3(spec.lat, lon, PLANET_RADIUS + spec.altitude + bob, g.position)
-    surfaceQuaternion(g.position, g.quaternion)
+    g.position.set(
+      spec.radius * Math.sin(angle),
+      spec.altitude + bob,
+      spec.radius * Math.cos(angle),
+    )
   })
 
   return (

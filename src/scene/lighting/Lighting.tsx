@@ -15,7 +15,7 @@ const _sunDir = new Vector3()
  *
  * The key light is a "personal sun": it rides above wherever the
  * avatar is, so the player always walks in daylight no matter where
- * on the sphere they roam — and its shadow frustum stays tight around
+ * on the island they roam — and its shadow frustum stays tight around
  * the avatar for crisp little shadows.
  */
 export function Lighting() {

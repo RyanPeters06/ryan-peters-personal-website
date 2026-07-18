@@ -1,68 +1,46 @@
 /**
- * Global tuning knobs for the tiny planet world.
+ * Global tuning knobs for Ryan Land.
  * Everything size- or feel-related should live here so the whole
  * world can be re-tuned from one place.
  */
 
-/** Radius of the planet sphere, in world units. Large enough that the
- *  walking horizon sits high and curves gently, while the intro shot
- *  (which frames proportionally) still reads as a tiny toy globe. */
-export const PLANET_RADIUS = 24
+/** Radius of the floating plaza island — a flat disc in the sky.
+ *  The ground has NO curvature; the island simply ends at a soft
+ *  rounded edge and drops off into the atmosphere. */
+export const ISLAND_RADIUS = 16
 
-/** How far the idle cinematic camera orbits from the planet center. */
-export const CAMERA_ORBIT_RADIUS = PLANET_RADIUS * 4.3
+/** Height of the island's cliff edge, where the floor drops into the
+ *  sky below the rim. */
+export const ISLAND_EDGE_HEIGHT = 1.6
 
-/** Camera altitude when focused on the avatar: just above head
- *  height, so the shot is a portrait — never a top-down view. */
-export const CAMERA_FOCUS_RADIUS = PLANET_RADIUS + 1.25
+/** Camera far-clip plane — generous enough to keep the cloud ring and
+ *  sky dome from clipping. */
+export const CAMERA_FAR = ISLAND_RADIUS * 15
 
-/** Degrees of latitude the focus camera stands away from its subject
- *  along the ground (≈4 world units) — the portrait's distance. The
- *  camera stands on the equator side, the same side the far intro
- *  view arrives from, so the push-in never flies past the subject. */
-export const FOCUS_LAT_OFFSET = 9
-
-/** Where the avatar lives (and spawns), in degrees. Low-center of the
- *  tableau frame: a few steps south of the fountain, facing into the
- *  plaza with his back to the visitor — just like the reference. */
-export const AVATAR_LAT = 79
-export const AVATAR_LON = 0
+/** Where the avatar spawns: low-center of the tableau frame, a few
+ *  steps south of the fountain, back to the visitor. */
+export const AVATAR_SPAWN_Z = 4.7
 
 /** ---- The tableau: one fixed, art-directed frame --------------------
  * The camera is locked high and pulled back with a long lens so the
- * plaza reads as a compressed diorama. The character walks freely
- * WITHIN the frame (leashed to the staged area); the camera never
- * follows. Mouse adds only a gentle eased look-around. */
-/** ~37° below horizontal at ~24 units out: looking down at a diorama
- *  on a table. Close enough that the plaza and all six monuments fill
- *  the frame and the planet's limb mostly drops out of view — the
- *  curvature reads as gentle roundness, not an obvious globe. */
-export const TABLEAU_CAMERA_POS: readonly [number, number, number] = [0, 39, 19]
-export const TABLEAU_CAMERA_TARGET: readonly [number, number, number] = [0, 23.5, -2]
+ * plaza reads as a compressed diorama on a table (~37 degrees down).
+ * The character walks freely WITHIN the frame (leashed to the island);
+ * the camera never follows. Mouse adds only a gentle eased look. */
+export const TABLEAU_CAMERA_POS: readonly [number, number, number] = [0, 15, 19]
+export const TABLEAU_CAMERA_TARGET: readonly [number, number, number] = [0, -0.5, -3]
 export const TABLEAU_FOV = 28
-/** Static fog band: plaza crisp, the planet's limb melts into sky. */
-export const TABLEAU_FOG: readonly [number, number] = [40, 100]
-/** How far (degrees of arc from the pole) the character may wander —
- *  the stage ends where the frame does. */
-export const TABLEAU_WALK_LIMIT_DEG = 30
+/** Static fog band: plaza crisp; distance melts into the sky. */
+export const TABLEAU_FOG: readonly [number, number] = [32, 75]
+/** How far from the island's center the character may wander — the
+ *  stage ends before the edge does. */
+export const TABLEAU_WALK_RADIUS = 12.5
 
 /** Walking speed along the surface, world units per second. */
 export const WALK_SPEED = 1.6
 
-/** Third-person chase camera: behind and above the avatar. Tuned so
- *  the horizon sits ~40% up the frame with a gentle curve. */
-export const CHASE_DISTANCE = 4.5
-export const CHASE_HEIGHT = 1.6
-/** How far ahead of the avatar (along the ground) the camera looks —
- *  closer means more down-pitch, which lifts the horizon in frame. */
-export const CHASE_LOOK_AHEAD = 1.4
-
-/** Radians/second the idle camera drifts around the planet. */
-export const CAMERA_ORBIT_SPEED = 0.04
-
 /** Altitude band (above the surface) where clouds live. */
-export const CLOUD_ALTITUDE_MIN = 3.0
-export const CLOUD_ALTITUDE_MAX = 6.0
+export const CLOUD_ALTITUDE_MIN = 2.0
+export const CLOUD_ALTITUDE_MAX = 12.0
 
 /** Uniform scale applied to each cloud, so they read from orbit and
  *  still feel like plump companions at walking level. */

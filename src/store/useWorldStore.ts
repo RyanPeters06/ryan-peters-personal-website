@@ -1,5 +1,4 @@
 import { create } from 'zustand'
-import type { LatLon } from '@/lib/math/spherical'
 
 /**
  * Shared world state.
@@ -23,11 +22,11 @@ interface WorldState {
   toggleMuted: () => void
 
   /**
-   * Where the camera should focus. `null` means "idle cinematic drift".
-   * Later milestones point this at the avatar or at a location.
+   * Where the camera should focus, in flat XZ world units. `null`
+   * means "the fixed tableau frame" (the current, and only, mode).
    */
-  cameraFocus: LatLon | null
-  setCameraFocus: (focus: LatLon | null) => void
+  cameraFocus: { x: number; z: number } | null
+  setCameraFocus: (focus: { x: number; z: number } | null) => void
 
   /** Which location's pod the avatar is standing beside, if any. */
   activeLocation: string | null

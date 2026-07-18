@@ -1,17 +1,12 @@
 import { useMemo } from 'react'
 import { Color, MeshStandardMaterial } from 'three'
-import { PALETTE, PLANET_RADIUS, TILE_SIZE } from '@/lib/constants'
+import { ISLAND_EDGE_HEIGHT, ISLAND_RADIUS, PALETTE, TILE_SIZE } from '@/lib/constants'
 
 /**
- * The plaza planet: a smooth warm-white sphere whose surface is drawn
- * as soft rounded-square tiles — a giant friendly menu screen wrapped
- * around a tiny world, not a 3D-modeling grid.
- *
- * The grid is a *quad-sphere* pattern: the surface direction is
- * projected onto the surrounding cube with equal-angle spacing, and
- * each cube face carries an integer number of tiles. Seams therefore
- * line up exactly along face edges — no pole pinching, no texture
- * seams, and none of the ghost lines a triplanar blend produces.
+ * The plaza floor: a flat disc drawn as soft rounded-square tiles — a
+ * giant friendly menu screen, not a 3D-modeling grid. No curvature
+ * anywhere; the disc simply ends at a rounded edge and drops into the
+ * sky, floating-island style (see Ground's cliff wall below).
  *
  * Each tile is shaded like a slightly raised toy button: generously
  * rounded corners, blurred low-contrast seams, a faint inner shadow,
@@ -24,25 +19,20 @@ function createTiledMaterial(): MeshStandardMaterial {
     metalness: 0,
   })
 
-  // Tiles per cube-face edge, rounded so seams align across faces.
-  const faceTiles = Math.max(2, Math.round((Math.PI * PLANET_RADIUS) / 2 / TILE_SIZE))
-
   material.onBeforeCompile = (shader) => {
     shader.uniforms.uLineColor = { value: new Color(PALETTE.groundLine) }
-    shader.uniforms.uFaceTiles = { value: faceTiles }
+    shader.uniforms.uTileSize = { value: TILE_SIZE }
 
     shader.vertexShader = shader.vertexShader
       .replace(
         '#include <common>',
         `#include <common>
-varying vec3 vTileWorldPos;
-varying vec3 vTileWorldNormal;`,
+varying vec3 vTileWorldPos;`,
       )
       .replace(
         '#include <worldpos_vertex>',
         `#include <worldpos_vertex>
-vTileWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
-vTileWorldNormal = normalize(mat3(modelMatrix) * normal);`,
+vTileWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;`,
       )
 
     shader.fragmentShader = shader.fragmentShader
@@ -50,28 +40,21 @@ vTileWorldNormal = normalize(mat3(modelMatrix) * normal);`,
         '#include <common>',
         `#include <common>
 varying vec3 vTileWorldPos;
-varying vec3 vTileWorldNormal;
 uniform vec3 uLineColor;
-uniform float uFaceTiles;
+uniform float uTileSize;
 
 // Rounded corner radius (~22% of tile width) and seam half-width,
 // in tile-cell units.
 #define TILE_CORNER 0.22
 #define LINE_HALF 0.018
-#define QUARTER_PI 0.7853981634
 
-// Quad-sphere tiling: project the surface direction onto its dominant
-// cube face, spread tiles by *angle* so they stay evenly sized.
+// Flat tiling: the floor has no curvature, so cells are just the
+// world XZ position divided by the tile size — no projection needed.
 // Returns (d, uv.x, uv.y, vary): signed distance to the rounded-square
 // border, in-cell coordinates for bevel shading, and a per-tile
 // pseudo-random value for quiet brightness variation.
-vec4 tileCell(vec3 dir) {
-  vec3 a = abs(dir);
-  vec2 t;
-  if (a.x >= a.y && a.x >= a.z)      t = vec2(dir.z, dir.y) / a.x;
-  else if (a.y >= a.x && a.y >= a.z) t = vec2(dir.x, dir.z) / a.y;
-  else                               t = vec2(dir.x, dir.y) / a.z;
-  vec2 cell = (atan(t) / QUARTER_PI * 0.5 + 0.5) * uFaceTiles;
+vec4 tileCell(vec2 worldXZ) {
+  vec2 cell = worldXZ / uTileSize;
   vec2 uv = fract(cell) - 0.5;
   float vary = fract(sin(dot(floor(cell), vec2(127.1, 311.7))) * 43758.5453);
   // Hand-laid cobble feel: each tile jitters its center a whisper and
@@ -88,7 +71,7 @@ vec4 tileCell(vec3 dir) {
         '#include <color_fragment>',
         `#include <color_fragment>
 {
-  vec4 cellInfo = tileCell(normalize(vTileWorldPos));
+  vec4 cellInfo = tileCell(vTileWorldPos.xz);
   float d = cellInfo.x;
   vec2 cuv = cellInfo.yz;
   float aa = fwidth(d);
@@ -109,12 +92,30 @@ vec4 tileCell(vec3 dir) {
   return material
 }
 
-export function Planet() {
-  const material = useMemo(createTiledMaterial, [])
+export function Ground() {
+  const tileMaterial = useMemo(createTiledMaterial, [])
+  const edgeMaterial = useMemo(
+    () => new MeshStandardMaterial({ color: PALETTE.groundLine, roughness: 0.7 }),
+    [],
+  )
 
   return (
-    <mesh material={material} receiveShadow>
-      <sphereGeometry args={[PLANET_RADIUS, 96, 64]} />
-    </mesh>
+    <group>
+      {/* The plaza floor: one flat tiled disc, no curvature. */}
+      <mesh material={tileMaterial} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <circleGeometry args={[ISLAND_RADIUS, 96]} />
+      </mesh>
+      {/* The island's edge: a short cliff wall dropping from the rim,
+          tapering slightly so the underside reads as rock, not a
+          machined cylinder. */}
+      <mesh
+        material={edgeMaterial}
+        position={[0, -ISLAND_EDGE_HEIGHT / 2, 0]}
+      >
+        <cylinderGeometry
+          args={[ISLAND_RADIUS, ISLAND_RADIUS * 0.9, ISLAND_EDGE_HEIGHT, 96, 1, true]}
+        />
+      </mesh>
+    </group>
   )
 }

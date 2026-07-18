@@ -4,8 +4,8 @@ import { Bloom, EffectComposer } from '@react-three/postprocessing'
 import { NoToneMapping } from 'three'
 import { GLOW } from '@/lib/designSystem'
 import { Sky } from '@/scene/Sky'
-import { Planet } from '@/scene/Planet'
-import { PlanetShadow } from '@/scene/PlanetShadow'
+import { Ground } from '@/scene/Ground'
+import { IslandShadow } from '@/scene/IslandShadow'
 import { Clouds } from '@/scene/Clouds'
 import { Lighting } from '@/scene/lighting/Lighting'
 import { Avatar } from '@/avatar/Avatar'
@@ -17,7 +17,7 @@ import { setAmbientScale, useAmbientDriver } from '@/hooks/useAmbientLoop'
 import { useMovementKeys } from '@/systems/movement/useMovementInput'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import {
-  CAMERA_ORBIT_RADIUS,
+  CAMERA_FAR,
   REDUCED_MOTION_SCALE,
   TABLEAU_CAMERA_POS,
   TABLEAU_FOV,
@@ -51,7 +51,7 @@ export function Experience() {
         position: [...TABLEAU_CAMERA_POS],
         fov: TABLEAU_FOV,
         near: 0.1,
-        far: CAMERA_ORBIT_RADIUS * 2.5,
+        far: CAMERA_FAR,
       }}
       // Flat tone mapping keeps the whites bright and airy — the pastel
       // palette needs no filmic compression.
@@ -62,8 +62,8 @@ export function Experience() {
         <AmbientLoopDriver />
         <Sky />
         <Lighting />
-        <Planet />
-        <PlanetShadow />
+        <Ground />
+        <IslandShadow />
         <Clouds />
         <Locations />
         <Fountain />

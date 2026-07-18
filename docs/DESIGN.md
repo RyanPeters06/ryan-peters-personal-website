@@ -4,10 +4,10 @@
 
 A personal portfolio for **Ryan Peters** (CS student, aspiring software
 engineer) that is not a portfolio website. It is a **tiny interactive
-world**: a small planet floating in a bright spring-morning sky, inhabited
+world**: a small island floating in a bright spring-morning sky, inhabited
 by one friendly character the visitor controls. The portfolio content —
 projects, experience, education, skills, contact — exists as **places on
-the planet** that the visitor walks to.
+the island** that the visitor walks to.
 
 > This should feel like a tiny game that happens to contain a portfolio.
 > Visitors should remember the experience more than the information.
@@ -37,7 +37,7 @@ capture the *feeling*, never copy assets, models, or trademarks.
 ## The Visitor's Journey
 
 1. **The title:** the camera holds high above the already-living
-   planet (villagers wander, clouds drift) while "Ryan's Planet"
+   island (villagers wander, clouds drift) while "Ryan Land"
    reveals itself out of the bright sky. One click, and the title
    dissolves into the light as the camera begins its descent.
 2. **Arrival:** the camera glides down to the character, who turns

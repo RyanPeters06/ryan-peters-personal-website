@@ -1,6 +1,6 @@
 # DESIGN SYSTEM — The Factory Specs
 
-Every object in Ryan's Planet is manufactured from **these tokens**.
+Every object in Ryan Land is manufactured from **these tokens**.
 Nothing is designed independently: a new landmark, prop, card, or
 character picks its numbers from this sheet (mirrored in code at
 `src/lib/designSystem.ts`). If a value isn't here, add it here first —

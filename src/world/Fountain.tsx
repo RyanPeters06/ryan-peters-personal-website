@@ -1,40 +1,33 @@
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Group, MeshStandardMaterial } from 'three'
-import { useSphericalPosition } from '@/hooks/useSphericalPosition'
+import { MeshStandardMaterial } from 'three'
 import { getAmbientTime } from '@/hooks/useAmbientLoop'
 import { PALETTE } from '@/lib/constants'
 
 /**
- * The plaza centerpiece: a little ringed planet — the world's own
- * mascot — floating over a white basin with a ring of grass, at the
- * exact center of the tableau. Its only motion is the world's kind:
- * a slow turn, a gentle bob, the ring precessing like a lazy halo.
+ * The plaza centerpiece: a simple white basin with a ring of grass and
+ * a low pillowy dome plinth at the exact center of the tableau. Its
+ * only motion is the world's kind: the dome's glow breathes gently —
+ * "architecture's life is light, not motion" (see DESIGN_SYSTEM).
  */
 export function Fountain() {
-  // The crown of the planet — the center of the staged plaza.
-  const { position, quaternion } = useSphericalPosition(90, 0)
-  const planet = useRef<Group>(null)
+  const domeMat = useRef<MeshStandardMaterial>(null)
 
   const materials = useMemo(
     () => ({
       basin: new MeshStandardMaterial({ color: '#ffffff', roughness: 0.16 }),
       grass: new MeshStandardMaterial({ color: PALETTE.grass, roughness: 0.75 }),
-      globe: new MeshStandardMaterial({ color: PALETTE.skyTop, roughness: 0.3 }),
-      ring: new MeshStandardMaterial({ color: '#ffffff', roughness: 0.25 }),
     }),
     [],
   )
 
   useFrame(() => {
-    if (!planet.current) return
-    const t = getAmbientTime()
-    planet.current.rotation.y = t * 0.25
-    planet.current.position.y = 1.05 + Math.sin(t * 0.9) * 0.05
+    if (!domeMat.current) return
+    domeMat.current.emissiveIntensity = 0.06 + Math.sin(getAmbientTime() * 0.9) * 0.03
   })
 
   return (
-    <group position={position} quaternion={quaternion}>
+    <group position={[0, 0, 0]}>
       {/* Basin: two soft white steps rising from the floor */}
       <mesh material={materials.basin} position={[0, 0.09, 0]} receiveShadow>
         <cylinderGeometry args={[1.35, 1.45, 0.18, 36]} />
@@ -46,15 +39,17 @@ export function Fountain() {
       <mesh material={materials.grass} position={[0, 0.32, 0]}>
         <cylinderGeometry args={[0.95, 1.0, 0.1, 36]} />
       </mesh>
-      {/* The little ringed planet */}
-      <group ref={planet} position={[0, 1.05, 0]}>
-        <mesh material={materials.globe} castShadow>
-          <sphereGeometry args={[0.52, 24, 18]} />
-        </mesh>
-        <mesh material={materials.ring} rotation={[0.35, 0, 0.1]}>
-          <torusGeometry args={[0.78, 0.055, 10, 40]} />
-        </mesh>
-      </group>
+      {/* The plinth: a low pillowy dome, breathing softly */}
+      <mesh position={[0, 0.42, 0]} castShadow>
+        <sphereGeometry args={[0.62, 28, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        <meshStandardMaterial
+          ref={domeMat}
+          color="#ffffff"
+          roughness={0.2}
+          emissive={PALETTE.skyTop}
+          emissiveIntensity={0.06}
+        />
+      </mesh>
     </group>
   )
 }

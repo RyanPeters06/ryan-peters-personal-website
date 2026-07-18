@@ -13,13 +13,14 @@ Statuses: ✅ done · 🔨 in progress · ⬜ not started
 - **Success:** `npm run dev` + clean build. **Deps:** none.
 
 ## M1 — The Living World ✅
-- **Objective:** a beautiful, breathing planet worth staring at.
-- **Features:** quad-sphere tile floor (shader); gradient-sky + fog;
-  soft lighting; instanced drifting clouds; slow cinematic orbit camera;
-  mute button + overlay layer; shared ambient heartbeat;
-  reduced-motion support.
+- **Objective:** a beautiful, breathing world worth staring at.
+- **Features:** flat tiled floor with a cliff edge (shader) on a
+  floating island; gradient-sky + fog; soft lighting; instanced
+  drifting clouds ringing the island; fixed art-directed tableau
+  camera with a gentle eased mouse look-around; mute button + overlay
+  layer; shared ambient heartbeat; reduced-motion support.
 - **Files:** scene/*, camera/CinematicCamera, hooks/*, lib/*, ui/MuteButton.
-- **Success:** 60fps; horizon curves; nothing static. **Deps:** M0.
+- **Success:** 60fps; nothing static. **Deps:** M0.
 
 ## M2 — The Avatar ✅
 - **Objective:** an original Mii-language resident.
@@ -31,11 +32,12 @@ Statuses: ✅ done · 🔨 in progress · ⬜ not started
 
 ## M3 — Movement ✅
 - **Objective:** the world becomes a game.
-- **Features:** WASD/arrows camera-relative walking on great circles;
-  procedural walk cycle; third-person chase camera (level side-sweep
-  transition, surface-normal up, ~40% horizon); controls hint card.
+- **Features:** WASD/arrows camera-relative walking, plain XZ
+  translation on the flat floor, leashed to a walk radius around the
+  island's center so the stage ends where the fixed tableau frame
+  does; procedural walk cycle; controls hint card.
 - **Files:** systems/movement/*, camera, ui/ControlsHint.
-- **Success:** full lap of the planet feels natural; controls not
+- **Success:** walking around the plaza feels natural; controls not
   inverted (see ARCHITECTURE sign conventions). **Deps:** M2.
 
 ## M4 — World Dressing 🔨 (atmosphere + crowd done)

@@ -1,43 +1,49 @@
-# THE ART BIBLE — Ryan's Planet
+# THE ART BIBLE — Ryan Land
 
-> **This is the single source of truth for how Ryan's Planet looks,
+> **This is the single source of truth for how Ryan Land looks,
 > feels, and moves.** When any decision is uncertain, this document
 > wins — over convention, over "modern," over technical convenience.
 > It supersedes and consolidates the older `ART_DIRECTION.md`.
 >
 > The test applied to every pixel, every object, every motion:
-> **"Does this belong in Ryan's Planet — a warm, handcrafted little
+> **"Does this belong in Ryan Land — a warm, handcrafted little
 > world someone clearly loved making?"** If not, it is wrong, however
 > well-built.
 
 ---
 
-## ✅ THE WORLD MODEL — DECIDED (2026-07-17): TABLEAU ON THE SPHERE
+## ✅ THE WORLD MODEL — DECIDED (2026-07-18): TABLEAU ON A FLAT FLOATING ISLAND
 
-Peter chose the **staged plaza tableau**, realized on the existing
-sphere geometry:
+Peter chose the **staged plaza tableau**, superseding the 2026-07-17
+sphere-geometry version: the sphere is gone. The plaza is now a **flat
+disc floating in the sky**, floating-island style — no curvature
+anywhere, plain XZ world coordinates, no lat/lon or great-circle math.
 
 - **One fixed, art-directed camera** — high on the plaza's south side,
-  tilted ~37° down at ~24 units (a diorama on a table), long lens
-  (`fov 28`) so perspective compresses. The plaza and all six
-  monuments fill the frame; the planet's limb mostly drops out of
-  view, so the curvature reads as gentle roundness, not a globe. It
-  never follows. Mouse adds only a gentle eased look-around (see
-  `TABLEAU_*` constants + `CinematicCamera.tsx`).
-- **The stage is the planet's crown.** Fountain centerpiece at the
-  pole; the six landmarks fan in a horseshoe opening toward the camera
-  (screen left→right: About, Projects, Experience, Skills, Contact,
-  Resume), each rotated to face the fountain.
+  tilted down (a diorama on a table), long lens (`fov 28`) so
+  perspective compresses. The plaza and all six monuments fill the
+  frame. It never follows. Mouse adds only a gentle eased look-around
+  (see `TABLEAU_*` constants + `CinematicCamera.tsx`).
+- **The stage is a flat disc (`Ground.tsx`), radius `ISLAND_RADIUS`.**
+  It ends at a defined rounded edge and drops off into open sky —
+  there is no decorative planet ornament and no orbit ring anywhere in
+  the scene. The fountain centerpiece sits at the exact center; the
+  six landmarks fan in a horseshoe opening toward the camera (screen
+  left→right: About, Projects, Experience, Skills, Contact, Resume),
+  each rotated to face the center.
 - **The character still walks (WASD)** — freely *within* the frame,
-  softly leashed to ~30° of arc from the pole (the stage ends where
-  the frame does). Spawns low-center, back to the visitor.
-- The world remains a true sphere underneath — the visible horizon
-  curve is real geometry, and the crowd/system code is unchanged.
+  softly leashed to a walk radius around the island's center
+  (`TABLEAU_WALK_RADIUS`; the stage ends where the frame does). Spawns
+  low-center, back to the visitor.
+- Up is always world +Y. Walking is a plain XZ vector add, clamped by
+  distance from center — no rotation-around-axis, no tangent-plane
+  projection.
 
 Where older sections say **[TABLEAU]** they are now the live spec;
-**[SPHERE]**-flagged rules (chase camera, whole-globe exploration) are
-retired but preserved in git history (`snapshot/pre-art-bible-2026-07-17`,
-plus the chase rig up to tag-time in `CinematicCamera` history).
+**[SPHERE]**-flagged rules (chase camera, whole-globe exploration, the
+planet ornament) are retired but preserved in git history
+(`snapshot/pre-art-bible-2026-07-17`, plus history up to the
+2026-07-18 flat-island rewrite).
 
 ---
 
@@ -71,7 +77,7 @@ Never: impressed-first (cold), overwhelmed, hurried, or "sold to."
 
 ## 3. Visual Identity
 
-Ryan's Planet looks like a **premium soft-toy operating system that
+Ryan Land looks like a **premium soft-toy operating system that
 became a place** — the friendliness of a Wii U-era plaza and the tactile
 charm of high-end vinyl designer toys, rendered original in every
 asset. Bright, rounded, pastel, glossy, and airy. A world you want to
@@ -251,6 +257,13 @@ Floating, rounded, soft — the world is never blocked by a wall of UI.
 - Chrome layout (per concept art): a **title pill top-left**, **round
   tool buttons top-right**, a **welcome/context card bottom-left**, a
   **controls hint pill bottom-center**. All same family.
+- **The title pill (`HeaderBadge`) is a small badge, never a header.**
+  Icon + short wordmark at the same scale as the panel labels ("Projects,"
+  "Skills," …) or smaller. Hard rule: it must never exceed roughly **1/3
+  of the viewport width** and must stay pinned top-left — it never grows
+  to span or dominate the 3D canvas. Any subtitle beneath it follows the
+  same rule. (Regression history: it once rendered oversized and ran off
+  both edges of the screen — don't let that happen again.)
 - **Never:** nav bars, scrolling pages, hero sections, dashboards,
   tables, skill bars, timelines, sharp rectangles, hard borders.
 

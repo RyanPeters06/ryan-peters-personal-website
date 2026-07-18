@@ -23,11 +23,15 @@ import fontUrl from '@fontsource/quicksand/files/quicksand-latin-700-normal.woff
  * never a hard cut.
  */
 
-/** Where the title hangs: in the sky band just above the plaza's far
- *  horizon, deep in the tableau frame — real atmosphere between the
- *  camera and the letters. */
-const ANCHOR_Y = 16
-const ANCHOR_Z = -30
+/** Where the title hangs: just above the landmark row, at roughly
+ *  their depth — real atmosphere between the camera and the letters.
+ *  The fixed tableau camera has a narrow, steeply-downward frustum
+ *  (see TABLEAU_CAMERA_POS/TARGET), so there is very little headroom
+ *  above the plaza; these values are tuned to sit inside it without
+ *  clipping. Compact: it crowns the scene, it never overlaps the
+ *  monuments or leaves the frame. */
+const ANCHOR_Y = 0
+const ANCHOR_Z = -9
 
 const ease = (p: number) => {
   const t = Math.min(1, Math.max(0, p))
@@ -66,7 +70,7 @@ export function TitleWorld() {
 
     if (group.current) {
       // Slow upward easing on reveal; a gentle release upward on dissolve.
-      group.current.position.set(0, ANCHOR_Y - (1 - rTitle) * 2.2 + dis * 5, ANCHOR_Z)
+      group.current.position.set(0, ANCHOR_Y - (1 - rTitle) * 1.1 + dis * 2.6, ANCHOR_Z)
       group.current.scale.setScalar((0.965 + rTitle * 0.035) * (1 + dis * 0.05))
     }
 
@@ -99,29 +103,29 @@ export function TitleWorld() {
       <Text
         ref={title}
         font={fontUrl}
-        fontSize={6}
+        fontSize={3.1}
         letterSpacing={-0.015}
         color="#6d8494"
         anchorX="center"
         anchorY="middle"
-        position={[0, 3.6, 0]}
+        position={[0, 1.5, 0]}
         outlineWidth={0}
         outlineBlur={0.09}
         outlineColor="#ffffff"
         fillOpacity={0}
         outlineOpacity={0}
       >
-        {'Ryan’s Planet'}
+        {'Ryan Land'}
       </Text>
       <Text
         ref={sub}
         font={fontUrl}
-        fontSize={1.45}
+        fontSize={0.92}
         letterSpacing={0.22}
         color="#93a5b1"
         anchorX="center"
         anchorY="middle"
-        position={[0, -1.4, 0]}
+        position={[0, -0.75, 0]}
         outlineWidth={0}
         outlineBlur={0.06}
         outlineColor="#ffffff"
@@ -133,12 +137,12 @@ export function TitleWorld() {
       <Text
         ref={cta}
         font={fontUrl}
-        fontSize={1.05}
+        fontSize={0.68}
         letterSpacing={0.28}
         color="#a8b6c0"
         anchorX="center"
         anchorY="middle"
-        position={[0, -3.9, 0]}
+        position={[0, -2.1, 0]}
         outlineWidth={0}
         outlineBlur={0.06}
         outlineColor="#ffffff"

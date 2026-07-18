@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
 import { CanvasTexture } from 'three'
-import { PALETTE, PLANET_RADIUS } from '@/lib/constants'
+import { ISLAND_EDGE_HEIGHT, ISLAND_RADIUS, PALETTE } from '@/lib/constants'
 
 /**
- * A soft radial-gradient disc floating below the planet — the gentle
- * contact shadow that grounds the toy world in its white sky.
+ * A soft radial-gradient disc floating below the island — the gentle
+ * shadow that grounds the floating plaza in its white sky.
  */
 function createShadowTexture(): CanvasTexture {
   const size = 256
@@ -24,14 +24,14 @@ function createShadowTexture(): CanvasTexture {
   return new CanvasTexture(canvas)
 }
 
-export function PlanetShadow() {
+export function IslandShadow() {
   const texture = useMemo(createShadowTexture, [])
 
   return (
     <mesh
-      position={[0, -PLANET_RADIUS * 1.32, 0]}
+      position={[0, -ISLAND_EDGE_HEIGHT - 3, 0]}
       rotation={[-Math.PI / 2, 0, 0]}
-      scale={PLANET_RADIUS * 1.05}
+      scale={ISLAND_RADIUS * 1.1}
     >
       <circleGeometry args={[1, 48]} />
       <meshBasicMaterial map={texture} transparent depthWrite={false} fog={false} />

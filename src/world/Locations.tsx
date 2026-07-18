@@ -7,7 +7,7 @@ import type { WorldLocation } from '@/content/locations'
 import { LocationPod } from '@/world/LocationPod'
 import { useWorldStore } from '@/store/useWorldStore'
 import { getAmbientTime } from '@/hooks/useAmbientLoop'
-import { expDamp } from '@/lib/math/spherical'
+import { expDamp } from '@/lib/math/damp'
 import { GLOW, LANDMARK } from '@/lib/designSystem'
 
 /**

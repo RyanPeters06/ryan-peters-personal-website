@@ -14,19 +14,20 @@
 ## Folder Structure (src/)
 
 ```
-scene/        what exists (Experience composition, Planet, Sky, Clouds,
-              PlanetShadow, lighting/)
+scene/        what exists (Experience composition, Ground, IslandShadow,
+              Sky, Clouds, lighting/)
 camera/       CinematicCamera — all camera behavior lives here
 avatar/       the character: model + all procedural animation
-world/        placed structures (LocationPod, Locations)
+world/        placed structures (LocationPod, Locations, Fountain,
+              Crowd, Villager)
 systems/      behavior (movement/: input hook + avatarPose channel)
-hooks/        reusable logic (ambient clock, smoothing, spherical
+hooks/        reusable logic (ambient clock, smoothing, flat-ground
               placement, reduced-motion)
 store/        useWorldStore (Zustand)
-ui/           overlay components (cards, hints, mute)
+ui/           overlay components (cards, hints, mute, header badge)
 content/      typed portfolio DATA (locations.ts) — copy lives here,
               never in scene code
-lib/          math/spherical.ts (pure math), constants.ts (ALL tuning
+lib/          math/damp.ts (pure math), constants.ts (ALL tuning
               knobs + PALETTE)
 styles/       Tailwind entry
 ```
@@ -38,34 +39,58 @@ math?"
 ## Scene Hierarchy
 
 ```
-<Canvas shadows dpr=[1,2] NoToneMapping far=2.5*orbit>
+<Canvas shadows dpr=[1,2] NoToneMapping far=CAMERA_FAR>
   <Suspense>
     AmbientLoopDriver   (advances the shared heartbeat)
     Sky                 (gradient dome + fog + background)
     Lighting            (ambient + personal-sun key + fill + hemisphere)
-    Planet              (quad-sphere tile shader)
-    PlanetShadow        (soft contact disc below the floating planet)
-    Clouds              (instanced puff clusters)
+    Ground              (flat tiled disc + cliff edge — the island floor)
+    IslandShadow        (soft contact disc below the floating island)
+    Clouds              (instanced puff clusters, ring around the island)
     Locations           (LocationPod per content entry)
+    Fountain            (center plinth)
+    Crowd               (background villagers)
     Avatar              (character + controller + animation)
-    CinematicCamera     (drives the default camera every frame)
+    TitleWorld          (3D title text)
+    CinematicCamera     (drives the fixed tableau camera every frame)
 ```
 
 ## Coordinate & Math Conventions (IMPORTANT — bugs lived here)
 
-- The planet is a sphere at the origin, `PLANET_RADIUS = 24`.
-- `lib/math/spherical.ts` is the single source of truth: lat/lon ↔
-  Vector3, surface orientation, great circles, `expDamp`.
-- Avatar tangent frame: `up = normalize(position)`, `forward` tangent,
-  `right = up × forward`; root quaternion from `makeBasis(right, up,
-  forward)` (character faces local +Z).
-- **Walking axis: `up × forward`** rotates the position vector *along*
-  facing. (`forward × up` walks backward — this bug shipped once.)
+- **The world is flat.** The plaza floor is a disc of radius
+  `ISLAND_RADIUS`, centered at the origin, lying in the XZ plane at
+  y = 0. It has NO curvature — it simply ends at a rounded edge and
+  drops into the sky (`Ground.tsx`'s cliff wall), floating-island
+  style. There is no sphere, no lat/lon, no great-circle math anywhere
+  in the codebase (this was a full rewrite away from the original
+  true-sphere world model — see `docs/ART_BIBLE.md`'s WORLD MODEL
+  section for the decision history).
+- `lib/math/damp.ts` holds the only shared math primitive: `expDamp`
+  (frame-rate-independent exponential smoothing). Positioning is plain
+  Vector3/XZ arithmetic wherever it's needed — no spherical helpers.
+- `hooks/useFlatPosition.ts` places things at `(x, altitude, z)` with
+  an identity quaternion (the ground has no curvature, so nothing
+  needs a per-position "standing up" rotation). Callers that need a
+  facing direction (e.g. `LocationPod` turning to face the fountain)
+  add their own yaw via `Math.atan2`.
+- **Up is always world +Y**, everywhere — the avatar, villagers, and
+  camera never recompute it per-position the way the old sphere model
+  did.
+- **Walking is a plain XZ vector add**: `position += forward * speed *
+  dt`, then clamped to `TABLEAU_WALK_RADIUS` from the island's center
+  (a simple `Math.hypot` distance check, not an angular leash).
 - **Screen-right = `viewDir × up`.** (`up × viewDir` is screen-LEFT —
-  this bug also shipped once.)
+  this bug shipped once, back in the sphere-era code.)
 - **Arm z-rotation: positive = outward for the RIGHT arm (+x), negative
   for the left.** Getting it backwards folds arms invisibly into the
   body (the wave was inert for a whole session because of this).
+- **The fixed tableau camera has very little vertical headroom.**
+  `TABLEAU_CAMERA_POS`/`TABLEAU_CAMERA_TARGET` give a steep, narrow
+  (`fov 28`) downward-looking frustum — there is no "high sky" in the
+  visible frame the way a wider or less-tilted camera would have.
+  Anything meant to read as "above the plaza" (e.g. `TitleWorld`'s
+  anchor) has to be tuned empirically against this frustum, not placed
+  by intuition about world-space height.
 
 ## State Management
 
@@ -90,28 +115,23 @@ whatever is active. Non-modal by design: the world never pauses.
 
 ## Camera System (CinematicCamera)
 
-One component owns the camera; three eased modes selected by
-phase/focus:
-
-- **Orbit** (far): slow drift around the planet; up = world Y.
-- **Focus** (portrait): head-height at `CAMERA_FOCUS_RADIUS = R+1.25`,
-  standing `FOCUS_LAT_OFFSET = 9°` on the **equator side** of the
-  subject; up = local surface normal.
-- **Chase** (third person): offset decomposed into azimuth-around-up /
-  height / horizontal-distance, each eased separately — transitions
-  sweep around the character's side, never over their head.
-
-Every scalar is damped (`useSmoothValue` / `expDamp`); the look target
-lerps; fog near/far retune per mode. The camera is never set, always
-steered.
+One fixed, art-directed frame — the tableau (see `docs/ART_BIBLE.md`
+WORLD MODEL section). The camera never follows the character; it holds
+at `TABLEAU_CAMERA_POS` looking at `TABLEAU_CAMERA_TARGET` with
+`TABLEAU_FOV`, always `up = world Y`. The only motion is a gentle eased
+mouse look-around (pan + a whisper of positional parallax) so the
+diorama feels held, not bolted down. Fog eases once to the static
+`TABLEAU_FOG` band on mount. The older Orbit/Focus/Chase multi-mode
+camera (whole-globe exploration era) is retired; its history lives in
+git up to the `snapshot/pre-art-bible-2026-07-17` tag.
 
 ## Character Controller
 
-Camera-relative input (`getMoveInput`) → tangent move direction →
-`forward` eases toward it → position rotates around `up × forward` by
-`WALK_SPEED·dt/R` (great circles). Facing, walking, idle life, waving,
-and foot shifts are all procedural transforms in one `useFrame` — no rig,
-no animation clips.
+Camera-relative input (`getMoveInput`) → flat XZ move direction →
+`forward` eases toward it → position advances by `forward * WALK_SPEED
+* dt`, clamped to a radius around the island's center. Facing, walking,
+idle life, waving, and foot shifts are all procedural transforms in one
+`useFrame` — no rig, no animation clips.
 
 ## Performance Strategy
 

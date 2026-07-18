@@ -5,6 +5,95 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-18 — THE FLAT ISLAND (world model pivot, off the sphere)
+
+**Current milestone:** M5 (Locations) — world-model rewrite, content
+placement unaffected
+**Next milestone:** Peter to spot-check the title-card reveal live (see
+Known issues below), then continue M4/M5 remaining work
+
+### Pivot: sphere → flat floating-island disc
+- **Peter's call:** stop simulating a flattened sphere and instead
+  rebuild the ground as a genuine flat disc (`scene/Ground.tsx`,
+  radius `ISLAND_RADIUS`), plain XZ world coordinates, no curvature,
+  no lat/lon, no great-circle math anywhere. This supersedes the
+  2026-07-17 "TABLEAU ON THE SPHERE" decision in `ART_BIBLE.md` (now
+  updated) — the tableau camera/composition stays, the sphere under it
+  does not.
+- **Full math rewrite, not a patch:** `lib/math/spherical.ts` and
+  `hooks/useSphericalPosition.ts` are deleted outright, replaced by
+  `lib/math/damp.ts` (just `expDamp`) and `hooks/useFlatPosition.ts`.
+  Every consumer — `avatarPose`, `Avatar`, `Villager`, `Crowd`,
+  `Clouds`, `LocationPod`, `Locations` — now does plain Vector3/XZ
+  arithmetic. Walking is `position += forward * speed * dt`, clamped
+  by distance from center (`TABLEAU_WALK_RADIUS`) instead of an
+  angular leash. Verified via `grep` after the fact: zero lat/lon/
+  spherical/greatCircle/PLANET_RADIUS references remain in `src/`.
+- **Ground.tsx**: a flat tiled disc (the old quad-sphere tile shader
+  rewritten for flat XZ cells — much simpler, no cube-face projection)
+  plus a short cliff wall dropping from the rim, so the island reads
+  as floating with a real edge, not a table that fades to nothing.
+  `IslandShadow.tsx` (renamed from `PlanetShadow.tsx`) grounds it from
+  below.
+- **Planet ornament removed entirely.** `Fountain.tsx` no longer has
+  the floating ringed mini-planet or its orbit ring — just the basin,
+  grass ring, and a low pillowy dome plinth with a softly breathing
+  glow (light is the life here, not motion, per DESIGN_SYSTEM).
+- **Landmark positions re-derived**, not hand-waved: each location's
+  old (lat, lon) was converted to flat (x, z) preserving the same
+  horseshoe angular arrangement and relative spread, then the six
+  radii were tuned against the fixed tableau camera's actual frustum.
+  Crowd chat-circles and wanderer spots got fresh hand-placed XZ
+  coordinates within the walk radius (the old sphere version let
+  wanderers roam to off-stage equatorial points well outside the
+  camera frame — not reproduced here).
+
+### Rename: Ryan's Planet → Ryan Land
+- `index.html` title/meta, the 3D title text (`TitleWorld.tsx`), and
+  the header badge (`HeaderBadge.tsx`, new component) all say "Ryan
+  Land" now. Swapped the header's 🪐 planet emoji for 🏝️. `ART_BIBLE.md`
+  and `DESIGN_SYSTEM.md` headings updated to match; `DESIGN.md`'s
+  vision paragraph re-worded from "planet" to "island".
+
+### Header fixed
+- The header was rendering oversized and running off both edges
+  before this session (a half-finished change from a parallel
+  session). `HeaderBadge.tsx` is now a small pill, top-left, 24px
+  inset — measured live at **7.6% of viewport width** (130px of
+  1707px), far under the "never >1/3 screen width" rule now written
+  into `ART_BIBLE.md` §13 (UI Language) so it doesn't regress again.
+
+### Verified live (Claude in Chrome — the in-app preview pane can't run
+R3F; see prior session notes)
+- Full plaza composition: flat disc floor, six monuments in a
+  horseshoe, crowd, fountain plinth, cloud ring, header badge — all
+  confirmed via screenshot.
+- Header badge size/position confirmed via direct DOM measurement
+  (`getBoundingClientRect`), not just eyeballing.
+- `npx tsc -b` and `npm run build` both clean.
+
+### Known issues / open items
+- **Title-card reveal (3D "Ryan Land" text) could not be visually
+  confirmed in this session.** The click-to-enter flow works (the
+  invisible full-screen click-catcher always advances the phase
+  regardless), but the automated browser tab appears to throttle/pause
+  `requestAnimationFrame` heavily in the background, so the ~2.6s
+  reveal animation was never caught in a screenshot despite one clean
+  console-log capture proving the opacity animation itself runs
+  correctly. Repositioned `TitleWorld`'s anchor (`ANCHOR_Y`/`ANCHOR_Z`
+  in `TitleWorld.tsx`) using trigonometry calibrated against the
+  confirmed-visible monument position, since the fixed tableau camera
+  turned out to have very little vertical headroom (a narrow 28° FOV
+  pointed steeply down — see the new note in `ARCHITECTURE.md`).
+  **Peter should give this one live look in a normal foreground
+  browser tab** before considering the title sequence done.
+- ROADMAP.md's M1/M3 prose still describes the old sphere/great-circle/
+  chase-camera model — flagged as a follow-up, not fixed this session.
+- Landmark/crowd XZ placement is a first pass, not pixel-verified
+  against the exact camera crop — worth a look together.
+
+---
+
 ## 2026-07-17 — Creative-Director pass: Art Bible, reference teardown, audit
 
 **Current milestone:** M5 (Locations) — paused for a strategic decision

@@ -3,9 +3,10 @@
  * the placeholders here for real content without touching the world.
  *
  * Placement: the six landmarks fan in a gentle horseshoe around the
- * plaza's fountain (the planet's crown), opening toward the fixed
- * tableau camera on lon 0. Screen left→right = About … Resume, per
- * the reference. Accents come from DESIGN_SYSTEM §8.
+ * plaza's fountain (the island's center), opening toward the fixed
+ * tableau camera on +Z. Screen left→right = About … Resume, per the
+ * reference. Flat XZ world units, no curvature. Accents come from
+ * DESIGN_SYSTEM §8.
  */
 
 export interface LocationItem {
@@ -24,9 +25,9 @@ export interface WorldLocation {
   tagline: string
   /** Pastel accent for the monument and card trim. */
   accent: string
-  /** Where the monument stands on the planet, in degrees. */
-  lat: number
-  lon: number
+  /** Where the monument stands on the flat plaza floor, world units. */
+  x: number
+  z: number
   items: LocationItem[]
 }
 
@@ -37,8 +38,8 @@ export const LOCATIONS: WorldLocation[] = [
     icon: '👤',
     tagline: 'Who I am',
     accent: '#cdb9ea',
-    lat: 73.8,
-    lon: -98,
+    x: -7.9,
+    z: -1.1,
     items: [
       {
         title: 'Hi, I’m Ryan',
@@ -53,12 +54,12 @@ export const LOCATIONS: WorldLocation[] = [
     icon: '</>',
     tagline: 'Things I have built',
     accent: '#a9c9e8',
-    lat: 72.2,
-    lon: -136,
+    x: -6.0,
+    z: -6.2,
     items: [
       {
-        title: 'Ryan’s Planet',
-        description: 'This world — React Three Fiber, a quad-sphere plaza, and one small resident.',
+        title: 'Ryan Land',
+        description: 'This world — React Three Fiber, a hand-tiled floating plaza, and one small resident.',
         url: 'https://github.com/RyanPeters06/ryan-peters-personal-website',
       },
       {
@@ -77,8 +78,8 @@ export const LOCATIONS: WorldLocation[] = [
     icon: '💼',
     tagline: 'Where I have worked',
     accent: '#b8e6c9',
-    lat: 71.4,
-    lon: -163,
+    x: -2.7,
+    z: -8.8,
     items: [
       {
         title: 'Placeholder Role — Company',
@@ -92,8 +93,8 @@ export const LOCATIONS: WorldLocation[] = [
     icon: '⚙️',
     tagline: 'What I work with',
     accent: '#f2d38f',
-    lat: 71.4,
-    lon: 163,
+    x: 2.7,
+    z: -8.8,
     items: [
       {
         title: 'Languages & Tools',
@@ -107,8 +108,8 @@ export const LOCATIONS: WorldLocation[] = [
     icon: '💬',
     tagline: 'Say hello',
     accent: '#f2b8c6',
-    lat: 72.2,
-    lon: 136,
+    x: 6.0,
+    z: -6.2,
     items: [
       {
         title: 'petersryan006@gmail.com',
@@ -123,8 +124,8 @@ export const LOCATIONS: WorldLocation[] = [
     icon: '📄',
     tagline: 'The paper version',
     accent: '#a8dde0',
-    lat: 73.8,
-    lon: 98,
+    x: 7.9,
+    z: -1.1,
     items: [
       {
         title: 'Download Resume',

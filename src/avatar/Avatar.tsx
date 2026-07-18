@@ -2,15 +2,10 @@ import { useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { DoubleSide, Group, Matrix4, MeshStandardMaterial, Vector3 } from 'three'
 import { useWorldStore } from '@/store/useWorldStore'
-import { expDamp } from '@/lib/math/spherical'
+import { expDamp } from '@/lib/math/damp'
 import { avatarPose } from '@/systems/movement/avatarPose'
 import { getMoveInput } from '@/systems/movement/useMovementInput'
-import {
-  PALETTE,
-  PLANET_RADIUS,
-  TABLEAU_WALK_LIMIT_DEG,
-  WALK_SPEED,
-} from '@/lib/constants'
+import { PALETTE, TABLEAU_WALK_RADIUS, WALK_SPEED } from '@/lib/constants'
 
 /**
  * The resident of the tiny world — an original character that speaks
@@ -21,9 +16,10 @@ import {
  * is procedural (breathing, blinking, glances, foot shifts, the wave,
  * and the walk cycle are code-driven transforms in the frame loop).
  *
- * Movement: WASD/arrows, camera-relative, integrated as rotations of
- * the position vector around the planet — the avatar always walks a
- * great circle. Pose is published to `avatarPose` for the chase camera.
+ * Movement: WASD/arrows, camera-relative, integrated as a plain XZ
+ * offset across the flat plaza floor, leashed to a walk radius around
+ * the island's center. Pose is published to `avatarPose` for lighting
+ * and landmark proximity checks.
  */
 
 // --- Proportions (world units; ~0.96 tall, head ≈ 0.58 of it) --------
@@ -57,10 +53,8 @@ const smoothstep = (a: number, b: number, x: number): number => {
 const _camFlat = new Vector3()
 const _camRight = new Vector3()
 const _moveDir = new Vector3()
-const _axis = new Vector3()
 const _right = new Vector3()
 const _basis = new Matrix4()
-const _worldY = new Vector3(0, 1, 0)
 
 /** Mutable animation state kept outside React. */
 interface AvatarAnim {
@@ -154,15 +148,12 @@ export function Avatar() {
     const inputActive = input.x !== 0 || input.z !== 0
     if (phase === 'idle' && inputActive) store.setPhase('exploring')
 
-    pose.up.copy(pose.position).normalize()
-
     let moveTarget = 0
     let steering = false
     if (phase === 'exploring' && inputActive) {
-      // Camera-relative direction on the tangent plane: W walks away
-      // from the camera, A/D strafe — the avatar turns to face travel.
-      _camFlat.copy(pose.position).sub(camera.position)
-      _camFlat.addScaledVector(pose.up, -_camFlat.dot(pose.up))
+      // Camera-relative direction on the flat floor: W walks away from
+      // the camera, A/D strafe — the avatar turns to face travel.
+      _camFlat.set(pose.position.x - camera.position.x, 0, pose.position.z - camera.position.z)
       if (_camFlat.lengthSq() > 1e-8) {
         _camFlat.normalize()
         // Screen-right is viewDir x up (up x viewDir points LEFT).
@@ -184,8 +175,7 @@ export function Avatar() {
     // ----- Facing --------------------------------------------------------
     if (phase === 'arriving' || phase === 'greeting') {
       // Face the camera for the hello.
-      _moveDir.copy(camera.position).sub(pose.position)
-      _moveDir.addScaledVector(pose.up, -_moveDir.dot(pose.up))
+      _moveDir.set(camera.position.x - pose.position.x, 0, camera.position.z - pose.position.z)
       if (_moveDir.lengthSq() > 1e-8) {
         _moveDir.normalize()
         steering = true
@@ -195,34 +185,22 @@ export function Avatar() {
       const lambda = phase === 'exploring' ? 10 : 4
       pose.forward.lerp(_moveDir, 1 - Math.exp(-lambda * dt))
     }
-    // Keep forward a clean tangent regardless of what happened above.
-    pose.forward.addScaledVector(pose.up, -pose.forward.dot(pose.up)).normalize()
+    // Keep forward flat and unit-length regardless of what happened above.
+    pose.forward.y = 0
+    pose.forward.normalize()
 
-    // ----- Integrate walking along a great circle -----------------------
+    // ----- Integrate walking across the flat floor -----------------------
     if (a.move > 0.003 && phase === 'exploring') {
-      const angle = (WALK_SPEED * a.move * dt) / PLANET_RADIUS
-      // Axis order matters: up × forward advances the position *along*
-      // the facing direction (forward × up walks you backward).
-      _axis.crossVectors(pose.up, pose.forward).normalize()
-      pose.position.applyAxisAngle(_axis, angle)
-      pose.position.setLength(PLANET_RADIUS)
+      pose.position.addScaledVector(pose.forward, WALK_SPEED * a.move * dt)
 
-      // Tableau leash: the stage ends where the frame does. If the walk
-      // strays past the staged plaza, slide the position back toward
-      // the pole by the excess arc — a soft invisible boundary.
-      const polar = Math.acos(
-        Math.min(1, Math.max(-1, pose.position.y / PLANET_RADIUS)),
-      )
-      const maxPolar = (TABLEAU_WALK_LIMIT_DEG * Math.PI) / 180
-      if (polar > maxPolar) {
-        // pos × Y rotated positively moves the position toward the pole.
-        _axis.crossVectors(pose.position, _worldY).normalize()
-        pose.position.applyAxisAngle(_axis, polar - maxPolar)
-        pose.position.setLength(PLANET_RADIUS)
+      // Tableau leash: the stage ends where the frame does. Clamp to a
+      // circle around the island's center — a soft invisible boundary.
+      const dist = Math.hypot(pose.position.x, pose.position.z)
+      if (dist > TABLEAU_WALK_RADIUS) {
+        const scale = TABLEAU_WALK_RADIUS / dist
+        pose.position.x *= scale
+        pose.position.z *= scale
       }
-
-      pose.up.copy(pose.position).normalize()
-      pose.forward.addScaledVector(pose.up, -pose.forward.dot(pose.up)).normalize()
     }
 
     // ----- Write the root transform -------------------------------------

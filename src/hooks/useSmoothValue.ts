@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { expDamp } from '@/lib/math/spherical'
+import { expDamp } from '@/lib/math/damp'
 
 export interface SmoothValue {
   /** The current smoothed value. */

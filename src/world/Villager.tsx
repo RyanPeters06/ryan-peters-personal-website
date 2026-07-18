@@ -10,8 +10,6 @@ import {
   Vector3,
 } from 'three'
 import { getAmbientScale } from '@/hooks/useAmbientLoop'
-import { latLonToVec3 } from '@/lib/math/spherical'
-import { PLANET_RADIUS } from '@/lib/constants'
 
 /**
  * One background villager — a simplified cousin of the player's
@@ -50,8 +48,8 @@ const MAT = {
 
 export interface VillagerSpec {
   id: number
-  lat: number
-  lon: number
+  x: number
+  z: number
   /** ~1.0 — villagers stand the same height as the player. */
   scale: number
   hair: number
@@ -63,14 +61,13 @@ export interface VillagerSpec {
   /** Personal random phase so the crowd never moves in sync. */
   seed: number
   /** Destinations wanderers may stroll between. */
-  pois: { lat: number; lon: number }[]
+  pois: { x: number; z: number }[]
 }
 
 const WALK_SPEED = 0.5 // slow and peaceful — a third of the player's pace
 
 // Scratch (safe: used synchronously within one callback)
 const _dir = new Vector3()
-const _axis = new Vector3()
 const _right = new Vector3()
 const _basis = new Matrix4()
 
@@ -103,14 +100,13 @@ export function Villager({ spec }: { spec: VillagerSpec }) {
 
   const st = useRef<VillagerState | null>(null)
   if (st.current === null) {
-    const pos = latLonToVec3(spec.lat, spec.lon, PLANET_RADIUS)
-    const up = pos.clone().normalize()
-    // Initial facing: chat centers face the group; others face "south".
-    const fwd = spec.chatCenter
-      ? spec.chatCenter.clone().sub(pos)
-      : new Vector3(0, -1, 0)
-    fwd.addScaledVector(up, -fwd.dot(up))
-    if (fwd.lengthSq() < 1e-6) fwd.set(1, 0, 0).addScaledVector(up, -up.x)
+    const pos = new Vector3(spec.x, 0, spec.z)
+    const up = new Vector3(0, 1, 0)
+    // Initial facing: chat centers face the group; others face "south"
+    // (+Z, toward the camera/spawn side of the plaza).
+    const fwd = spec.chatCenter ? spec.chatCenter.clone().sub(pos) : new Vector3(0, 0, 1)
+    fwd.y = 0
+    if (fwd.lengthSq() < 1e-6) fwd.set(1, 0, 0)
     fwd.normalize()
     st.current = {
       t: spec.seed * 10,
@@ -135,7 +131,6 @@ export function Villager({ spec }: { spec: VillagerSpec }) {
     // Ambient-scaled time: reduced motion calms the crowd too.
     const dt = Math.min(rawDt, 0.1) * getAmbientScale()
     s.t += dt
-    s.up.copy(s.pos).normalize()
 
     // ---- decide -------------------------------------------------------
     // Everyone strolls. Wanderers roam POI to POI forever; chat-circle
@@ -143,16 +138,15 @@ export function Villager({ spec }: { spec: VillagerSpec }) {
     // rejoin the conversation — circles dissolve and reform.
     if (s.mode === 'idle' && s.t >= s.nextWalkAt) {
       if (!spec.wanderer && s.away) {
-        latLonToVec3(spec.lat, spec.lon, PLANET_RADIUS, s.target)
+        s.target.set(spec.x, 0, spec.z)
         s.goingHome = true
       } else {
         const poi = spec.pois[Math.floor((s.t * 7.31 + spec.seed * 13) % spec.pois.length)]
         // Small deterministic jitter so villagers don't stack on a point.
-        latLonToVec3(
-          poi.lat + Math.sin(spec.seed * 12.9 + s.t) * 3,
-          poi.lon + Math.cos(spec.seed * 7.7 + s.t) * 3,
-          PLANET_RADIUS,
-          s.target,
+        s.target.set(
+          poi.x + Math.sin(spec.seed * 12.9 + s.t) * 3,
+          0,
+          poi.z + Math.cos(spec.seed * 7.7 + s.t) * 3,
         )
         s.away = true
         s.goingHome = false
@@ -164,7 +158,7 @@ export function Villager({ spec }: { spec: VillagerSpec }) {
     let moveTarget = 0
     if (s.mode === 'walk') {
       _dir.copy(s.target).sub(s.pos)
-      _dir.addScaledVector(s.up, -_dir.dot(s.up))
+      _dir.y = 0
       const remaining = _dir.length()
       if (remaining < 0.45) {
         s.mode = 'idle'
@@ -180,20 +174,18 @@ export function Villager({ spec }: { spec: VillagerSpec }) {
         _dir.divideScalar(remaining)
         s.fwd.lerp(_dir, 1 - Math.exp(-4 * dt)).normalize()
         moveTarget = 1
-        _axis.crossVectors(s.up, s.fwd).normalize()
-        s.pos.applyAxisAngle(_axis, (WALK_SPEED * dt) / PLANET_RADIUS)
-        s.pos.setLength(PLANET_RADIUS)
-        s.up.copy(s.pos).normalize()
+        s.pos.addScaledVector(s.fwd, WALK_SPEED * dt)
       }
     } else if (spec.chatCenter && !s.away) {
       // Chat posture: at home, keep facing the group's center.
       _dir.copy(spec.chatCenter).sub(s.pos)
-      _dir.addScaledVector(s.up, -_dir.dot(s.up))
+      _dir.y = 0
       if (_dir.lengthSq() > 1e-6) {
         s.fwd.lerp(_dir.normalize(), 1 - Math.exp(-2 * dt))
       }
     }
-    s.fwd.addScaledVector(s.up, -s.fwd.dot(s.up)).normalize()
+    s.fwd.y = 0
+    s.fwd.normalize()
     s.move += (moveTarget - s.move) * (1 - Math.exp(-6 * dt))
 
     // ---- write transform ------------------------------------------------

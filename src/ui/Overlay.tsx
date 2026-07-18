@@ -1,4 +1,5 @@
 import { ControlsHint } from '@/ui/ControlsHint'
+import { HeaderBadge } from '@/ui/HeaderBadge'
 import { LocationCard } from '@/ui/LocationCard'
 import { MuteButton } from '@/ui/MuteButton'
 import { TitleSequence } from '@/ui/TitleSequence'
@@ -12,6 +13,7 @@ export function Overlay() {
   return (
     <div className="pointer-events-none absolute inset-0 z-10">
       <TitleSequence />
+      <HeaderBadge />
       <ControlsHint />
       <LocationCard />
       <div className="absolute bottom-5 right-5">
