@@ -10,6 +10,22 @@ session. This file always reflects the current state of the project.
 **Current milestone:** M5 (Locations) — paused for a strategic decision
 **Next milestone:** Peter to resolve the world-model fork (below)
 
+### Phase 4+5 (same day, after the docs pass)
+- **Design system shipped:** docs/DESIGN_SYSTEM.md + src/lib/designSystem.ts
+  (world scale, monument mold, radii law, material bands, glow levels,
+  all six landmark accents, timing, curves). Nothing designed
+  independently from here on.
+- **Environment redesigned (Phase 5, env only — UI untouched):** sunny
+  genuine-blue sky (`#A5D3F0` zenith) with the dome gradient re-keyed to
+  the CAMERA frame with steep stops — the old avatar-up keying left the
+  whole intro background below the gradient horizon (that was the real
+  "overcast" bug). Warmer/stronger key sun (1.15), blue hemisphere;
+  hand-laid floor (per-tile center jitter + per-tile corner radius
+  17–27%); plumper clouds (scale 2.5); **real bloom pass** added
+  (@react-three/postprocessing; threshold 0.9, intensity 0.22).
+  Verified live: intro frame now genuinely resembles the concept art —
+  blue corners, radiant white halo behind the planet, title in the glow.
+
 ### Completed (documentation only — no code changed)
 - **Snapshot tag** `snapshot/pre-art-bible-2026-07-17` created and pushed
   — a durable return point before any redesign.

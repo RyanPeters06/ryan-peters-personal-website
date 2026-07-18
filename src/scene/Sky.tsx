@@ -1,18 +1,20 @@
 import { useMemo } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import { BackSide, Color, ShaderMaterial, Vector3 } from 'three'
-import { avatarPose } from '@/systems/movement/avatarPose'
 import { CAMERA_ORBIT_RADIUS, PALETTE } from '@/lib/constants'
 
 /**
- * The spring-morning sky: a soft white-to-blue gradient dome, plus
- * near-white cyan-tinted fog so the world melts into light.
+ * The sunny spring-morning sky: a genuine-blue-to-white gradient dome,
+ * plus near-white sky-tinted fog so the world melts into light.
  *
- * The gradient's "up" follows the avatar's surface normal — wherever
- * you walk on the planet, the fresh blue stays overhead and the
- * horizon glows white, like a bright menu screen rather than a
- * physical atmosphere. (CinematicCamera retunes the fog's near/far
- * smoothly per shot; the colors live here.)
+ * The gradient is keyed to the CAMERA's frame — blue always fills the
+ * top of the view, easing to a glowing white band behind the world —
+ * so every shot composes like the concept art: intro (looking down at
+ * the planet against white, blue climbing above) and chase (blue
+ * overhead, white at the walking horizon) alike. Steep stops put real
+ * blue in frame within ~20° above the view center. (Keying to the
+ * avatar's up looked right on paper but left the whole intro
+ * background below the gradient's horizon — all white, overcast.)
  */
 
 const SKY_VERTEX = /* glsl */ `
@@ -31,13 +33,16 @@ uniform vec3 uMid;
 uniform vec3 uHorizon;
 void main() {
   float h = clamp(dot(normalize(vDir), normalize(uUp)), -1.0, 1.0);
-  vec3 col = mix(uHorizon, uMid, smoothstep(0.0, 0.45, h));
-  col = mix(col, uTop, smoothstep(0.45, 1.0, h));
+  vec3 col = mix(uHorizon, uMid, smoothstep(-0.02, 0.14, h));
+  col = mix(col, uTop, smoothstep(0.12, 0.38, h));
   gl_FragColor = vec4(col, 1.0);
 }
 `
 
+const _camUp = new Vector3()
+
 export function Sky() {
+  const camera = useThree((s) => s.camera)
   const material = useMemo(
     () =>
       new ShaderMaterial({
@@ -57,7 +62,11 @@ export function Sky() {
   )
 
   useFrame(() => {
-    ;(material.uniforms.uUp.value as Vector3).copy(avatarPose.up)
+    // The camera's true up axis in world space (column 1 of its
+    // world matrix) — already eased by the rig, so the gradient
+    // re-orients as smoothly as the camera itself.
+    _camUp.setFromMatrixColumn(camera.matrixWorld, 1)
+    ;(material.uniforms.uUp.value as Vector3).copy(_camUp)
   })
 
   return (

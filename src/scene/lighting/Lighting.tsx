@@ -35,15 +35,16 @@ export function Lighting() {
 
   return (
     <>
-      {/* Generous, faintly blue base light: bright spring morning.
+      {/* Generous, faintly blue base light: sunny spring morning.
           High ambient + soft key keeps shadows gentle and blue-gray. */}
-      <ambientLight intensity={1.35} color={PALETTE.ambient} />
+      <ambientLight intensity={1.3} color={PALETTE.ambient} />
 
-      {/* Warm key: the personal sun, softened. */}
+      {/* Warm key: the personal sun — a touch stronger and warmer, so
+          the world reads sunlit rather than overcast. */}
       <object3D ref={target} />
       <directionalLight
         ref={key}
-        intensity={1.05}
+        intensity={1.15}
         color={PALETTE.keyLight}
         castShadow
         shadow-mapSize={[1024, 1024]}
@@ -57,10 +58,10 @@ export function Lighting() {
       />
 
       {/* Cool fill from the opposite side, no shadows. */}
-      <directionalLight position={[-6, -2, -8]} intensity={0.4} color={PALETTE.fillLight} />
+      <directionalLight position={[-6, -2, -8]} intensity={0.35} color={PALETTE.fillLight} />
 
-      {/* Sky/ground bounce: pale blue from above, cool floor below. */}
-      <hemisphereLight args={['#e8f4ff', '#dfe9f0', 0.55]} />
+      {/* Sky/ground bounce: genuine blue sky above, cool floor below. */}
+      <hemisphereLight args={['#dcefff', '#e3ecf2', 0.55]} />
     </>
   )
 }

@@ -1,6 +1,8 @@
 import { Suspense, useEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
+import { Bloom, EffectComposer } from '@react-three/postprocessing'
 import { NoToneMapping } from 'three'
+import { GLOW } from '@/lib/designSystem'
 import { Sky } from '@/scene/Sky'
 import { Planet } from '@/scene/Planet'
 import { PlanetShadow } from '@/scene/PlanetShadow'
@@ -60,6 +62,16 @@ export function Experience() {
         <Avatar />
         <TitleWorld />
         <CinematicCamera />
+        {/* The reference's "gently emits light" finish: a whisper of
+            bloom on only the brightest whites and accent glows. */}
+        <EffectComposer multisampling={4}>
+          <Bloom
+            mipmapBlur
+            intensity={GLOW.bloom.intensity}
+            luminanceThreshold={GLOW.bloom.threshold}
+            luminanceSmoothing={GLOW.bloom.smoothing}
+          />
+        </EffectComposer>
       </Suspense>
     </Canvas>
   )

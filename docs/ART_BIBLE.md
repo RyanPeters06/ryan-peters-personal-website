@@ -116,9 +116,12 @@ painted textures anywhere.
   finish — see audit.)
 - `NoToneMapping`: pastels render exactly as authored; whites stay
   bright and airy without filmic compression.
-- The sky reads clearly **blue** overhead easing to soft white at the
-  horizon — sunny, not washed out. (Current build skews too near-white;
-  see audit.)
+- The sky reads clearly **blue** at the top of every frame, easing to a
+  glowing white band behind the world — sunny, never washed out. The
+  dome gradient is keyed to the **camera's frame** with steep stops
+  (blue arrives within ~20° above view center), so intro and chase
+  shots alike compose like the concept art. A subtle real **bloom pass**
+  (threshold 0.9, intensity ~0.22) supplies the glow.
 
 ## 7. Color Palette
 
@@ -128,7 +131,7 @@ sky-blue. **All values live in `src/lib/constants.ts` (`PALETTE`).**
 **Environment**
 | Role | Hex |
 |---|---|
-| Sky zenith | `#DFF4FF` → *push bluer toward reference* |
+| Sky zenith | `#A5D3F0` (genuine sunny blue) |
 | Sky horizon | `#FFFFFF` |
 | Fog | `#F2FBFF` |
 | Ground | `#F8FAFC` |

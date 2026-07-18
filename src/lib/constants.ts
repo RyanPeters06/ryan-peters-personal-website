@@ -49,22 +49,23 @@ export const CLOUD_ALTITUDE_MAX = 6.0
 
 /** Uniform scale applied to each cloud, so they read from orbit and
  *  still feel like plump companions at walking level. */
-export const CLOUD_SCALE = 2.2
+export const CLOUD_SCALE = 2.5
 
 /**
  * The world palette — soft, unsaturated, optimistic.
  * White sky, gentle greens, pastel accents. No neon, ever.
  */
 export const PALETTE = {
-  /** Spring-morning sky: a soft white-to-blue gradient. */
-  skyTop: '#dff4ff',
-  skyMid: '#eef9ff',
+  /** Sunny spring-morning sky: a genuine blue easing to white at the
+   *  horizon — bright and warm, never overcast (see DESIGN_SYSTEM §8). */
+  skyTop: '#a5d3f0',
+  skyMid: '#d6ecfa',
   skyHorizon: '#ffffff',
-  /** Fog: almost white with a hint of cyan. */
-  fog: '#f2fbff',
+  /** Fog: almost white with a hint of sky blue. */
+  fog: '#eef8fe',
   /** The plaza floor: cool near-white tiles reflecting the sky. */
   ground: '#f8fafc',
-  groundLine: '#e3e9ed',
+  groundLine: '#e5eaee',
   grass: '#8fce7f',
   grassLight: '#a5dc94',
   grassDark: '#7cbe6e',
@@ -72,8 +73,8 @@ export const PALETTE = {
   cloudShade: '#eef4f6',
   /** Shadows lean blue-gray, never neutral gray. */
   shadow: '#c5cfd9',
-  ambient: '#edf5ff',
-  keyLight: '#fff8ee',
+  ambient: '#eef6ff',
+  keyLight: '#fff6e8',
   fillLight: '#e8f2ff',
   /** The avatar: soft skin, warm hair, one pastel accent. */
   skin: '#f6cfae',

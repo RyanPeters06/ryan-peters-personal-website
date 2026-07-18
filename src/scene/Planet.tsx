@@ -74,8 +74,13 @@ vec4 tileCell(vec3 dir) {
   vec2 cell = (atan(t) / QUARTER_PI * 0.5 + 0.5) * uFaceTiles;
   vec2 uv = fract(cell) - 0.5;
   float vary = fract(sin(dot(floor(cell), vec2(127.1, 311.7))) * 43758.5453);
-  vec2 q = abs(uv) - vec2(0.5 - TILE_CORNER);
-  float d = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - TILE_CORNER;
+  // Hand-laid cobble feel: each tile jitters its center a whisper and
+  // wears its own corner radius (17–27%), so the grid reads organic —
+  // laid by hand, not plotted — while seams still meet cleanly.
+  uv -= (vec2(vary, fract(vary * 7.31)) - 0.5) * 0.05;
+  float corner = TILE_CORNER + (vary - 0.5) * 0.10;
+  vec2 q = abs(uv) - vec2(0.5 - corner);
+  float d = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - corner;
   return vec4(d, uv, vary);
 }`,
       )
