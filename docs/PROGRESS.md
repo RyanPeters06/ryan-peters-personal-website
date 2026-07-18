@@ -10,6 +10,26 @@ session. This file always reflects the current state of the project.
 **Current milestone:** M5 (Locations) — paused for a strategic decision
 **Next milestone:** Peter to resolve the world-model fork (below)
 
+### 2026-07-18 — THE TABLEAU (world model decided)
+- **Peter chose the staged tableau.** Camera locked to one fixed
+  art-directed frame (pos [0,38,26] → target [0,23.2,-2], fov 28
+  compressed-diorama lens) with gentle eased mouse look-around; the
+  chase/orbit/focus rig is retired (history: CinematicCamera pre-pivot).
+- **Composition arranged to the reference:** six landmarks in a
+  horseshoe at the crown (screen L→R About #cdb9ea, Projects #a9c9e8,
+  Experience #b8e6c9, Skills #f2d38f, Contact #f2b8c6, Resume #a8dde0;
+  lats ~70-73, lons ±98..±163), each yawed to face the new **fountain
+  centerpiece** (world/Fountain.tsx: white basin, grass ring, floating
+  ringed mini-planet) at the pole. All six locations now exist in
+  content (placeholders; only Projects has a 3D symbol so far).
+- **WASD kept, leashed:** walk clamps softly at 30° arc from the pole
+  (TABLEAU_WALK_LIMIT_DEG); spawn lat 79, facing the fountain (back to
+  camera, like the reference). Greeting no longer distance-gated.
+- Fog now static (40/100); title re-anchored into the sky band above
+  the plaza's far horizon. Materials/lighting/post untouched this pass
+  by explicit instruction.
+- Verified live: the frame closely matches the concept-art composition.
+
 ### Phase 6+7 (same day)
 - **Projects monument redesigned from scratch** — the language every
   landmark inherits (tokens in DESIGN_SYSTEM → LANDMARK): pillowy

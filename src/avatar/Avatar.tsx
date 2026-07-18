@@ -6,10 +6,9 @@ import { expDamp } from '@/lib/math/spherical'
 import { avatarPose } from '@/systems/movement/avatarPose'
 import { getMoveInput } from '@/systems/movement/useMovementInput'
 import {
-  AVATAR_LAT,
-  AVATAR_LON,
   PALETTE,
   PLANET_RADIUS,
+  TABLEAU_WALK_LIMIT_DEG,
   WALK_SPEED,
 } from '@/lib/constants'
 
@@ -61,6 +60,7 @@ const _moveDir = new Vector3()
 const _axis = new Vector3()
 const _right = new Vector3()
 const _basis = new Matrix4()
+const _worldY = new Vector3(0, 1, 0)
 
 /** Mutable animation state kept outside React. */
 interface AvatarAnim {
@@ -138,16 +138,12 @@ export function Avatar() {
     const pose = avatarPose
 
     // ----- Arrival timeline (clock starts when the title gives way) ----
+    // The tableau camera is fixed, so the greeting needs no distance
+    // gate: a short beat after the title dissolves, he turns to the
+    // visitor and waves.
     if (phase === 'arriving') {
       if (a.arriveT0 < 0) a.arriveT0 = a.t
-      const elapsed = a.t - a.arriveT0
-      if (elapsed > 0.15 && store.cameraFocus === null) {
-        store.setCameraFocus({ lat: AVATAR_LAT, lon: AVATAR_LON })
-      }
-      // Wave only once the camera has actually arrived in front (with a
-      // timeout in case something holds it up) — never greet an empty sky.
-      const cameraClose = camera.position.distanceTo(avatarPose.position) < 6.5
-      if (elapsed > 1.0 && (cameraClose || elapsed > 6)) {
+      if (a.t - a.arriveT0 > 0.9) {
         store.setPhase('greeting')
         a.waveT = 0
       }
@@ -210,6 +206,21 @@ export function Avatar() {
       _axis.crossVectors(pose.up, pose.forward).normalize()
       pose.position.applyAxisAngle(_axis, angle)
       pose.position.setLength(PLANET_RADIUS)
+
+      // Tableau leash: the stage ends where the frame does. If the walk
+      // strays past the staged plaza, slide the position back toward
+      // the pole by the excess arc — a soft invisible boundary.
+      const polar = Math.acos(
+        Math.min(1, Math.max(-1, pose.position.y / PLANET_RADIUS)),
+      )
+      const maxPolar = (TABLEAU_WALK_LIMIT_DEG * Math.PI) / 180
+      if (polar > maxPolar) {
+        // pos × Y rotated positively moves the position toward the pole.
+        _axis.crossVectors(pose.position, _worldY).normalize()
+        pose.position.applyAxisAngle(_axis, polar - maxPolar)
+        pose.position.setLength(PLANET_RADIUS)
+      }
+
       pose.up.copy(pose.position).normalize()
       pose.forward.addScaledVector(pose.up, -pose.forward.dot(pose.up)).normalize()
     }

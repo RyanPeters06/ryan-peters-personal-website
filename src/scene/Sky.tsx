@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { BackSide, Color, ShaderMaterial, Vector3 } from 'three'
-import { CAMERA_ORBIT_RADIUS, PALETTE } from '@/lib/constants'
+import { PALETTE, TABLEAU_FOG } from '@/lib/constants'
 
 /**
  * The sunny spring-morning sky: a genuine-blue-to-white gradient dome,
@@ -72,10 +72,7 @@ export function Sky() {
   return (
     <>
       <color attach="background" args={[PALETTE.skyHorizon]} />
-      <fog
-        attach="fog"
-        args={[PALETTE.fog, CAMERA_ORBIT_RADIUS * 0.78, CAMERA_ORBIT_RADIUS * 1.28]}
-      />
+      <fog attach="fog" args={[PALETTE.fog, TABLEAU_FOG[0], TABLEAU_FOG[1]]} />
       <mesh material={material} renderOrder={-1} frustumCulled={false}>
         <sphereGeometry args={[200, 32, 24]} />
       </mesh>

@@ -16,7 +16,13 @@ import { CinematicCamera } from '@/camera/CinematicCamera'
 import { setAmbientScale, useAmbientDriver } from '@/hooks/useAmbientLoop'
 import { useMovementKeys } from '@/systems/movement/useMovementInput'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
-import { CAMERA_ORBIT_RADIUS, REDUCED_MOTION_SCALE } from '@/lib/constants'
+import {
+  CAMERA_ORBIT_RADIUS,
+  REDUCED_MOTION_SCALE,
+  TABLEAU_CAMERA_POS,
+  TABLEAU_FOV,
+} from '@/lib/constants'
+import { Fountain } from '@/world/Fountain'
 
 /** Advances the world's shared heartbeat and syncs it with the
  *  visitor's reduced-motion preference. Mounted once, inside Canvas. */
@@ -40,8 +46,10 @@ export function Experience() {
       shadows
       dpr={[1, 2]}
       camera={{
-        position: [0, 6, CAMERA_ORBIT_RADIUS],
-        fov: 42,
+        // The tableau lens: long focal length, fixed high vantage —
+        // the plaza reads as a compressed diorama (see CinematicCamera).
+        position: [...TABLEAU_CAMERA_POS],
+        fov: TABLEAU_FOV,
         near: 0.1,
         far: CAMERA_ORBIT_RADIUS * 2.5,
       }}
@@ -58,6 +66,7 @@ export function Experience() {
         <PlanetShadow />
         <Clouds />
         <Locations />
+        <Fountain />
         <Crowd />
         <Avatar />
         <TitleWorld />

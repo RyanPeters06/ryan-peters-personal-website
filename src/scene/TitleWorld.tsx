@@ -23,10 +23,11 @@ import fontUrl from '@fontsource/quicksand/files/quicksand-latin-700-normal.woff
  * never a hard cut.
  */
 
-/** Where the title hangs: above the crown, ~70 units from the intro
- *  camera — deep enough into the scene to feel atmospheric. */
-const ANCHOR_Y = 30
-const ANCHOR_Z = 26
+/** Where the title hangs: in the sky band just above the plaza's far
+ *  horizon, deep in the tableau frame — real atmosphere between the
+ *  camera and the letters. */
+const ANCHOR_Y = 19
+const ANCHOR_Z = -32
 
 const ease = (p: number) => {
   const t = Math.min(1, Math.max(0, p))

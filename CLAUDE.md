@@ -8,8 +8,9 @@ portfolio. **Not** a modern portfolio website.
 1. **Before making any decision, read every document in `/docs`:**
    - `docs/ART_BIBLE.md` — **THE source of truth for look/feel/motion.
      When any choice is uncertain, this file wins.** (Supersedes the old
-     `ART_DIRECTION.md`.) Note the **OPEN STRATEGIC DECISION** at its top
-     (walkable sphere vs. staged plaza tableau) — unresolved.
+     `ART_DIRECTION.md`.) The world model is **decided (2026-07-17):
+     staged TABLEAU on the sphere — fixed art-directed camera, WASD
+     walking leashed within the frame.** See the Bible's top section.
    - `docs/DESIGN.md` — what we're building and why
    - `docs/REFERENCE_ANALYSIS.md` — reverse-engineered concept art +
      ranked gap list vs. the current build

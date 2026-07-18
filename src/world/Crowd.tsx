@@ -24,16 +24,16 @@ function makeRng(seed: number): () => number {
   }
 }
 
-/** Chat circles: where they stand and how many gather. The first two
- *  sit near the spawn crown so the world feels inhabited immediately. */
+/** Chat circles: all staged inside the tableau frame, scattered
+ *  between the fountain and the landmark arc like the reference. */
 const GROUPS: { lat: number; lon: number; size: number }[] = [
-  { lat: 68, lon: 14, size: 3 },
-  { lat: 64, lon: -16, size: 2 },
-  { lat: 55, lon: 8, size: 4 },
-  { lat: 35, lon: 75, size: 3 },
-  { lat: 8, lon: -115, size: 2 },
-  { lat: -28, lon: 155, size: 3 },
-  { lat: -55, lon: 45, size: 2 },
+  { lat: 77, lon: 48, size: 3 },
+  { lat: 76, lon: -55, size: 2 },
+  { lat: 73, lon: -110, size: 3 },
+  { lat: 72, lon: 170, size: 3 },
+  { lat: 73, lon: 115, size: 2 },
+  { lat: 80, lon: -150, size: 2 },
+  { lat: 75, lon: 12, size: 2 },
 ]
 
 /** How far chat-circle members stand from their center, world units. */
@@ -92,14 +92,14 @@ function createCrowd(): VillagerSpec[] {
     }
   }
 
-  // Wanderers: a few near the crown, the rest scattered.
+  // Wanderers: strolling the open plaza between the arc and the front.
   const wanderSpots = [
-    { lat: 71, lon: 30 },
-    { lat: 58, lon: -35 },
-    { lat: 44, lon: 120 },
-    { lat: 15, lon: -30 },
-    { lat: -5, lon: 80 },
-    { lat: -40, lon: -100 },
+    { lat: 81, lon: 60 },
+    { lat: 79, lon: -70 },
+    { lat: 76, lon: 145 },
+    { lat: 76, lon: -170 },
+    { lat: 82, lon: 175 },
+    { lat: 78, lon: 95 },
   ]
   for (const w of wanderSpots) {
     specs.push(make(w.lat + (rng() - 0.5) * 6, w.lon + (rng() - 0.5) * 6, null, true))

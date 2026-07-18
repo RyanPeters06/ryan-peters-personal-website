@@ -1,13 +1,13 @@
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RoundedBox, Text } from '@react-three/drei'
-import { Color, MeshStandardMaterial } from 'three'
+import { Color, MeshStandardMaterial, Vector3 } from 'three'
 import type { WorldLocation } from '@/content/locations'
 import { useSphericalPosition } from '@/hooks/useSphericalPosition'
 import { useWorldStore } from '@/store/useWorldStore'
 import { avatarPose } from '@/systems/movement/avatarPose'
 import { expDamp } from '@/lib/math/spherical'
-import { PALETTE } from '@/lib/constants'
+import { PALETTE, PLANET_RADIUS } from '@/lib/constants'
 import { GLOW, LANDMARK } from '@/lib/designSystem'
 import fontUrl from '@fontsource/quicksand/files/quicksand-latin-700-normal.woff?url'
 
@@ -39,6 +39,19 @@ export function LocationPod({
   const { position, quaternion } = useSphericalPosition(location.lat, location.lon)
   const near = useRef(false)
   const glow = useRef<number>(GLOW.bodyIdle)
+
+  // Turn the monument on its local up axis so its face points at the
+  // plaza center (the fountain at the crown) — the tableau's horseshoe.
+  const yaw = useMemo(() => {
+    const up = position.clone().normalize()
+    const forward = new Vector3(0, 0, 1).applyQuaternion(quaternion)
+    const toCenter = new Vector3(0, PLANET_RADIUS, 0).sub(position)
+    toCenter.addScaledVector(up, -toCenter.dot(up))
+    if (toCenter.lengthSq() < 1e-8) return 0
+    toCenter.normalize()
+    const cross = new Vector3().crossVectors(forward, toCenter)
+    return Math.atan2(cross.dot(up), forward.dot(toCenter))
+  }, [position, quaternion])
 
   const { body: B, swell: S } = LANDMARK
   const bodyY = B.height / 2 - B.sink
@@ -96,6 +109,7 @@ export function LocationPod({
 
   return (
     <group position={position} quaternion={quaternion}>
+      <group rotation-y={yaw}>
       {/* The floor rising gently to meet the monument */}
       <RoundedBox
         args={[S.width, S.height, S.depth]}
@@ -139,6 +153,7 @@ export function LocationPod({
       >
         {location.name}
       </Text>
+      </group>
     </group>
   )
 }

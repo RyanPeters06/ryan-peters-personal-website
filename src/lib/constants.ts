@@ -22,12 +22,25 @@ export const CAMERA_FOCUS_RADIUS = PLANET_RADIUS + 1.25
  *  view arrives from, so the push-in never flies past the subject. */
 export const FOCUS_LAT_OFFSET = 9
 
-/** Where the avatar lives (and spawns), in degrees. Near the top of
- *  the planet: there the surface "up" almost matches world up, so the
- *  intro zoom needs no disorienting camera roll, and the far planet
- *  view naturally frames him in front. */
-export const AVATAR_LAT = 75
+/** Where the avatar lives (and spawns), in degrees. Low-center of the
+ *  tableau frame: a few steps south of the fountain, facing into the
+ *  plaza with his back to the visitor — just like the reference. */
+export const AVATAR_LAT = 79
 export const AVATAR_LON = 0
+
+/** ---- The tableau: one fixed, art-directed frame --------------------
+ * The camera is locked high and pulled back with a long lens so the
+ * plaza reads as a compressed diorama. The character walks freely
+ * WITHIN the frame (leashed to the staged area); the camera never
+ * follows. Mouse adds only a gentle eased look-around. */
+export const TABLEAU_CAMERA_POS: readonly [number, number, number] = [0, 38, 26]
+export const TABLEAU_CAMERA_TARGET: readonly [number, number, number] = [0, 23.2, -2]
+export const TABLEAU_FOV = 28
+/** Static fog band: plaza crisp, the planet's limb melts into sky. */
+export const TABLEAU_FOG: readonly [number, number] = [40, 100]
+/** How far (degrees of arc from the pole) the character may wander —
+ *  the stage ends where the frame does. */
+export const TABLEAU_WALK_LIMIT_DEG = 30
 
 /** Walking speed along the surface, world units per second. */
 export const WALK_SPEED = 1.6

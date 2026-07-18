@@ -12,26 +12,30 @@
 
 ---
 
-## ⚠️ ONE OPEN STRATEGIC DECISION (read first)
+## ✅ THE WORLD MODEL — DECIDED (2026-07-17): TABLEAU ON THE SPHERE
 
-The concept art and the current build disagree on the **fundamental
-world model**, and it changes everything downstream:
+Peter chose the **staged plaza tableau**, realized on the existing
+sphere geometry:
 
-- **Concept art = a staged plaza tableau.** A flat, gently-curved
-  floating plaza disc. Landmarks arranged in a shallow arc facing the
-  viewer, each on its own grassy island with steps and trees. A central
-  fountain. A single, mostly-fixed elevated 3/4 camera that shows the
-  whole plaza at once. You read the whole world in one glance.
-- **Current build = a walkable sphere.** A true tiny planet you orbit
-  and walk around via great-circle movement, with a close third-person
-  chase camera. You discover the world by exploring it.
+- **One fixed, art-directed camera** — high on the plaza's south side,
+  pulled back, long lens (`fov 28`), reading the whole composition as a
+  compressed diorama, exactly like the concept art. It never follows.
+  Mouse adds only a gentle eased look-around (see
+  `TABLEAU_*` constants + `CinematicCamera.tsx`).
+- **The stage is the planet's crown.** Fountain centerpiece at the
+  pole; the six landmarks fan in a horseshoe opening toward the camera
+  (screen left→right: About, Projects, Experience, Skills, Contact,
+  Resume), each rotated to face the fountain.
+- **The character still walks (WASD)** — freely *within* the frame,
+  softly leashed to ~30° of arc from the pole (the stage ends where
+  the frame does). Spawns low-center, back to the visitor.
+- The world remains a true sphere underneath — the visible horizon
+  curve is real geometry, and the crowd/system code is unchanged.
 
-Both are legitimate and beautiful. They are **not compatible** — one
-is a diorama you survey, the other is a globe you traverse. This Bible
-describes the **shared visual language** (which is identical for both),
-and flags where a rule depends on the choice with **[TABLEAU]** or
-**[SPHERE]**. **Peter must pick the world model before major world
-work continues.** See `CODEBASE_AUDIT.md` for the cost of each path.
+Where older sections say **[TABLEAU]** they are now the live spec;
+**[SPHERE]**-flagged rules (chase camera, whole-globe exploration) are
+retired but preserved in git history (`snapshot/pre-art-bible-2026-07-17`,
+plus the chase rig up to tag-time in `CinematicCamera` history).
 
 ---
 

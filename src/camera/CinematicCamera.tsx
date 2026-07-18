@@ -1,174 +1,66 @@
 import { useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { Fog, Vector3 } from 'three'
-import { getAmbientScale, getAmbientTime } from '@/hooks/useAmbientLoop'
-import { useSmoothValue } from '@/hooks/useSmoothValue'
-import { useWorldStore } from '@/store/useWorldStore'
-import { latLonToVec3, expDamp, shortestAngleDeltaDeg } from '@/lib/math/spherical'
-import { avatarPose } from '@/systems/movement/avatarPose'
 import {
-  CAMERA_FOCUS_RADIUS,
-  CAMERA_ORBIT_RADIUS,
-  CAMERA_ORBIT_SPEED,
-  CHASE_DISTANCE,
-  CHASE_HEIGHT,
-  CHASE_LOOK_AHEAD,
-  FOCUS_LAT_OFFSET,
-  PLANET_RADIUS,
+  TABLEAU_CAMERA_POS,
+  TABLEAU_CAMERA_TARGET,
+  TABLEAU_FOG,
 } from '@/lib/constants'
 
-/** Ground-level fog band for the chase shot: the horizon (~8–10 units
- *  out) melts into the sky instead of cutting a hard silhouette. */
-const CHASE_FOG: readonly [number, number] = [6, 16]
-
-/** Idle framing: a touch above center so the planet floats slightly
- *  low in frame with generous white sky above. */
-const IDLE_LOOK = new Vector3(0, PLANET_RADIUS * 0.12, 0)
+/**
+ * The tableau camera: one fixed, art-directed frame.
+ *
+ * The camera lives high and pulled back on the plaza's south side,
+ * looking down at the staged composition with a long lens — a
+ * compressed diorama, framed once, like the reference. It never
+ * follows the character; the character moves within the frame.
+ *
+ * The only motion is a gentle eased look-around driven by the mouse
+ * (a few degrees of pan and a whisper of parallax), so the diorama
+ * feels held by a hand, not bolted to a tripod. Fog is static: the
+ * plaza stays crisp while the planet's limb melts into the sky.
+ */
+const BASE_POS = new Vector3(...TABLEAU_CAMERA_POS)
+const BASE_TARGET = new Vector3(...TABLEAU_CAMERA_TARGET)
 const WORLD_UP = new Vector3(0, 1, 0)
 
-const _pos = new Vector3()
-const _focusLook = new Vector3()
-const _upTarget = new Vector3()
-const _currOff = new Vector3()
-const _a = new Vector3()
-const _b = new Vector3()
+/** Mouse look-around authority, in world units at the target plane. */
+const LOOK_PAN_X = 2.2
+const LOOK_PAN_Y = 1.1
+/** Tiny positional parallax so the pan has depth. */
+const DOLLY_X = 0.6
+const DOLLY_Y = 0.3
 
-/**
- * The cinematic rig, in three moods:
- *
- * 1. Idle orbit (arriving, before focus): slow drift around the whole
- *    planet — the world turns beneath you.
- * 2. Focus (greeting): pushed in over the avatar's lat/lon, *in front*
- *    of the character so the hello is fully visible.
- * 3. Chase (idle/exploring): classic third-person — behind the avatar,
- *    slightly above, looking past their shoulder. The transition from
- *    front to back is an eased *arc around* the character, and
- *    camera.up follows the surface normal so the shot stays level
- *    anywhere on the sphere.
- */
 export function CinematicCamera() {
   const camera = useThree((s) => s.camera)
   const scene = useThree((s) => s.scene)
+  const look = useRef(BASE_TARGET.clone())
+  const pos = useRef(BASE_POS.clone())
 
-  // Start the far view on the avatar's longitude — the planet shot
-  // opens facing him, and the push-in is one clean forward move.
-  const lonRef = useRef(0)
-  const lat = useSmoothValue(24, 2.2)
-  const radius = useSmoothValue(CAMERA_ORBIT_RADIUS, 2.2)
-  const look = useRef(IDLE_LOOK.clone())
-
-  useFrame((_, rawDt) => {
+  useFrame((state, rawDt) => {
     const dt = Math.min(rawDt, 0.1)
-    const t = getAmbientTime()
-    const { cameraFocus: focus, phase } = useWorldStore.getState()
-    const chasing = phase === 'idle' || phase === 'exploring'
 
-    // ---------- Mode-aware fog ------------------------------------------
-    // Far shots want the planet's rim to melt; the chase shot wants the
-    // *horizon* to melt. Retune the same fog smoothly per mode.
+    // Static fog band, eased in once from whatever came before.
     if (scene.fog instanceof Fog) {
-      const dist = camera.position.length()
-      const nearT = chasing ? CHASE_FOG[0] : dist * 0.78
-      const farT = chasing ? CHASE_FOG[1] : dist * 1.28
       const k = 1 - Math.exp(-1.2 * dt)
-      scene.fog.near += (nearT - scene.fog.near) * k
-      scene.fog.far += (farT - scene.fog.far) * k
+      scene.fog.near += (TABLEAU_FOG[0] - scene.fog.near) * k
+      scene.fog.far += (TABLEAU_FOG[1] - scene.fog.far) * k
     }
 
-    // ---------- Chase mode: behind the avatar, slightly above ----------
-    if (chasing) {
-      const pose = avatarPose
+    // Gentle mouse look-around: eased pan of the look target plus a
+    // whisper of camera parallax. The frame never travels.
+    const px = state.pointer.x
+    const py = state.pointer.y
+    const k = 1 - Math.exp(-3 * dt)
+    look.current.x += (BASE_TARGET.x + px * LOOK_PAN_X - look.current.x) * k
+    look.current.y += (BASE_TARGET.y + py * LOOK_PAN_Y - look.current.y) * k
+    look.current.z = BASE_TARGET.z
+    pos.current.x += (BASE_POS.x + px * DOLLY_X - pos.current.x) * k
+    pos.current.y += (BASE_POS.y + py * DOLLY_Y - pos.current.y) * k
+    pos.current.z = BASE_POS.z
 
-      // Decompose the current offset into the avatar's tangent frame —
-      // signed azimuth around their up axis (0 = directly behind),
-      // height above the ground, and horizontal distance — and ease
-      // each separately. The front→back transition is then a level
-      // sweep around the character's *side*, never a vault over their
-      // head, and each quantity settles without cross-talk.
-      _currOff.copy(camera.position).sub(pose.position)
-      const vert = _currOff.dot(pose.up)
-      _a.copy(_currOff).addScaledVector(pose.up, -vert) // horizontal part
-      let hLen = _a.length()
-      if (hLen < 1e-4) {
-        _a.copy(pose.forward).negate()
-        hLen = 1e-4
-      } else {
-        _a.divideScalar(hLen)
-      }
-      _b.crossVectors(pose.up, pose.forward) // avatar's right
-      const azimuth = Math.atan2(_a.dot(_b), -_a.dot(pose.forward))
-
-      const azNew = azimuth * Math.exp(-2.6 * dt)
-      const vertNew = expDamp(vert, CHASE_HEIGHT, 2.6, dt)
-      const hLenNew = expDamp(hLen, CHASE_DISTANCE, 2.6, dt)
-
-      // Rebuild the offset: "behind" rotated by the eased azimuth.
-      _a.copy(pose.forward).negate().applyAxisAngle(pose.up, -azNew)
-      camera.position
-        .copy(pose.position)
-        .addScaledVector(_a, hLenNew)
-        .addScaledVector(pose.up, vertNew)
-
-      // Level the horizon against the local ground, not world Y.
-      camera.up.lerp(pose.up, 1 - Math.exp(-3 * dt)).normalize()
-
-      // Look chest-high a step ahead: tuned (empirically) so the
-      // horizon sits ~40% up the frame and the avatar rides low-center.
-      _focusLook
-        .copy(pose.position)
-        .addScaledVector(pose.up, 0.8)
-        .addScaledVector(pose.forward, CHASE_LOOK_AHEAD + pose.moving * 0.8)
-      look.current.lerp(_focusLook, 1 - Math.exp(-4 * dt))
-      camera.lookAt(look.current)
-
-      // Keep the orbit state parked near the camera so a later mode
-      // switch (e.g. focusing a location) starts from a sane place.
-      lonRef.current = Math.atan2(camera.position.x, camera.position.z) * (180 / Math.PI)
-      return
-    }
-
-    // ---------- Orbit / focus modes ------------------------------------
-    let latTarget: number
-    let radiusTarget: number
-    let lookTarget: Vector3
-
-    if (focus === null) {
-      // Idle drift: constant slow orbit + breathing tilt. During the
-      // title hold the drift slows to a near-still breath, so the
-      // world-anchored title keeps its composition.
-      const drift = phase === 'title' ? 0.25 : 1
-      lonRef.current +=
-        CAMERA_ORBIT_SPEED * getAmbientScale() * dt * (180 / Math.PI) * 0.35 * drift
-      latTarget = 24 + Math.sin(t * 0.11) * 7
-      radiusTarget = CAMERA_ORBIT_RADIUS * (1 + Math.sin(t * 0.07) * 0.02)
-      lookTarget = IDLE_LOOK
-    } else {
-      // Focused: settle in front of the point at near-eye level, with a
-      // gentle lateral sway so the shot never feels locked off.
-      const lonTarget = focus.lon + Math.sin(t * 0.06) * 1
-      lonRef.current +=
-        shortestAngleDeltaDeg(lonRef.current, lonTarget) *
-        (1 - Math.exp(-2.5 * dt))
-      latTarget = focus.lat - FOCUS_LAT_OFFSET + Math.sin(t * 0.1) * 0.4
-      radiusTarget = CAMERA_FOCUS_RADIUS + Math.sin(t * 0.07) * 0.12
-      lookTarget = latLonToVec3(focus.lat, focus.lon, PLANET_RADIUS + 0.62, _focusLook)
-    }
-
-    lat.update(latTarget, dt)
-    radius.update(radiusTarget, dt)
-    look.current.lerp(lookTarget, 1 - Math.exp(-2.5 * dt))
-    // Level the camera against the right "up" for the shot: world Y for
-    // the whole-planet orbit, but the *local surface normal* when focused
-    // near the ground — otherwise the close shot arrives rolled sideways.
-    if (focus === null) {
-      camera.up.lerp(WORLD_UP, 1 - Math.exp(-3 * dt)).normalize()
-    } else {
-      latLonToVec3(focus.lat, focus.lon, 1, _upTarget)
-      camera.up.lerp(_upTarget, 1 - Math.exp(-3 * dt)).normalize()
-    }
-
-    latLonToVec3(lat.value, lonRef.current, radius.value, _pos)
-    camera.position.copy(_pos)
+    camera.position.copy(pos.current)
+    camera.up.copy(WORLD_UP)
     camera.lookAt(look.current)
   })
 
