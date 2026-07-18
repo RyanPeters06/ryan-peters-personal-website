@@ -23,12 +23,12 @@ One mold for every location. Differ ONLY in accent + symbol + label.
 
 | Part | Dimensions (w × h × d) | Notes |
 |---|---|---|
-| Body | 1.7 × 2.2 × 0.66 | One continuous RoundedBox |
-| Body radius | 0.26 (≈ 15% of height, 24% of depth) | |
-| Ground swell | 2.7 × 0.14 × 2.7, r 0.07 | Floor material, sunk to 0.03 |
-| Symbol zone | 1.0 wide, centered at y ≈ 1.25 | Upper-middle of face |
-| Symbol depth | bar centers at face − 0.035 | Flush molded, ~0.015 proud |
-| Future: island | grass disc ≈ 3.6 ⌀, steps 1.1 wide | [staging, per Bible §11] |
+| Body | 2.1 × 2.55 × 0.8, r 0.33 | One continuous RoundedBox, base sunk 0.24 |
+| Inset face | 1.62 × 2.05, r 0.26 | Flush accent-washed panel |
+| Ground swell | 3.1 × 0.16 × 3.1, r 0.08 | Floor material |
+| Symbol zone | 0.9 wide, centered at y ≈ 1.56 | Upper-middle of face |
+| Symbol stroke | capsule r 0.055, flush molded | ~0.02 proud |
+| Future: island | grass disc ≈ 3.8 ⌀, steps 1.2 wide | [staging, Phase 3] |
 
 ## 3. Corner Radii (the squircle law)
 
