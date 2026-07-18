@@ -27,21 +27,22 @@ import {
  * great circle. Pose is published to `avatarPose` for the chase camera.
  */
 
-// --- Proportions (world units; ~1.0 tall, head ≈ 0.58 of it) ---------
-const HEAD_R = 0.29
-const HEAD_Y = 0.71
-const BODY_TOP_R = 0.115
-const BODY_BOTTOM_R = 0.15
-const BODY_H = 0.26
-const BODY_Y = 0.33
-const ARM_R = 0.03
-const ARM_LEN = 0.14
-const SHOULDER_X = 0.145
-const SHOULDER_Y = 0.4
-const LEG_R = 0.032
-const LEG_LEN = 0.05
-const HIP_Y = 0.2
-const LEG_X = 0.06
+// --- Proportions (world units; ~0.96 tall, head ≈ 0.58 of it) --------
+// Phase-7 silhouette: a chunky, plump hoodie body under the big head —
+// stable, huggable, toddler-plush — with stubby legs and white sneakers.
+const HEAD_R = 0.28
+const HEAD_Y = 0.68
+const BODY_R = 0.155 // plump capsule torso (the hoodie)
+const BODY_LEN = 0.2
+const BODY_Y = 0.34
+const ARM_R = 0.035
+const ARM_LEN = 0.13
+const SHOULDER_X = 0.16
+const SHOULDER_Y = 0.42
+const LEG_R = 0.034
+const LEG_LEN = 0.045
+const HIP_Y = 0.17
+const LEG_X = 0.065
 const EYE_X = 0.095
 const EYE_Y = -0.02 // below head center — the face sits low
 const MOUTH_Y = -0.115
@@ -249,12 +250,16 @@ export function Avatar() {
       legR.current.rotation.x = -swing + (a.shiftSide > 0 ? shiftLift : 0)
     }
     if (bodyGroup.current) {
-      const breath = Math.sin(a.t * 2.0) * 0.014 * (1 - a.move)
+      const breath = Math.sin(a.t * 2.0) * 0.016 * (1 - a.move)
       bodyGroup.current.scale.set(1 - breath * 0.5, 1 + breath, 1 - breath * 0.5)
-      // Step bounce while walking, lazy sway while standing.
-      bodyGroup.current.position.y = Math.abs(Math.sin(a.stride)) * 0.03 * a.move
+      // Chunky step bounce while walking, lazy sway while standing.
+      bodyGroup.current.position.y = Math.abs(Math.sin(a.stride)) * 0.04 * a.move
       bodyGroup.current.position.x = shiftSway
-      bodyGroup.current.rotation.z = Math.sin(a.t * 0.7) * 0.015 * (1 - a.move)
+      // The whole body rolls gently side to side with the stride — the
+      // waddle that makes the plump silhouette read alive and friendly.
+      bodyGroup.current.rotation.z =
+        Math.sin(a.stride) * 0.05 * a.move +
+        Math.sin(a.t * 0.7) * 0.015 * (1 - a.move)
       bodyGroup.current.rotation.x = 0.09 * a.move // gentle forward lean
     }
 
@@ -333,8 +338,8 @@ export function Avatar() {
           </mesh>
           <mesh
             material={materials.shoe}
-            position={[0, -0.15, 0.025]}
-            scale={[0.085, 0.05, 0.125]}
+            position={[0, -0.14, 0.03]}
+            scale={[0.095, 0.055, 0.14]}
             castShadow
           >
             <sphereGeometry args={[1, 16, 12]} />
@@ -346,20 +351,31 @@ export function Avatar() {
           </mesh>
           <mesh
             material={materials.shoe}
-            position={[0, -0.15, 0.025]}
-            scale={[0.085, 0.05, 0.125]}
+            position={[0, -0.14, 0.03]}
+            scale={[0.095, 0.055, 0.14]}
             castShadow
           >
             <sphereGeometry args={[1, 16, 12]} />
           </mesh>
         </group>
 
-        {/* Body: a short tapered cylinder, softly rounded at the top */}
-        <mesh material={materials.shirt} position={[0, BODY_Y, 0]} castShadow>
-          <cylinderGeometry args={[BODY_TOP_R, BODY_BOTTOM_R, BODY_H, 22]} />
+        {/* Body: one plump capsule — the hoodie. Chunky and stable,
+            slightly squashed so it reads soft, not tubular. */}
+        <mesh
+          material={materials.shirt}
+          position={[0, BODY_Y, 0]}
+          scale={[1.05, 1, 0.92]}
+          castShadow
+        >
+          <capsuleGeometry args={[BODY_R, BODY_LEN, 6, 18]} />
         </mesh>
-        <mesh material={materials.shirt} position={[0, BODY_Y + BODY_H / 2, 0]}>
-          <sphereGeometry args={[BODY_TOP_R, 22, 10, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        {/* The hood: a soft bump on the upper back, same pour. */}
+        <mesh
+          material={materials.shirt}
+          position={[0, BODY_Y + 0.16, -0.1]}
+          scale={[1.25, 0.8, 0.7]}
+        >
+          <sphereGeometry args={[0.105, 16, 12]} />
         </mesh>
 
         {/* Arms: thin rounded capsules (groups pivot at the shoulder) */}

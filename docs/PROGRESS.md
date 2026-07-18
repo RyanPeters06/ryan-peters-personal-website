@@ -10,6 +10,20 @@ session. This file always reflects the current state of the project.
 **Current milestone:** M5 (Locations) — paused for a strategic decision
 **Next milestone:** Peter to resolve the world-model fork (below)
 
+### Phase 6+7 (same day)
+- **Projects monument redesigned from scratch** — the language every
+  landmark inherits (tokens in DESIGN_SYSTEM → LANDMARK): pillowy
+  white monolith (1.9×2.3×0.75, r 0.3, extremely soft bevels) sunk
+  0.22 into the floor swell + **flush accent-washed inset face panel**
+  (the UI pillow-shell construction become architecture) + refined
+  molded `</>` glyph + **the location's name in 3D Quicksand** on the
+  face. Glow fully token-driven.
+- **Character redesigned (Phase 7):** plump squashed-capsule hoodie
+  body with molded hood bump on the back, chunkier arms/shoes, **white
+  sneakers** (crowd matched), soft-navy pants, waddle roll + bigger
+  step bounce in the walk. Verified live mid-wave: reads uncannily
+  like the concept-art character.
+
 ### Phase 4+5 (same day, after the docs pass)
 - **Design system shipped:** docs/DESIGN_SYSTEM.md + src/lib/designSystem.ts
   (world scale, monument mold, radii law, material bands, glow levels,

@@ -42,7 +42,7 @@ const MAT = {
   // Premium molded plastic, matching the player's finish.
   skin: new MeshStandardMaterial({ color: '#f6cfae', roughness: 0.6 }),
   pants: new MeshStandardMaterial({ color: '#8d99a6', roughness: 0.65 }),
-  shoe: new MeshStandardMaterial({ color: '#8a939b', roughness: 0.55 }),
+  shoe: new MeshStandardMaterial({ color: '#f2f5f7', roughness: 0.55 }),
   face: new MeshStandardMaterial({ color: '#2e2c2a', roughness: 0.55 }),
   hair: VILLAGER_HAIR.map((c) => new MeshStandardMaterial({ color: c, roughness: 0.7 })),
   shirt: VILLAGER_SHIRTS.map((c) => new MeshStandardMaterial({ color: c, roughness: 0.55 })),

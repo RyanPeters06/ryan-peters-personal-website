@@ -18,12 +18,27 @@ export const SCALE = {
   treeMax: 2.0,
 } as const
 
-/** ---- The monument family: one mold for every landmark --------------- */
+/** ---- The monument family: one mold for every landmark ---------------
+ * The Projects monument (Phase 6) established this language; every
+ * future landmark inherits it and changes ONLY accent + symbol + name.
+ * Construction mirrors the UI pillow shell: body → inset face →
+ * symbol + label. */
 export const LANDMARK = {
-  body: { width: 1.7, height: 2.2, depth: 0.66, radius: 0.26 },
-  swell: { width: 2.7, height: 0.14, depth: 2.7, radius: 0.07, sink: 0.03 },
-  /** Symbol zone on the face: width and center height. */
-  symbol: { width: 1.0, centerY: 1.25, barRadius: 0.05, faceInset: 0.035 },
+  body: {
+    width: 1.9,
+    height: 2.3,
+    depth: 0.75,
+    radius: 0.3, // extremely soft bevels — the pillow ratio
+    /** How deep the base sinks into the floor swell. */
+    sink: 0.22,
+    /** The flush accent-washed inset panel on the front. */
+    faceWidth: 1.45,
+    faceHeight: 1.85,
+    faceRadius: 0.24,
+  },
+  swell: { width: 2.9, height: 0.16, depth: 2.9, radius: 0.08, sink: 0.1 },
+  /** Symbol zone: center height and stroke radius of glyph bars. */
+  symbol: { width: 0.9, centerY: 1.42, barRadius: 0.055 },
   /** Proximity: enter/exit hysteresis for the overlay card. */
   enterDistance: 3.0,
   exitDistance: 3.6,

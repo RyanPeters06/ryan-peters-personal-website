@@ -76,12 +76,13 @@ export const PALETTE = {
   ambient: '#eef6ff',
   keyLight: '#fff6e8',
   fillLight: '#e8f2ff',
-  /** The avatar: soft skin, warm hair, one pastel accent. */
+  /** The avatar: soft skin, warm hair, one pastel accent — a friendly
+   *  little person in a blue hoodie, soft navy pants, white sneakers. */
   skin: '#f6cfae',
   hair: '#584639',
   shirt: '#a9c9e8',
-  pants: '#8d99a6',
-  shoe: '#8a939b',
+  pants: '#707c8d',
+  shoe: '#f2f5f7',
   face: '#2e2c2a',
 } as const
 

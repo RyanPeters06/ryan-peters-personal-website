@@ -184,11 +184,15 @@ black. If a color feels "corporate" or "techy," it is wrong.
 
 Original, Mii-adjacent, never a copy.
 
-- **Head ≈ 58% of total height**; total ≈ 1.0 world unit. Big head,
-  small body, oversized rounded shoes.
-- Body: short tapered cylinder. Arms: thin capsules. Face sits **low**
-  on the head. Eyes: simple black ovals. Mouth: tiny torus-arc. Nose:
-  the faintest bump.
+- **Head ≈ 58% of total height**; total ≈ 0.96 world units. Big head,
+  chunky little body, oversized rounded shoes.
+- Body: one **plump squashed capsule — the hoodie** — with a soft hood
+  bump molded on the upper back; stable, huggable, toddler-plush.
+  Arms: rounded capsules. **White sneakers**, soft-navy pants. Face
+  sits **low** on the head. Eyes: simple black ovals. Mouth: tiny
+  torus-arc. Nose: the faintest bump.
+- Walk carries a gentle side-to-side **waddle roll** + chunky step
+  bounce — the plump silhouette must read alive from behind.
 - Hair: smooth "hood" cap + soft ellipsoid fringe swooshes. **Nothing
   pointy, nothing that reads as an attached piece.**
 - **One pastel accent** (the player's blue hoodie) over soft neutrals.
