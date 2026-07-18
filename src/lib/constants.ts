@@ -33,8 +33,12 @@ export const AVATAR_LON = 0
  * plaza reads as a compressed diorama. The character walks freely
  * WITHIN the frame (leashed to the staged area); the camera never
  * follows. Mouse adds only a gentle eased look-around. */
-export const TABLEAU_CAMERA_POS: readonly [number, number, number] = [0, 38, 26]
-export const TABLEAU_CAMERA_TARGET: readonly [number, number, number] = [0, 23.2, -2]
+/** ~37° below horizontal at ~24 units out: looking down at a diorama
+ *  on a table. Close enough that the plaza and all six monuments fill
+ *  the frame and the planet's limb mostly drops out of view — the
+ *  curvature reads as gentle roundness, not an obvious globe. */
+export const TABLEAU_CAMERA_POS: readonly [number, number, number] = [0, 39, 19]
+export const TABLEAU_CAMERA_TARGET: readonly [number, number, number] = [0, 23.5, -2]
 export const TABLEAU_FOV = 28
 /** Static fog band: plaza crisp, the planet's limb melts into sky. */
 export const TABLEAU_FOG: readonly [number, number] = [40, 100]

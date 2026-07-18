@@ -18,9 +18,11 @@ Peter chose the **staged plaza tableau**, realized on the existing
 sphere geometry:
 
 - **One fixed, art-directed camera** — high on the plaza's south side,
-  pulled back, long lens (`fov 28`), reading the whole composition as a
-  compressed diorama, exactly like the concept art. It never follows.
-  Mouse adds only a gentle eased look-around (see
+  tilted ~37° down at ~24 units (a diorama on a table), long lens
+  (`fov 28`) so perspective compresses. The plaza and all six
+  monuments fill the frame; the planet's limb mostly drops out of
+  view, so the curvature reads as gentle roundness, not a globe. It
+  never follows. Mouse adds only a gentle eased look-around (see
   `TABLEAU_*` constants + `CinematicCamera.tsx`).
 - **The stage is the planet's crown.** Fountain centerpiece at the
   pole; the six landmarks fan in a horseshoe opening toward the camera
