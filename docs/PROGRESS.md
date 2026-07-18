@@ -5,6 +5,40 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-17 — Creative-Director pass: Art Bible, reference teardown, audit
+
+**Current milestone:** M5 (Locations) — paused for a strategic decision
+**Next milestone:** Peter to resolve the world-model fork (below)
+
+### Completed (documentation only — no code changed)
+- **Snapshot tag** `snapshot/pre-art-bible-2026-07-17` created and pushed
+  — a durable return point before any redesign.
+- **`docs/ART_BIBLE.md`** — new comprehensive source of truth (18
+  sections: philosophy → materials → lighting → camera → landmarks → UI
+  → sound → scale → hard-NOs → consistency definition). Supersedes
+  `ART_DIRECTION.md` (now a one-line pointer). CLAUDE.md reading list
+  repointed.
+- **`docs/REFERENCE_ANALYSIS.md`** — senior-AD reverse-engineering of the
+  concept art + a ranked gap list (largest→smallest) vs. the build.
+- **`docs/CODEBASE_AUDIT.md`** — ruthless keep/redesign/delete/debt pass
+  on every file, judged only on Art-Bible alignment.
+
+### THE open strategic decision (blocks major world work)
+The concept art is a **staged plaza tableau** (flat curved disc, arc of
+landmark islands, central fountain, fixed elevated hero camera). The
+build is a **walkable sphere** with a close chase camera. They're not
+compatible. Peter must choose **[TABLEAU]** (largest change, literal
+fidelity) or **[SPHERE]** (keep the globe, borrow the polish — ~85% of
+the feeling, far cheaper). Cost of each is in CODEBASE_AUDIT.md.
+
+### Cheap wins that pay off under EITHER model (recommended next)
+Sky too near-white → push bluer/sunnier · add a subtle bloom pass
+(needs `@react-three/postprocessing`) · dial UI back from heavy glass to
+near-solid white · stage the first landmark island (grass + steps +
+label + trees).
+
+---
+
 ## 2026-07-16 — Docs system established; M5 underway
 
 **Current milestone:** M5 (Locations) + M4 remainder (dressing)

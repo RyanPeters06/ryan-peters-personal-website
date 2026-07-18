@@ -1,7 +1,9 @@
 # ART DIRECTION — The Visual Identity
 
-**This is the most important document.** When any choice is uncertain,
-this file wins — including over making something look "modern."
+> ⚠️ **SUPERSEDED (2026-07-17).** The authoritative art document is now
+> **`ART_BIBLE.md`**, which consolidates and extends everything here.
+> This file is kept for history only — read the Bible for the current
+> source of truth. Where the two disagree, the Bible wins.
 
 The feeling: a peaceful Nintendo plaza from the Wii U era. Warm, polished,
 playful, minimal. Original in every asset; inspired in every instinct.

@@ -6,9 +6,15 @@ portfolio. **Not** a modern portfolio website.
 ## MANDATORY WORKFLOW — read this first
 
 1. **Before making any decision, read every document in `/docs`:**
+   - `docs/ART_BIBLE.md` — **THE source of truth for look/feel/motion.
+     When any choice is uncertain, this file wins.** (Supersedes the old
+     `ART_DIRECTION.md`.) Note the **OPEN STRATEGIC DECISION** at its top
+     (walkable sphere vs. staged plaza tableau) — unresolved.
    - `docs/DESIGN.md` — what we're building and why
-   - `docs/ART_DIRECTION.md` — the visual identity. **When in doubt,
-     this file wins** — including over making something "modern."
+   - `docs/REFERENCE_ANALYSIS.md` — reverse-engineered concept art +
+     ranked gap list vs. the current build
+   - `docs/CODEBASE_AUDIT.md` — how well the code matches the Bible
+     (keep / redesign / delete / debt)
    - `docs/ARCHITECTURE.md` — structure, systems, and the sign/axis
      conventions that have caused real shipped bugs
    - `docs/ROADMAP.md` — all milestones and their status
