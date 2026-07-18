@@ -39,10 +39,13 @@ function createCloudSpecs(): CloudSpec[] {
   return Array.from({ length: CLOUD_COUNT }, (_, i) => {
     const puffCount = 3 + Math.floor(rng() * 3)
     return {
-      // A distant ring AROUND the stage, never over it: clouds live
-      // well beyond the walk limit, hugging the island's edge like the
-      // reference — slowly circling the plaza.
-      radius: TABLEAU_WALK_RADIUS + 4 + rng() * 8,
+      // A distant ring AROUND the island, never over it: clouds drift
+      // beside and below the rim in the open sky, spread over a deep
+      // band so the visible sky reads populated, not fringed. The
+      // minimum radius must clear the tableau camera's own distance
+      // from center (~17u) with margin, or a cloud can drift right up
+      // next to the lens and fill the frame.
+      radius: TABLEAU_WALK_RADIUS + 16 + rng() * 20,
       angle0: (i / CLOUD_COUNT) * 360 + rng() * 30,
       altitude:
         CLOUD_ALTITUDE_MIN + rng() * (CLOUD_ALTITUDE_MAX - CLOUD_ALTITUDE_MIN),

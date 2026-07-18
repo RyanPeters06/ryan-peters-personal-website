@@ -6,41 +6,54 @@
 
 /** Radius of the floating plaza island — a flat disc in the sky.
  *  The ground has NO curvature; the island simply ends at a soft
- *  rounded edge and drops off into the atmosphere. */
-export const ISLAND_RADIUS = 16
+ *  rounded edge and drops off into the atmosphere. Sized close behind
+ *  the landmark arc (max ~9.2 from center) so the cliff edge reads
+ *  just past the panels instead of leaving a wide empty ring. */
+export const ISLAND_RADIUS = 11
 
 /** Height of the island's cliff edge, where the floor drops into the
  *  sky below the rim. */
 export const ISLAND_EDGE_HEIGHT = 1.6
 
-/** Camera far-clip plane — generous enough to keep the cloud ring and
- *  sky dome from clipping. */
-export const CAMERA_FAR = ISLAND_RADIUS * 15
+/** Radius of the gradient sky dome surrounding the world. */
+export const SKY_DOME_RADIUS = 200
+
+/** Camera far-clip plane. MUST stay beyond SKY_DOME_RADIUS (plus the
+ *  camera's own offset from center) or the dome clips out entirely and
+ *  the sky renders as the flat white canvas background. Deriving this
+ *  from ISLAND_RADIUS caused exactly that bug when the island shrank. */
+export const CAMERA_FAR = SKY_DOME_RADIUS * 1.3
 
 /** Where the avatar spawns: low-center of the tableau frame, a few
- *  steps south of the fountain, back to the visitor. */
-export const AVATAR_SPAWN_Z = 4.7
+ *  steps south of the fountain, back to the visitor. Must stay inside
+ *  the frame's bottom edge (~43° below the camera's horizontal at the
+ *  current TABLEAU rig) or the character spawns head-clipped. */
+export const AVATAR_SPAWN_Z = 3.4
 
 /** ---- The tableau: one fixed, art-directed frame --------------------
  * The camera is locked high and pulled back with a long lens so the
  * plaza reads as a compressed diorama on a table (~37 degrees down).
  * The character walks freely WITHIN the frame (leashed to the island);
  * the camera never follows. Mouse adds only a gentle eased look. */
-export const TABLEAU_CAMERA_POS: readonly [number, number, number] = [0, 15, 19]
-export const TABLEAU_CAMERA_TARGET: readonly [number, number, number] = [0, -0.5, -3]
-export const TABLEAU_FOV = 28
+export const TABLEAU_CAMERA_POS: readonly [number, number, number] = [0, 10.5, 14.5]
+export const TABLEAU_CAMERA_TARGET: readonly [number, number, number] = [0, 2.6, -1.8]
+export const TABLEAU_FOV = 38
 /** Static fog band: plaza crisp; distance melts into the sky. */
-export const TABLEAU_FOG: readonly [number, number] = [32, 75]
+export const TABLEAU_FOG: readonly [number, number] = [26, 60]
 /** How far from the island's center the character may wander — the
  *  stage ends before the edge does. */
-export const TABLEAU_WALK_RADIUS = 12.5
+export const TABLEAU_WALK_RADIUS = 9.6
 
 /** Walking speed along the surface, world units per second. */
 export const WALK_SPEED = 1.6
 
-/** Altitude band (above the surface) where clouds live. */
-export const CLOUD_ALTITUDE_MIN = 2.0
-export const CLOUD_ALTITUDE_MAX = 12.0
+/** Altitude band where clouds live, in world Y. The tableau camera
+ *  points below world-horizontal, so the visible sky band sits at RIM
+ *  height and below — clouds must float beside/below the island's
+ *  edge (selling the floating-island fantasy), not high overhead
+ *  where the frame never looks. */
+export const CLOUD_ALTITUDE_MIN = -4.0
+export const CLOUD_ALTITUDE_MAX = 6.0
 
 /** Uniform scale applied to each cloud, so they read from orbit and
  *  still feel like plump companions at walking level. */

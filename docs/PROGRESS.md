@@ -86,11 +86,78 @@ R3F; see prior session notes)
   turned out to have very little vertical headroom (a narrow 28° FOV
   pointed steeply down — see the new note in `ARCHITECTURE.md`).
   **Peter should give this one live look in a normal foreground
-  browser tab** before considering the title sequence done.
+  browser tab** before considering the title sequence done. Follow-up
+  (below) confirms via real screenshot that the title text currently
+  overlaps the monuments rather than sitting clear in the sky band —
+  still open, not addressed this pass.
 - ROADMAP.md's M1/M3 prose still describes the old sphere/great-circle/
   chase-camera model — flagged as a follow-up, not fixed this session.
-- Landmark/crowd XZ placement is a first pass, not pixel-verified
-  against the exact camera crop — worth a look together.
+  **Resolved same day, see ROADMAP.md.**
+
+### Follow-up: camera framing pass (sky ratio + tightened composition)
+- **Peter's feedback:** pitch was too steep (only a sliver of sky at
+  the top of frame) and the disc left a lot of dead, empty floor
+  around the panel arc.
+- **Verification method correction:** the in-app Browser preview pane
+  and Claude-in-Chrome were both unavailable/non-rendering for R3F this
+  session; the Playwright MCP tools (real Chromium, not the preview
+  pane) rendered the canvas correctly and gave reliable screenshots —
+  worth reaching for first next time R3F needs visual verification.
+- **Fix, iterated visually against real screenshots (not just math):**
+  raised the camera and flattened its pitch — `TABLEAU_CAMERA_POS`
+  `[0,15,19]` → `[0,14,19]`, `TABLEAU_CAMERA_TARGET` `[0,-0.5,-3]` →
+  `[0,2.9,-2]`, `TABLEAU_FOV` `28` → `38` — landing sky at ~40% of
+  frame (target was 35-45%). `ISLAND_RADIUS` `16` → `11` and
+  `TABLEAU_WALK_RADIUS` `12.5` → `9.6` close the cliff edge in behind
+  the landmark arc (max landmark radius is ~9.2) instead of leaving a
+  wide empty ring. Landmark/crowd/avatar positions untouched.
+- **Regression caught and fixed in the same pass:** shrinking
+  `TABLEAU_WALK_RADIUS` also shrinks the cloud ring (`Clouds.tsx`
+  derives its orbit radius from it), which let a cloud drift within a
+  few units of the camera — filling half the frame with a gray blob.
+  Bumped the ring's minimum clearance so it always clears the camera's
+  own distance from center with margin.
+- **No reddish/pink vignette found.** Checked the title screen, the
+  idle plaza, and the arrival frame directly — sky gradient, fog, and
+  bloom are all blue/white per `PALETTE`; the only warm/pink tones are
+  the "Contact" and "About" monuments' own pastel accents, not a
+  screen-edge effect. If Peter still sees one, it's worth a screenshot
+  from his machine — could be a monitor/OS color effect rather than
+  something the app is drawing.
+- Verified: `npx tsc -b` and `npm run build` both clean; screenshots
+  confirm sky ratio, panel/avatar/NPC framing, and no cloud-in-face
+  regression.
+
+### Follow-up 2: real blue sky + tighter dolly (Peter round 2)
+- **Peter's feedback:** still too much sky, and the sky rendered as
+  flat blank white — no gradient, no clouds in it; plus dead ground
+  between the camera and the panel arc and beyond the outer panels.
+- **Root cause of the white sky — two stacked bugs:**
+  1. `CAMERA_FAR` was derived as `ISLAND_RADIUS * 15`; shrinking the
+     island to 11 dropped the far plane to 165, **closer than the
+     200u sky dome**, clipping the dome out entirely — the "sky" was
+     the flat white canvas background. Now `SKY_DOME_RADIUS = 200`
+     is its own constant and `CAMERA_FAR` derives from *it* (×1.3),
+     with a comment explaining the trap.
+  2. Even unclipped, the gradient could never show: the tableau
+     camera points ~26° down, so every ray in frame aims BELOW
+     world-horizontal, and both the old camera-up keying and naive
+     world-up stops put all the blue above the frame. The dome
+     shader (`Sky.tsx`) now keys world elevation with stops
+     calibrated to the visible band (h ≈ −0.29..−0.05): white at the
+     island rim, light blue within degrees, full blue by frame top.
+     Stops are camera-geometry-coupled — retune if the rig moves.
+- **Clouds live at rim height now:** same reasoning — the visible sky
+  band sits at/below the island rim, so `CLOUD_ALTITUDE` is now
+  −4..+6 (beside/below the edge, selling the floating island) over a
+  deep 25..45u radius band, instead of 2..12 up where the frame never
+  looks.
+- **Framing:** dolly in `[0,14,19]→[0,10.5,14.5]`, target
+  `[0,2.9,-2]→[0,2.6,-1.8]`, fov 38 — rim now ~40% down frame,
+  panels near the side edges, minimal dead ground. `AVATAR_SPAWN_Z`
+  4.7→3.4 (the closer camera clipped his head at the old spawn; note
+  added in constants.ts).
+- Verified via Playwright screenshots; tsc + build clean.
 
 ---
 
