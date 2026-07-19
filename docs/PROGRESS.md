@@ -5,6 +5,72 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-19 — Plaza realignment: platforms, saturated cards, real sky
+
+Peter shared a new reference image and authorized destructive changes
+to bring the plaza in line with it — explicitly superseding the
+grass-mound pod direction from the previous session. Rollback point:
+tag `snapshot/pre-plaza-realign-2026-07-19` (commit `5656c2c`).
+
+**Ground topology (biggest visual gap):** the grass-mound "hill" per
+pod read as separated floating islands with sky visible between them
+— against the reference's one continuous plaza floor. Replaced with a
+low platform (`POD.platform`, 0.18 tall vs. the mound's 0.46, same
+white tile material as the shared floor) + 2 shallow steps + a thin
+grass trim strip, instead of a 0.46-tall grass truncated cone. The
+ground now reads unbroken between landmarks.
+
+**Panel color (root cause of "washed out," not just bloom):** the
+previous fix (raising the bloom threshold) was correct but incomplete
+— the real problem was that landmark bodies were **white** with only
+a faint accent-tinted inset face. Reference cards are fully saturated
+per-location color. Body now lerps `#ffffff` toward the accent ~68%
+(inset face ~52%); symbol and label color inverted to white/cream
+(`#fdfaf5`/`#fffdf9`) since they now sit on a colored card, not a
+white one.
+
+**All six landmarks now have molded symbols** (previously only
+Projects did): person (About), briefcase (Experience), gear (Skills),
+chat bubble (Contact), document (Resume), built from the same
+capsule/box/torus primitive language as the original `</>` mark —
+`world/Locations.tsx`.
+
+**Dressing redistributed:** pods keep one flanking tree + a flower
+tuft; lampposts, a new `world/Bench.tsx`, and extra flower tufts moved
+to `world/PlazaDressing.tsx`, hand-placed across the open plaza
+(mirroring `Crowd.tsx`'s hand-placed `GROUPS` pattern) instead of
+one-per-pod.
+
+**Camera reopened for more sky:** pitch shallowed from ~26° to ~19°
+down (`TABLEAU_CAMERA_POS` `[0,11.5,16.5]`→`[0,9.5,15.5]`, target y
+2.6→3.4, fov 44→42) so the sky fills roughly 40–50% of the frame
+instead of ~30%; `ISLAND_RADIUS` 12.5→10.5 now that platforms need far
+less clearance than the old mounds, tightening dead space past the
+outer panels.
+
+**New UI chrome, matching the reference:** `ui/TopRightTools.tsx` (map/
+people/settings icon buttons, top-right) and `ui/WelcomeCard.tsx`
+(bottom-left greeting) — both presentational, no backing features yet.
+Caught and fixed a real bug while adding these: `ControlsHint` was
+anchored `bottom-8 left-8`, the same corner the new `WelcomeCard` needs
+per the reference (which wants controls bottom-*center*) — moved
+`ControlsHint` to `inset-x-0 justify-center`, matching `LocationCard`'s
+existing pattern.
+
+**Left as a known gap:** the top-right tools have no map/people/
+settings panels behind them (presentational only, per Peter's "add to
+match the reference" instruction — building real features wasn't in
+scope). Icon shapes (gear, chat bubble, briefcase, document, person)
+are simplified original glyphs, not pixel-matched to the reference —
+same "reasonable approximation" standard the original `</>` mark was
+built to.
+
+Verified live via the Browser pane (worked this session — see
+[[browser-pane-no-raf]] for the retry pattern). `tsc -b` and
+`npm run build` both clean.
+
+---
+
 ## 2026-07-19 — Docs consolidation pass
 
 Peter asked for a full pass over every markdown file: fix what's stale,

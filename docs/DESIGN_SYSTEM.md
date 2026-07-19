@@ -28,12 +28,23 @@ One mold for every location. Differ ONLY in accent + symbol + label.
 | Ground swell | 3.1 × 0.16 × 3.1, r 0.08 | Floor material |
 | Symbol zone | 0.9 wide, centered at y ≈ 1.56 | Upper-middle of face |
 | Symbol stroke | capsule r 0.055, flush molded | ~0.02 proud |
-| Mound | truncated cone, top r 1.85, base r 2.35, h 0.46 | Grass; monument stands on top |
-| Steps | 3, embedded in mound's front (+Z) slope | White; see `POD.steps` |
-| Trees | 2 per pod, flanking at mound corners | Green or blossom-pink canopy |
-| Lamppost / flowers | 1 each per pod | See `world/Lamppost.tsx`, `FlowerTuft.tsx` |
+| Platform | 3.2 × 0.18 × 2.4, r 0.14 | White tile, same family as the plaza floor |
+| Steps | 2, embedded in platform's front (+Z) slope | White; see `POD.steps` |
+| Grass trim | thin strip behind the platform | The only grass ON the pod |
+| Tree | 1 per pod, flanking the monument | Green or blossom-pink canopy |
+| Flower tuft | 1 per pod, at the base of the steps | See `world/FlowerTuft.tsx` |
 
-Pod dressing tokens live in `POD` (designSystem.ts), shipped 2026-07-18.
+Pod dressing tokens live in `POD` (designSystem.ts). Revised 2026-07-19:
+platforms replaced grass mounds (were reading as separated floating
+islands); lampposts/bench/extra flowers moved to `world/
+PlazaDressing.tsx`, scattered across the open plaza — see `LAMPPOSTS`/
+`FLOWER_TUFTS`/`BENCH` there, hand-placed rather than tokenized (same
+pattern as `Crowd.tsx`'s `GROUPS`).
+
+**Landmark body color** (revised 2026-07-19): the body is the
+saturated card — `#ffffff` lerped ~68% toward `location.accent`; the
+inset face ~52%. Symbols and labels are white/cream (`#fdfaf5` /
+`#fffdf9`), not accent-colored — see ART_BIBLE.md §11 for why.
 
 ## 3. Corner Radii (the squircle law)
 

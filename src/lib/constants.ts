@@ -7,10 +7,10 @@
 /** Radius of the floating plaza island — a flat disc in the sky.
  *  The ground has NO curvature; the island simply ends at a soft
  *  rounded edge and drops off into the atmosphere. Sized just past
- *  the landmark arc's mounds (monuments sit ~9.2 from center; their
- *  grass mounds add up to POD.mound.baseRadius ≈ 2.35 more) so the
- *  cliff edge clears the mounds instead of clipping through them. */
-export const ISLAND_RADIUS = 12.5
+ *  the landmark arc's low platforms (monuments sit ~9.2 from center;
+ *  platforms + steps add ~1.6 more) so the cliff edge clears them
+ *  without leaving a wide empty apron of bare tile beyond the arc. */
+export const ISLAND_RADIUS = 10.5
 
 /** Height of the island's cliff edge, where the floor drops into the
  *  sky below the rim. */
@@ -36,9 +36,9 @@ export const AVATAR_SPAWN_Z = 3.4
  * plaza reads as a compressed diorama on a table (~37 degrees down).
  * The character walks freely WITHIN the frame (leashed to the island);
  * the camera never follows. Mouse adds only a gentle eased look. */
-export const TABLEAU_CAMERA_POS: readonly [number, number, number] = [0, 11.5, 16.5]
-export const TABLEAU_CAMERA_TARGET: readonly [number, number, number] = [0, 2.6, -1.8]
-export const TABLEAU_FOV = 44
+export const TABLEAU_CAMERA_POS: readonly [number, number, number] = [0, 9.5, 15.5]
+export const TABLEAU_CAMERA_TARGET: readonly [number, number, number] = [0, 3.4, -2]
+export const TABLEAU_FOV = 42
 /** Static fog band: plaza crisp; distance melts into the sky. */
 export const TABLEAU_FOG: readonly [number, number] = [26, 60]
 /** How far from the island's center the character may wander — the

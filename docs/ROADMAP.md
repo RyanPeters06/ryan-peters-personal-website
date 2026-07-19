@@ -42,20 +42,21 @@ Statuses: ✅ done · 🔨 in progress · ⬜ not started
 - **Success:** walking around the plaza feels natural; controls not
   inverted (see ARCHITECTURE sign conventions). **Deps:** M2.
 
-## M4 — World Dressing 🔨 (atmosphere + crowd + pods done)
+## M4 — World Dressing 🔨 (atmosphere + crowd + pods + scattered dressing done)
 - **Objective:** the walks between destinations feel rewarding.
 - **Done:** spring-morning atmosphere (gradient dome, blue ambient,
   personal sun, per-shot fog). **Background crowd** (~24 villagers,
   player-height, varied pastel hair/shirts, chat circles facing inward
   with nods and hops; everyone takes slow strolls between destinations —
   circle members walk out and return home. Deterministic seed, shared
-  geometry/material pools). **Landmark pods** (2026-07-18): every
-  monument now stands on its own grass mound with 3 embedded steps
-  down to the plaza, two flanking trees (green or blossom-pink canopy
-  per location), a lamppost, and a flower tuft — world/Tree.tsx,
-  Lamppost.tsx, FlowerTuft.tsx, tokens in designSystem.ts POD.
-- **Remaining:** benches, path hints — rounded/toy-like, instanced,
-  gently animated.
+  geometry/material pools). **Landmark pods**, revised 2026-07-19: each
+  monument stands on a low platform (2 steps, shared floor tile) with
+  one flanking tree and a flower tuft — world/Tree.tsx, FlowerTuft.tsx,
+  tokens in designSystem.ts POD. **Scattered plaza dressing**
+  (2026-07-19): lampposts, a bench, and extra flower tufts hand-placed
+  across the open floor — world/Bench.tsx, world/PlazaDressing.tsx —
+  instead of clustered one-per-pod (that read as isolated islands).
+- **Remaining:** path hints — rounded/toy-like, instanced, gently animated.
 - **Files:** world/* (new props), scene/lighting.
 - **Success:** every camera angle has something charming in it.
   **Deps:** M1 (visual), M5 (placement makes sense around pods).
@@ -64,16 +65,15 @@ Statuses: ✅ done · 🔨 in progress · ⬜ not started
 - **Objective:** portfolio sections exist as places — as architecture.
 - **Done:** typed content layer (content/locations.ts) with all **six**
   locations (About, Projects, Experience, Skills, Contact, Resume);
-  LocationPod as a **monument** (one molded monolith on its own grass
-  pod — steps, trees, lamppost, flush-molded symbol face, accent
+  LocationPod as a **monument** (one molded monolith on its own low
+  platform — steps, a tree, flush-molded symbol face, accent
   breathing/brightening on approach — spec in ART_BIBLE.md §11);
   proximity hysteresis → activeLocation; pillow-shell overlay card;
-  title sequence. Only **Projects** has its molded symbol glyph built
-  (`world/Locations.tsx`'s `SYMBOLS` map) — the other five render an
-  empty face.
-- **Remaining:** real content (all six are placeholders); five more
-  molded symbol glyphs (person, briefcase, spark, chat-bubble,
-  document — see the Areas table in DESIGN.md).
+  title sequence. **All six** now have molded symbol glyphs
+  (2026-07-19: person, `</>`, briefcase, gear, chat bubble, document —
+  `world/Locations.tsx`'s `SYMBOLS` map), white/cream against each
+  location's saturated accent card.
+- **Remaining:** real content — all six are still placeholders.
 - **Files:** content/locations.ts, world/*, ui/LocationCard.
 - **Success:** a stranger finds and reads real content unprompted, and
   every landmark is instantly recognizable as one design system.

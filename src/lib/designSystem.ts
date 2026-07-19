@@ -44,25 +44,29 @@ export const LANDMARK = {
   exitDistance: 3.6,
 } as const
 
-/** ---- Landmark pods: each monument stands on its own small grassy
- * mound — a truncated cone (flat top, sloped sides) so trees, the
- * lamppost, and the monument itself all place at one known height
- * (POD.mound.height). Three steps embed into the front (+Z, toward
- * the plaza center) slope; the rest of the mound's base meets the
- * plaza tile flush, no seam. */
+/** ---- Landmark pods: each monument stands on a LOW, subtle platform
+ * — not a hill. (Revised 2026-07-19: the grass-mound "floating pod"
+ * treatment read as separated islands with sky gaps between them,
+ * against the reference's one continuous plaza floor. Platforms are
+ * barely raised — two shallow steps down to the shared tile floor —
+ * and share the floor's own white tile material, not grass, so the
+ * ground reads unbroken between landmarks.) A thin grass trim strip
+ * behind the platform and a single flanking tree are the only planting
+ * tied to the pod itself; lampposts, the bench, and extra flowers are
+ * scattered across the open plaza instead (see world/PlazaDressing.tsx). */
 export const POD = {
-  mound: { topRadius: 1.85, baseRadius: 2.35, height: 0.46 },
+  platform: { width: 3.2, depth: 2.4, height: 0.18, radius: 0.14 },
   steps: [
-    { y: 0.36, z: 1.55, width: 1.5, depth: 0.55 },
-    { y: 0.2, z: 1.95, width: 1.65, depth: 0.55 },
-    { y: 0.04, z: 2.35, width: 1.8, depth: 0.6 },
+    { y: 0.09, z: 1.4, width: 1.8, depth: 0.4, height: 0.1 },
+    { y: 0.0, z: 1.75, width: 2.0, depth: 0.45, height: 0.1 },
   ],
-  /** Trees flank the monument at the back corners of the mound. */
-  trees: { x: 1.35, z: -0.55 },
-  /** The lamppost stands beside the steps. */
-  lamp: { x: 1.55, z: 1.1 },
-  /** Little flower tuft at the base of the steps. */
-  flowers: { x: -1.5, z: 1.9 },
+  /** A thin grass trim along the platform's back edge — a hint of
+   *  planting, not a hill. */
+  grassTrim: { z: -1.28, width: 3.4, depth: 0.35, height: 0.05 },
+  /** The single flanking tree, beside the monument on the platform. */
+  tree: { x: 1.25, z: -0.35 },
+  /** Little flower tuft at the base of the steps, on the plaza floor. */
+  flowers: { x: -1.05, z: 1.85 },
 } as const
 
 /** ---- Corner radii: fraction of the shorter side (squircle law) ----- */

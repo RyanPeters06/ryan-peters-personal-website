@@ -10,6 +10,7 @@ import { Clouds } from '@/scene/Clouds'
 import { Lighting } from '@/scene/lighting/Lighting'
 import { Avatar } from '@/avatar/Avatar'
 import { Locations } from '@/world/Locations'
+import { PlazaDressing } from '@/world/PlazaDressing'
 import { Crowd } from '@/world/Crowd'
 import { TitleWorld } from '@/scene/TitleWorld'
 import { CinematicCamera } from '@/camera/CinematicCamera'
@@ -66,6 +67,7 @@ export function Experience() {
         <IslandShadow />
         <Clouds />
         <Locations />
+        <PlazaDressing />
         <Fountain />
         <Crowd />
         <Avatar />

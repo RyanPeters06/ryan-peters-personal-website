@@ -33,9 +33,13 @@ anywhere, plain XZ world coordinates, no lat/lon or great-circle math.
   the earlier large freestanding planet-plus-orbit-ring ornament that
   was retired the same day. The six landmarks fan in a horseshoe
   opening toward the camera (screen left→right: About, Projects,
-  Experience, Skills, Contact, Resume), each on its own small grass
-  mound (steps, two trees, a lamppost, a flower tuft — see `POD` in
-  `designSystem.ts`), rotated to face the center.
+  Experience, Skills, Contact, Resume), each a **saturated pastel
+  card** on a **low, barely-raised platform** (two shallow steps, the
+  shared white tile material — see `POD` in `designSystem.ts`),
+  rotated to face the center. Dressing (trees, lampposts, the bench,
+  flowers) is mostly **scattered across the open plaza**
+  (`world/PlazaDressing.tsx`), not clustered one-per-landmark — see
+  §11 and §15 for the full 2026-07-19 revision of both.
 - **The character still walks (WASD)** — freely *within* the frame,
   softly leashed to a walk radius around the island's center
   (`TABLEAU_WALK_RADIUS`; the stage ends where the frame does). Spawns
@@ -228,20 +232,37 @@ Original, Mii-adjacent, never a copy.
 ## 11. Landmark Design
 
 **Landmarks are architecture, not props.** Each is a **giant app icon
-that became a building** — one continuous molded rounded-square monolith
-in glossy white, with its identity **symbol molded flush into the front
-face** (two-shot-injection feel; never attached, floating, or
-assembled). The accent **breathes as an inner glow** and brightens on
-approach — architecture's life is light, not hopping.
+that became a building** — one continuous molded rounded-square
+monolith, with its identity **symbol molded flush into the front face**
+(two-shot-injection feel; never attached, floating, or assembled). The
+accent **breathes as an inner glow** and brightens on approach —
+architecture's life is light, not hopping.
 
 - **One family.** All landmarks share proportions, radius, material,
   and construction; they differ only in **accent + molded symbol +
   label.** A visitor recognizes them instantly as one system.
+- **The body itself is a saturated pastel card** (revised 2026-07-19 —
+  `#ffffff` lerped ~68% toward the accent, inset face ~52%), not a
+  white body with a faintly-tinted inset. The earlier white-body
+  treatment was the largest single cause of the "washed out" look —
+  bloom tuning alone couldn't fix a body that was never colored in the
+  first place.
+- **Symbols and labels are white/cream** (`#fdfaf5`), not accent-
+  colored — they need to read against a now-saturated card, the
+  inverse of the original white-card/accent-symbol pairing. All six
+  locations have a molded symbol: person (About), `</>` (Projects),
+  briefcase (Experience), gear (Skills), chat bubble (Contact),
+  document (Resume) — see `world/Locations.tsx`.
 - **Grown from the world**, never set on top: the base sinks into a
-  swell atop its own small grass mound — soft steps down to the plaza,
-  two flanking trees, a lamppost, a flower tuft (`POD` in
-  `designSystem.ts`, shipped 2026-07-18).
-- A **label** in the accent color reads beneath the symbol.
+  swell atop a **low, barely-raised platform** — two shallow steps,
+  the shared plaza tile material, one flanking tree, a flower tuft
+  (`POD` in `designSystem.ts`). Revised 2026-07-19 from an earlier
+  grass-mound "hill" treatment that read as separated floating islands
+  with sky gaps between them, against the reference's one continuous
+  floor. Lampposts, the bench, and most flowers now live in
+  `world/PlazaDressing.tsx`, scattered across the open plaza instead
+  of clustered onto each pod.
+- A **label** reads beneath the symbol.
 - **Final test, every landmark:** "placed into the scene?" → redesign.
   "born as part of this world?" → ship.
 
@@ -305,13 +326,20 @@ quiet and optional.
   built from the same plastic. Trees are lollipop/cloud blobs (green +
   seasonal lavender/pink). Lamps are white posts with a softly glowing
   bulb. A **central fountain** with a slowly spinning little planet is
-  the plaza's heart and a self-referential wink.
-- **Tight, filled composition** (revised 2026-07-18 per Peter's framing
-  passes): the tableau camera dollies in close enough that the pod
-  arc, avatar, and crowd occupy most of the frame — minimal empty
-  ground at the edges or between camera and plaza. Breathing room
-  lives *within* a pod (mound, steps, trees) and between neighboring
-  pods, not as a wide empty ring around the whole composition.
+  the plaza's heart and a self-referential wink. Distribution (revised
+  2026-07-19): one tree + a flower tuft is tied to each pod; lampposts,
+  the bench, and extra flowers are hand-placed across the **open**
+  plaza (`world/PlazaDressing.tsx`) rather than clustered per-landmark
+  — the reference scatters dressing naturally across one continuous
+  ground, not into isolated per-panel gardens.
+- **Tight, filled composition, with real sky** (revised 2026-07-19):
+  the tableau camera holds close enough that the pod arc, avatar, and
+  crowd occupy most of the frame width — minimal empty ground at the
+  edges or between camera and plaza — while pitching shallow enough
+  that the sky still takes up **roughly 40–50% of the frame**, not a
+  thin strip. Breathing room lives *within* the composition (inside a
+  pod, between neighboring pods, in the open sky above), never as a
+  wide empty ring of bare ground.
 
 ## 16. Scale Rules
 

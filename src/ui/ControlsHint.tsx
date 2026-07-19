@@ -20,7 +20,7 @@ export function ControlsHint() {
   const phase = useWorldStore((s) => s.phase)
 
   return (
-    <div className="pointer-events-none absolute bottom-8 left-8 flex">
+    <div className="pointer-events-none absolute inset-x-0 bottom-8 flex justify-center">
       <AnimatePresence>
         {phase === 'idle' && (
           <PlazaCard>
