@@ -41,10 +41,12 @@ PlazaDressing.tsx`, scattered across the open plaza — see `LAMPPOSTS`/
 `FLOWER_TUFTS`/`BENCH` there, hand-placed rather than tokenized (same
 pattern as `Crowd.tsx`'s `GROUPS`).
 
-**Landmark body color** (revised 2026-07-19): the body is the
-saturated card — `#ffffff` lerped ~68% toward `location.accent`; the
-inset face ~52%. Symbols and labels are white/cream (`#fdfaf5` /
-`#fffdf9`), not accent-colored — see ART_BIBLE.md §11 for why.
+**Landmark body color** (final, 2026-07-19): body is **white**
+(`#ffffff`, faint accent emissive breathing); inset face is white with
+a ~14% accent lerp (frosted wash). Symbols and labels carry the
+accent color — the accent lives only there, per the reference. (A
+same-day saturated-body experiment — body ~68% accent, white symbols —
+was reverted; see ART_BIBLE.md §11.)
 
 ## 3. Corner Radii (the squircle law)
 

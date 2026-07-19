@@ -64,22 +64,23 @@ export function LocationPod({
 
   const materials = useMemo(() => {
     const accent = new Color(location.accent)
-    // Saturated pastel card — the body itself carries the color, not
-    // just a faint wash on an inset panel (the earlier white-body
-    // treatment was the main source of the "washed out" look).
-    const bodyColor = new Color('#ffffff').lerp(accent, 0.68)
-    const faceColor = new Color('#ffffff').lerp(accent, 0.52)
+    // White/frosted card (Peter's call, 2026-07-19, matching the
+    // reference): the body is soft white plastic like every other
+    // neutral surface — the accent lives ONLY in the icon glyph and
+    // the label text, plus a whisper of emissive breathing from
+    // within. (This reverts the fully-saturated-body treatment from
+    // earlier the same day.)
     return {
       body: new MeshStandardMaterial({
-        color: bodyColor,
+        color: '#ffffff',
         roughness: 0.26,
         emissive: accent,
         emissiveIntensity: GLOW.bodyIdle,
       }),
-      // The inset face: a touch lighter than the body — the two-shot
-      // molding cue — but the same color family, never white-on-color.
+      // The inset face: frosted near-white with only a faint accent
+      // wash — the two-shot molding cue, not a color fill.
       face: new MeshStandardMaterial({
-        color: faceColor,
+        color: new Color('#ffffff').lerp(accent, 0.14),
         roughness: 0.22,
         emissive: accent,
         emissiveIntensity: 0.05,
@@ -198,12 +199,12 @@ export function LocationPod({
       <group position={[0, P.height + LANDMARK.symbol.centerY, B.depth / 2 + 0.028]}>
         {children}
       </group>
-      {/* 3b — the label: white/cream, readable against the saturated card */}
+      {/* 3b — the label: the location's accent, readable on the white card */}
       <Text
         font={fontUrl}
         fontSize={0.24}
         letterSpacing={0.08}
-        color="#fffdf9"
+        color={location.accent}
         anchorX="center"
         anchorY="middle"
         position={[0, bodyY - 0.62, B.depth / 2 + 0.02]}

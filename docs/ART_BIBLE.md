@@ -275,18 +275,17 @@ architecture's life is light, not hopping.
 - **One family.** All landmarks share proportions, radius, material,
   and construction; they differ only in **accent + molded symbol +
   label.** A visitor recognizes them instantly as one system.
-- **The body itself is a saturated pastel card** (revised 2026-07-19 —
-  `#ffffff` lerped ~68% toward the accent, inset face ~52%), not a
-  white body with a faintly-tinted inset. The earlier white-body
-  treatment was the largest single cause of the "washed out" look —
-  bloom tuning alone couldn't fix a body that was never colored in the
-  first place.
-- **Symbols and labels are white/cream** (`#fdfaf5`), not accent-
-  colored — they need to read against a now-saturated card, the
-  inverse of the original white-card/accent-symbol pairing. All six
-  locations have a molded symbol: person (About), `</>` (Projects),
-  briefcase (Experience), gear (Skills), chat bubble (Contact),
-  document (Resume) — see `world/Locations.tsx`.
+- **The body is white/frosted soft plastic; the accent lives ONLY in
+  the icon glyph and label** (Peter's final call, later on 2026-07-19,
+  matching the reference's white cards with colored icons — this
+  reverted a same-day fully-saturated-body experiment). The inset face
+  carries only a faint accent wash (~14% lerp, the two-shot molding
+  cue), and the accent still breathes as faint emissive from within
+  the white body.
+- **Symbols and labels are accent-colored** against the white card.
+  All six locations have a molded symbol: person (About), `</>`
+  (Projects), briefcase (Experience), gear (Skills), chat bubble
+  (Contact), document (Resume) — see `world/Locations.tsx`.
 - **Grown from the world**, never set on top: the base sinks into a
   swell atop a **low, barely-raised platform** — two shallow steps,
   the shared plaza tile material, one flanking tree, a flower tuft

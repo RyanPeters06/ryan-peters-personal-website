@@ -12,26 +12,23 @@ import { GLOW, LANDMARK } from '@/lib/designSystem'
 
 /**
  * Location symbols — molded flush into each monument's face like a
- * two-shot injection: rounded white/cream forms half-sunk into the
- * (now saturated, accent-colored) body so they read as manufactured-in
- * app-icon glyphs, high-contrast against the card the way the
- * reference's icons are — never accent-on-accent. Each symbol breathes
- * a soft accent-tinted glow from underneath and brightens on approach.
+ * two-shot injection: rounded accent-colored forms half-sunk into the
+ * white/frosted body so they read as manufactured-in app-icon glyphs.
+ * The accent lives HERE (and in the label), not on the panel body —
+ * Peter's call 2026-07-19, matching the reference's white cards with
+ * colored icons. Each symbol breathes a soft glow and brightens on
+ * approach.
  */
-
-/** Off-white the symbols are molded in — reads crisply against every
- *  accent card, unlike the earlier accent-on-white treatment. */
-const SYMBOL_COLOR = '#fdfaf5'
 
 /** Shared breathing-glow material + animation for every symbol. */
 function useSymbolMaterial(location: WorldLocation): MeshStandardMaterial {
   const material = useMemo(
     () =>
       new MeshStandardMaterial({
-        color: SYMBOL_COLOR,
+        color: location.accent,
         roughness: 0.3,
         emissive: location.accent,
-        emissiveIntensity: 0.14,
+        emissiveIntensity: 0.22,
       }),
     [location.accent],
   )

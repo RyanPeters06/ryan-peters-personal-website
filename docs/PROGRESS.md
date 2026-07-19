@@ -5,6 +5,29 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-19 — Panel color split: white bodies, accent icons/labels
+
+Peter's correction on the panel treatment: the reference has **white/
+frosted panel bodies** — the saturated full-color fill from the
+plaza-realignment pass was wrong. Accent color belongs only on the
+icon glyph and the label text.
+
+- `LocationPod.tsx`: body back to `#ffffff` (kept the faint accent
+  emissive breathing), inset face down to a ~14% accent wash (was
+  52%), label back to `location.accent`.
+- `Locations.tsx`: symbol material back to accent-colored (was
+  white/cream `#fdfaf5`), emissive idle back to 0.22.
+- Net effect: this restores the *original* white-card/accent-symbol
+  pairing from before the saturation experiment — but now under the
+  fixed lighting/shadow/AO pipeline, which was the actual cause of
+  the "washed out" look the saturation experiment was chasing. With
+  real directional shading the white bodies read as dimensional
+  frosted plastic, not flat pale cards.
+- Materials-only change: no shape, size, position, lighting, or
+  header edits. Verified live; `tsc -b` + `npm run build` clean.
+
+---
+
 ## 2026-07-19 — Header false alarm + sun angle correction
 
 Peter reported two regressions: the header back to full-size overlap,
