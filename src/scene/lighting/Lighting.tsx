@@ -15,7 +15,11 @@ import { ISLAND_RADIUS, PALETTE } from '@/lib/constants'
  * `receiveShadow` were set on their meshes. The shadow camera now
  * covers the whole island from a fixed direction instead.
  */
-const SUN_DIR = new Vector3(0.8, 2.35, 0.4).normalize()
+// Screen-right for the tableau camera is world +X (viewDir x up), so a
+// light meant to read as upper-LEFT needs a NEGATIVE x — the previous
+// +0.8 put the sun upper-right, shadows falling lower-left, the mirror
+// of the reference's upper-left sun / lower-right shadows.
+const SUN_DIR = new Vector3(-0.85, 2.2, 0.55).normalize()
 const SUN_DISTANCE = 28
 const SUN_POSITION: [number, number, number] = [
   SUN_DIR.x * SUN_DISTANCE,

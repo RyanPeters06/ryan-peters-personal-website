@@ -5,6 +5,41 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-19 — Header false alarm + sun angle correction
+
+Peter reported two regressions: the header back to full-size overlap,
+and "still no real directional lighting" — despite the lighting pass
+earlier the same day. Investigated both from source before touching
+anything, per the ask.
+
+**Header: not a regression.** Read `HeaderBadge.tsx` and `Overlay.tsx`
+fresh — both identical to the small-pill implementation, mounted once,
+no duplicate. Live-checked in the browser: the large full-width "Ryan
+Land" text is `TitleWorld.tsx`'s **intentional 3D intro title**, which
+is *supposed* to fill the frame before the visitor's first click (it's
+real scene geometry, not the overlay). After clicking through, the
+actual `HeaderBadge` renders correctly — small pill, top-left, as
+designed. No code changed here; flagged to Peter that the screenshot/
+observation was almost certainly the title screen, not the persistent
+header.
+
+**Lighting: real angle bug, not "still absent."** The shadow-coverage
+fix from earlier today was confirmed still present and working (git
+log clean, `Lighting.tsx`/`Experience.tsx` unchanged from that commit).
+What was actually wrong: the sun's `SUN_DIR` had `x = +0.8`, which
+— given screen-right for this camera rig is world `+X`
+(`viewDir x up`, documented in ARCHITECTURE.md) — put the sun upper-
+**right**, shadows falling lower-left. The reference wants upper-left/
+lower-right, the mirror image. Flipped to `x = -0.85`, bumped the z
+lean slightly (`0.4 -> 0.55`) for a clearer front-key read. Confirmed
+live: panel side faces now show a visible lit-left/shadowed-right
+split, and NPC/tree shadows fall toward the lower-right of their feet.
+
+**Files:** `scene/lighting/Lighting.tsx` only (one constant). No header
+code touched (nothing was wrong). `tsc -b` and `npm run build` clean.
+
+---
+
 ## 2026-07-19 — Lighting pass: shadows, AO, DOF, color grade
 
 Peter asked for a diagnosis-first pass on lighting/shading — the

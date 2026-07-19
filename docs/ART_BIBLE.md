@@ -140,6 +140,13 @@ painted textures anywhere.
   dropped shadows from every landmark, tree, and bench. The shadow
   camera now covers the whole island (`ISLAND_RADIUS + 2`) from a
   fixed direction — see `scene/lighting/Lighting.tsx`.
+- **Sun angle: upper-left of the camera's view, shadows falling lower-
+  right** (tuned 2026-07-19 to match the reference exactly). Screen-
+  right for the tableau camera is world `+X`; the sun's `SUN_DIR` needs
+  a **negative x** to read as upper-left — a same-magnitude positive x
+  was tried first and put the sun upper-*right* instead, the mirror
+  image of the reference. If the camera rig ever changes, re-derive
+  screen-left/right before retuning this.
 - **Shadows are genuinely soft** via `VSMShadowMap`
   (`shadows="variance"` on the Canvas), not the deprecated
   `PCFSoftShadowMap` — R3F's `shadows` boolean/`"soft"` string both
