@@ -1,67 +1,69 @@
-import { useRef } from 'react'
-import { useFrame } from '@react-three/fiber'
-import { DirectionalLight, Object3D, Vector3 } from 'three'
-import { avatarPose } from '@/systems/movement/avatarPose'
-import { PALETTE } from '@/lib/constants'
-
-/** Fixed world-space tilt of the sun, so shadow direction drifts
- *  gently as you travel but never swings when you merely turn. */
-const SUN_TILT = new Vector3(0.8, 0.55, 0.4)
-
-const _sunDir = new Vector3()
+import { Vector3 } from 'three'
+import { ISLAND_RADIUS, PALETTE } from '@/lib/constants'
 
 /**
  * Soft, rounded light: high ambient + warm key + cool fill.
  *
- * The key light is a "personal sun": it rides above wherever the
- * avatar is, so the player always walks in daylight no matter where
- * on the island they roam — and its shadow frustum stays tight around
- * the avatar for crisp little shadows.
+ * The key light is a fixed world-space sun — NOT "personal light that
+ * follows the avatar" like it was under the old chase-camera model.
+ * That design tracked the avatar with a tight +/-8 shadow frustum,
+ * which was correct when only the avatar's immediate surroundings were
+ * ever in frame. Under the fixed tableau camera the WHOLE plaza is
+ * always in frame, so a small avatar-centered frustum left every
+ * landmark, tree, and bench outside the shadow camera — they cast and
+ * received no shadow at all, however correctly `castShadow`/
+ * `receiveShadow` were set on their meshes. The shadow camera now
+ * covers the whole island from a fixed direction instead.
  */
+const SUN_DIR = new Vector3(0.8, 2.35, 0.4).normalize()
+const SUN_DISTANCE = 28
+const SUN_POSITION: [number, number, number] = [
+  SUN_DIR.x * SUN_DISTANCE,
+  SUN_DIR.y * SUN_DISTANCE,
+  SUN_DIR.z * SUN_DISTANCE,
+]
+/** Shadow frustum half-extent — must clear the island's full radius
+ *  (platforms/steps push slightly past ISLAND_RADIUS at their
+ *  footprint) or the rim of the plaza silently loses its shadow. */
+const SHADOW_EXTENT = ISLAND_RADIUS + 2
+
 export function Lighting() {
-  const key = useRef<DirectionalLight>(null)
-  const target = useRef<Object3D>(null)
-
-  useFrame(() => {
-    const light = key.current
-    const tgt = target.current
-    if (!light || !tgt) return
-    _sunDir.copy(avatarPose.up).multiplyScalar(1.8).add(SUN_TILT).normalize()
-    light.position.copy(avatarPose.position).addScaledVector(_sunDir, 28)
-    tgt.position.copy(avatarPose.position)
-    light.target = tgt
-    tgt.updateMatrixWorld()
-  })
-
   return (
     <>
-      {/* Generous, faintly blue base light: sunny spring morning.
-          High ambient + soft key keeps shadows gentle and blue-gray. */}
-      <ambientLight intensity={1.3} color={PALETTE.ambient} />
+      {/* Generous, faintly blue base light: sunny spring morning. High
+          ambient keeps shadows gentle and blue-gray, but not so high
+          it flattens the key light's directional falloff — the
+          "single-tone card" look was ambient (1.3) nearly matching the
+          key (1.15); the ratio is now more directional. */}
+      <ambientLight intensity={1.05} color={PALETTE.ambient} />
 
-      {/* Warm key: the personal sun — a touch stronger and warmer, so
-          the world reads sunlit rather than overcast. */}
-      <object3D ref={target} />
+      {/* Warm key: the plaza's sun, fixed, sized to shadow the whole
+          island at once. */}
       <directionalLight
-        ref={key}
-        intensity={1.15}
+        position={SUN_POSITION}
+        intensity={1.35}
         color={PALETTE.keyLight}
         castShadow
-        shadow-mapSize={[1024, 1024]}
-        shadow-camera-near={1}
-        shadow-camera-far={60}
-        shadow-camera-left={-8}
-        shadow-camera-right={8}
-        shadow-camera-top={8}
-        shadow-camera-bottom={-8}
-        shadow-bias={-0.0005}
+        shadow-mapSize={[2048, 2048]}
+        shadow-camera-near={10}
+        shadow-camera-far={55}
+        shadow-camera-left={-SHADOW_EXTENT}
+        shadow-camera-right={SHADOW_EXTENT}
+        shadow-camera-top={SHADOW_EXTENT}
+        shadow-camera-bottom={-SHADOW_EXTENT}
+        shadow-bias={-0.0004}
+        /* VSM (see Experience.tsx's `shadows="variance"`) blurs via
+           radius/blurSamples, not a bias trick — this is what actually
+           gives soft, feathered shadow edges instead of a hard PCF line. */
+        shadow-radius={3.5}
+        shadow-blurSamples={16}
       />
 
       {/* Cool fill from the opposite side, no shadows. */}
-      <directionalLight position={[-6, -2, -8]} intensity={0.35} color={PALETTE.fillLight} />
+      <directionalLight position={[-6, -2, -8]} intensity={0.3} color={PALETTE.fillLight} />
 
       {/* Sky/ground bounce: genuine blue sky above, cool floor below. */}
-      <hemisphereLight args={['#dcefff', '#e3ecf2', 0.55]} />
+      <hemisphereLight args={['#dcefff', '#e3ecf2', 0.42]} />
     </>
   )
 }

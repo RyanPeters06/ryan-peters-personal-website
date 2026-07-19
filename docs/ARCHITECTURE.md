@@ -40,20 +40,22 @@ math?"
 ## Scene Hierarchy
 
 ```
-<Canvas shadows dpr=[1,2] NoToneMapping far=CAMERA_FAR>
+<Canvas shadows="variance" dpr=[1,2] NoToneMapping far=CAMERA_FAR>
   <Suspense>
     AmbientLoopDriver   (advances the shared heartbeat)
     Sky                 (gradient dome + fog + background)
-    Lighting            (ambient + personal-sun key + fill + hemisphere)
+    Lighting            (ambient + fixed key sun + fill + hemisphere)
     Ground              (flat tiled disc + cliff edge — the island floor)
     IslandShadow        (soft contact disc below the floating island)
     Clouds              (instanced puff clusters, ring around the island)
     Locations           (LocationPod per content entry)
+    PlazaDressing       (scattered lampposts, bench, flowers)
     Fountain            (center plinth)
     Crowd               (background villagers)
     Avatar              (character + controller + animation)
     TitleWorld          (3D title text)
     CinematicCamera     (drives the fixed tableau camera every frame)
+    EffectComposer      (N8AO -> DepthOfField -> Bloom -> BrightnessContrast -> HueSaturation)
 ```
 
 ## Coordinate & Math Conventions (IMPORTANT — bugs lived here)
@@ -139,10 +141,13 @@ idle life, waving, and foot shifts are all procedural transforms in one
 - Instancing for repeated geometry (all cloud puffs = 1 draw call).
 - Shared materials per component (useMemo), shared geometries.
 - **Zero allocations in frame loops** — module-level scratch Vector3s.
-- dpr capped at 2; shadow map 1024 tight around the avatar; far plane
-  (`CAMERA_FAR`) derives from `SKY_DOME_RADIUS`, not `ISLAND_RADIUS` —
-  deriving it from the island's size once clipped the sky dome out
-  entirely when the island shrank (see PROGRESS.md 2026-07-18).
+- dpr capped at 2; shadow map 2048² covering the whole island (a tight
+  frustum around the avatar left every static object un-shadowed once
+  the camera stopped following the avatar — see PROGRESS.md
+  2026-07-19); far plane (`CAMERA_FAR`) derives from `SKY_DOME_RADIUS`,
+  not `ISLAND_RADIUS` — deriving it from the island's size once
+  clipped the sky dome out entirely when the island shrank (see
+  PROGRESS.md 2026-07-18).
 - Deterministic seeded randomness (the sky is identical every visit).
 
 ## Asset Organization

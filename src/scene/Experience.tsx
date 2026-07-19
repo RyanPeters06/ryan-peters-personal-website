@@ -1,6 +1,13 @@
 import { Suspense, useEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { Bloom, EffectComposer } from '@react-three/postprocessing'
+import {
+  Bloom,
+  BrightnessContrast,
+  DepthOfField,
+  EffectComposer,
+  HueSaturation,
+  N8AO,
+} from '@react-three/postprocessing'
 import { NoToneMapping } from 'three'
 import { GLOW } from '@/lib/designSystem'
 import { Sky } from '@/scene/Sky'
@@ -19,6 +26,7 @@ import { useMovementKeys } from '@/systems/movement/useMovementInput'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion'
 import {
   CAMERA_FAR,
+  PALETTE,
   REDUCED_MOTION_SCALE,
   TABLEAU_CAMERA_POS,
   TABLEAU_FOV,
@@ -44,7 +52,10 @@ export function Experience() {
   useMovementKeys()
   return (
     <Canvas
-      shadows
+      // "soft" (and the boolean default) both map to THREE's deprecated
+      // PCFSoftShadowMap, which silently falls back to hard-edged PCF —
+      // "variance" maps to VSMShadowMap, genuinely soft and current.
+      shadows="variance"
       dpr={[1, 2]}
       camera={{
         // The tableau lens: long focal length, fixed high vantage —
@@ -73,15 +84,34 @@ export function Experience() {
         <Avatar />
         <TitleWorld />
         <CinematicCamera />
-        {/* The reference's "gently emits light" finish: a whisper of
-            bloom on only the brightest whites and accent glows. */}
         <EffectComposer multisampling={4}>
+          {/* Contact AO: soft blue-gray darkening at contact creases
+              (tree-to-mound, panel-to-platform, steps) — never black,
+              tinted with the same shadow color as everything else. */}
+          <N8AO
+            aoRadius={1.1}
+            intensity={3.2}
+            distanceFalloff={1}
+            quality="medium"
+            color={PALETTE.shadow}
+          />
+          {/* Subtle depth of field: sharp on the avatar/foreground,
+              gently softening toward the landmark arc and sky. */}
+          <DepthOfField worldFocusDistance={17} worldFocusRange={15} bokehScale={1.3} />
+          {/* The reference's "gently emits light" finish: a whisper of
+              bloom on only the brightest whites and accent glows. */}
           <Bloom
             mipmapBlur
             intensity={GLOW.bloom.intensity}
             luminanceThreshold={GLOW.bloom.threshold}
             luminanceSmoothing={GLOW.bloom.smoothing}
           />
+          {/* A light color grade, applied AFTER bloom so it never
+              shifts what counts as a bloom highlight (that's what
+              caused the earlier haze bug) — slightly warmer, a touch
+              more contrast, without reintroducing wash-out. */}
+          <BrightnessContrast brightness={0.015} contrast={0.08} />
+          <HueSaturation hue={-0.01} saturation={0.04} />
         </EffectComposer>
       </Suspense>
     </Canvas>

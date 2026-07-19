@@ -131,12 +131,39 @@ painted textures anywhere.
 - **Generous ambient** (faint blue) + **one soft warm key sun** +
   **pale-blue sky bounce** + cool fill. Shadows are **soft and
   blue-gray**, close to their object, never black or hard.
+- **The key light is a fixed world-space sun** (revised 2026-07-19),
+  not a light that tracks the avatar. It used to ride above wherever
+  the avatar stood with a tight shadow frustum — correct for the old
+  chase camera, where only the avatar's immediate surroundings were
+  ever in frame. Under the fixed tableau camera the whole plaza is
+  always in frame, so that tight avatar-centered frustum silently
+  dropped shadows from every landmark, tree, and bench. The shadow
+  camera now covers the whole island (`ISLAND_RADIUS + 2`) from a
+  fixed direction — see `scene/lighting/Lighting.tsx`.
+- **Shadows are genuinely soft** via `VSMShadowMap`
+  (`shadows="variance"` on the Canvas), not the deprecated
+  `PCFSoftShadowMap` — R3F's `shadows` boolean/`"soft"` string both
+  silently fall back to hard-edged PCF in current three.js. Blur comes
+  from `shadow-radius`/`shadow-blurSamples` on the key light.
+- **Contact AO** (`N8AO`, tinted the same blue-gray as the palette's
+  `shadow` color, never black) darkens contact creases — tree-to-
+  platform, panel-to-swell, steps-to-floor — so objects read as
+  resting on the ground, not floating above it.
+- **Subtle depth of field** (`DepthOfField`, world-space focus distance
+  tuned to the avatar): sharp on the avatar and near crowd, gently
+  softening toward the landmark arc and sky. Kept light — this is a
+  toy diorama, not a cinematic rack-focus.
 - **A hint of bloom / glow** on the brightest whites and accents — the
   world should feel like it gently emits light. A real bloom pass is
   live (`@react-three/postprocessing`, tuned high-threshold so it
-  catches highlights only — see §6 Lighting for why).
-- `NoToneMapping`: pastels render exactly as authored; whites stay
-  bright and airy without filmic compression.
+  catches highlights only, not general geometry — see below).
+- `NoToneMapping` **on the renderer**: pastels render exactly as
+  authored; whites stay bright and airy without filmic compression.
+  A light **post color grade** (`BrightnessContrast` + `HueSaturation`,
+  applied *after* Bloom in the composer) adds warmth and shadow depth
+  without touching what counts as a bloom highlight — ordering matters
+  here, a grade applied *before* Bloom would re-trigger the horizon-haze
+  bug from 2026-07-18.
 - The sky reads clearly **blue** at the top of every frame, easing to a
   glowing white band right at the island's rim — sunny, never washed
   out. The dome gradient is keyed to **world up** with stops calibrated

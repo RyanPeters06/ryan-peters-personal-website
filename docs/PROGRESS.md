@@ -5,6 +5,71 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-19 — Lighting pass: shadows, AO, DOF, color grade
+
+Peter asked for a diagnosis-first pass on lighting/shading — the
+scene's layout, color, and framing were considered settled; this was
+purely render-pipeline work. Findings, checked before touching
+anything:
+
+1. **Shadows were enabled but silently useless for 90% of the scene.**
+   `<Canvas shadows>` and `castShadow`/`receiveShadow` were all
+   correctly set — but the key light's shadow camera was a tight +/-8
+   orthographic frustum that **tracked the avatar's live position**
+   every frame (`Lighting.tsx`'s old `useFrame`, copying
+   `avatarPose.position`). That was correct for the old chase-camera
+   model, where only the avatar's immediate surroundings were ever in
+   frame. It was never revisited after the fixed-tableau pivot
+   (2026-07-18) — under a camera that always shows the *whole* plaza,
+   a small avatar-centered frustum left every landmark, tree, lamppost,
+   and bench outside the shadow camera, so they cast/received nothing
+   despite having the right mesh flags. Fixed: the key light is now a
+   **fixed** world-space sun (no more per-frame tracking, no more
+   `avatarPose` import in `Lighting.tsx`), shadow camera widened to
+   `ISLAND_RADIUS + 2`, shadow map bumped 1024->2048 to hold resolution
+   over the larger area.
+2. **Materials were already correctly lit** — every object uses
+   `MeshStandardMaterial`; the only `MeshBasicMaterial` in the codebase
+   is `IslandShadow`'s baked contact-shadow blob, which is *supposed*
+   to be unlit. The "flat card" look was a **light-balance** problem,
+   not a material problem: ambient (1.3) was nearly as strong as the
+   key light (1.15), which flattens directional falloff across a
+   surface. Ambient 1.3->1.05, key 1.15->1.35, hemisphere 0.55->0.42 —
+   more directional without darkening the scene's overall mood.
+3. **A real bug found mid-fix:** `<Canvas shadows>` (and the explicit
+   `shadows="soft"` string) both map to three.js's now-**deprecated**
+   `PCFSoftShadowMap`, which silently falls back to hard-edged
+   `PCFShadowMap` at render time (console: "PCFSoftShadowMap has been
+   deprecated. Using PCFShadowMap instead"). Switched to
+   `shadows="variance"` (`VSMShadowMap`) with `shadow-radius`/
+   `shadow-blurSamples` on the key light for genuinely soft, blurred
+   shadow edges. (Caught a red herring here too: the warning kept
+   showing after the fix because of stale HMR state from many edits
+   this session — a full dev-server restart confirmed the fix actually
+   worked. Don't trust console warnings that persist across HMR
+   without a hard restart to rule out stale state.)
+4. **No AO or DOF pass existed** — `EffectComposer` only had `Bloom`.
+   Added `N8AO` (tinted `PALETTE.shadow`, never black, per the "shadows
+   are always blue-gray" rule) for contact-point darkening, and
+   `DepthOfField` (world-space focus distance tuned to the avatar,
+   `worldFocusRange=15` for a wide sharp band, `bokehScale=1.3` —
+   first pass at `bokehScale=2.2`/`worldFocusRange=9` blurred the
+   landmark arc too aggressively for labels/icons to stay legible at
+   rest).
+5. **No color grade existed** (`NoToneMapping`, chosen specifically to
+   dodge the 2026-07-18 bloom/haze bug). Added `BrightnessContrast` +
+   `HueSaturation` for warmth/contrast, but ordered them **after**
+   `Bloom` in the composer — applying a grade before Bloom would shift
+   what counts as a highlight and could re-trigger the same haze,
+   since Bloom's threshold is tuned against the un-graded image.
+
+**Files:** `scene/lighting/Lighting.tsx` (rewritten), `scene/
+Experience.tsx` (Canvas `shadows` prop, five new composer effects).
+No layout, color, or camera-framing changes, per the ask. Verified live
+via the Browser pane; `tsc -b` and `npm run build` both clean.
+
+---
+
 ## 2026-07-19 — Plaza realignment: platforms, saturated cards, real sky
 
 Peter shared a new reference image and authorized destructive changes
