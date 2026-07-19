@@ -128,17 +128,20 @@ painted textures anywhere.
   **pale-blue sky bounce** + cool fill. Shadows are **soft and
   blue-gray**, close to their object, never black or hard.
 - **A hint of bloom / glow** on the brightest whites and accents — the
-  world should feel like it gently emits light. (Currently faked with
-  emissive + outline glow; a true subtle bloom pass is the intended
-  finish — see audit.)
+  world should feel like it gently emits light. A real bloom pass is
+  live (`@react-three/postprocessing`, tuned high-threshold so it
+  catches highlights only — see §6 Lighting for why).
 - `NoToneMapping`: pastels render exactly as authored; whites stay
   bright and airy without filmic compression.
 - The sky reads clearly **blue** at the top of every frame, easing to a
-  glowing white band behind the world — sunny, never washed out. The
-  dome gradient is keyed to the **camera's frame** with steep stops
-  (blue arrives within ~20° above view center), so intro and chase
-  shots alike compose like the concept art. A subtle real **bloom pass**
-  (threshold 0.9, intensity ~0.22) supplies the glow.
+  glowing white band right at the island's rim — sunny, never washed
+  out. The dome gradient is keyed to **world up** with stops calibrated
+  to the tableau camera's actual downward-pitched view band (it never
+  looks above world-horizontal, so the blue has to live *below* zero
+  elevation or the whole frame reads as flat white — see
+  `scene/Sky.tsx`). A subtle real **bloom pass** (threshold 0.97,
+  intensity ~0.18) supplies the glow — tuned high on purpose: at 0.9 the
+  plaza's own near-white surfaces bloomed into a horizon-wide haze.
 
 ## 7. Color Palette
 
@@ -178,24 +181,31 @@ black. If a color feels "corporate" or "techy," it is wrong.
   move accelerates and settles.
 - The camera **breathes** — always a whisper of drift, never locked
   fully static.
-- **[TABLEAU]** One elevated 3/4 hero angle (~35–40° down) that frames
-  the whole plaza with the player centered and the landmark arc behind.
-  Gentle mouse-look parallax; the composition stays legible always.
-- **[SPHERE]** Three eased moods — far orbit (whole planet) → head-height
-  focus portrait (never top-down) → third-person chase (horizon ~40% up
-  frame). `camera.up` levels to the local surface normal near ground.
-- Framing rule: the player rides **low-center**; generous sky above.
+- **One fixed elevated 3/4 hero angle** (~35–40° down) that frames the
+  whole plaza with the player low-center and the landmark arc behind —
+  never a chase or orbit; the camera never follows. Gentle mouse-look
+  parallax only; the composition stays legible always. `camera.up` is
+  always world +Y (the ground has no curvature to level against).
+- Framing rule: the player rides **low-center**; the horizon sits
+  roughly 40–50% down the frame — enough sky to read as a place with
+  air above it, not so much the plaza reads distant or small.
 
 ## 9. Composition Rules
 
 - **Symmetry and calm.** The hero shot is balanced, with a clear
   central anchor (the fountain / the player) and landmarks framing it.
-- **Generous negative space** — sky is at least the top third; the world
-  never fills the frame edge to edge. Emptiness is a designed feature.
+- **Tight and filled, not distant** (revised 2026-07-18 — see §15):
+  the camera dollies in close enough that the pod arc, avatar, and
+  crowd occupy most of the frame. Breathing room lives *within* the
+  composition — inside a pod, between neighboring pods, in the sky
+  band above the rim — never as a wide empty apron of bare ground
+  around the whole scene.
 - **Clear hierarchy:** player > active landmark > other landmarks >
   crowd > dressing > sky. Bloom, scale, and the single accent enforce it.
-- Landmarks sit on a gentle **arc / ring**, evenly rhythmic, each with
-  breathing room — a plaza, never a shelf of icons.
+- Landmarks sit on a gentle **arc / horseshoe**, in a steady **A-B-A-B
+  rhythm** (monolith, tree, monolith, tree) that reads as *designed*
+  rather than scattered — evenly spaced, each pod with its own
+  breathing room, never a shelf of icons.
 
 ## 10. Character Design
 
@@ -228,8 +238,9 @@ approach — architecture's life is light, not hopping.
   and construction; they differ only in **accent + molded symbol +
   label.** A visitor recognizes them instantly as one system.
 - **Grown from the world**, never set on top: the base sinks into a
-  swell of the ground (**[TABLEAU]:** a grassy island with soft steps,
-  trees, and flowers, per concept art).
+  swell atop its own small grass mound — soft steps down to the plaza,
+  two flanking trees, a lamppost, a flower tuft (`POD` in
+  `designSystem.ts`, shipped 2026-07-18).
 - A **label** in the accent color reads beneath the symbol.
 - **Final test, every landmark:** "placed into the scene?" → redesign.
   "born as part of this world?" → ship.
@@ -254,7 +265,9 @@ Floating, rounded, soft — the world is never blocked by a wall of UI.
   **soft diffuse shadow** and a whisper of white edge-light. Per the
   concept art the chrome reads **near-solid and clean, NOT heavy
   glass** — translucency and backdrop-blur are a light seasoning at
-  most. (Current build over-uses glass; see audit.)
+  most. **Open gap:** `PlazaCard.tsx` still uses heavy glass
+  (`rgba(255,255,255,0.55)` + 24px backdrop-blur) — dial toward
+  near-solid next time UI is touched.
 - **Icon (or emoji) centered above a short label**, rounded sans-serif,
   comfortable padding, friendly proportions.
 - Entrance: **scale 0.92→1, fade, ~320ms, `cubic-bezier(0.22,1,0.36,1)`**

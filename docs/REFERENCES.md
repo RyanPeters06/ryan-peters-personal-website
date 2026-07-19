@@ -33,13 +33,12 @@ images to the repo).
   glyph's single accent color *glowing through* the rim as a halo;
   squircle radii ~30% of width; edges described entirely by highlights
   (no outlines); tiny close diffuse shadows; generous spacing. Analysis
-  distilled into ART_DIRECTION → UI Philosophy (pillow-shell spec).
-  Remaining gap noted: subtle postprocessing bloom would complete the
-  "almost glowing" quality (needs @react-three/postprocessing —
-  awaiting Peter's approval).
+  distilled into ART_BIBLE.md §13 (pillow-shell spec). Bloom pass has
+  since shipped (`@react-three/postprocessing`); the UI chrome itself
+  still runs heavier glass than the spec calls for — open item.
 - Wii U app tiles: rounded squares, `rgba(255,255,255,0.72)` frost,
   1.5px white border, icon-over-label, springy scale-in. Exact spec in
-  ART_DIRECTION → UI Philosophy (Peter, 2026-07-16).
+  ART_BIBLE.md §13 (Peter, 2026-07-16).
 - Console keycap hints (rounded keys with a heavy bottom border) — our
   ControlsHint.
 
@@ -51,10 +50,12 @@ images to the repo).
   no HDR drama.
 
 ## Camera References
-- Warawara Plaza attract camera: slow, patient drift — our far orbit.
-- Modern third-person games (Mario Odyssey feel): behind + above,
-  looking past the character at the ground ahead — our chase framing
-  (horizon ~40% up the frame, character lower-middle).
+- Warawara Plaza's own hero shot: a fixed elevated 3/4 diorama view,
+  never a pilot's-eye chase — the direct model for the tableau camera
+  (`CinematicCamera.tsx`). The whole-globe chase/orbit era (M1–M3,
+  retired 2026-07-17/18) took its cues from Mario Odyssey-style
+  third-person framing instead; kept here as history since a future
+  world-model pivot could reach for it again.
 
 ## Animation References
 - Nintendo UI physics: overshoot springs, nothing linear, nothing
@@ -69,7 +70,7 @@ images to the repo).
   in-shader bevel (inner shadow + top highlight).
 
 ## Color References
-- Full palette table lives in ART_DIRECTION.md (single source of truth
+- Full palette table lives in ART_BIBLE.md §7 (single source of truth
   is `src/lib/constants.ts` PALETTE).
 
 ## Environmental References

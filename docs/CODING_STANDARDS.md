@@ -71,8 +71,8 @@ writes code indistinguishable from what's already here.
 - Ambient motion reads `getAmbientTime()` (respects reduced-motion);
   gameplay timers accumulate real clamped `dt`.
 - Overlay springs: framer `type:'spring'` for playful cards, or the
-  Wii U curve `cubic-bezier(0.22,1,0.36,1)` at 320ms (see
-  ART_DIRECTION UI spec).
+  Wii U curve `cubic-bezier(0.22,1,0.36,1)` at 320ms (see ART_BIBLE.md
+  §13 UI Language).
 
 ## Color & Constants
 

@@ -19,7 +19,8 @@ scene/        what exists (Experience composition, Ground, IslandShadow,
 camera/       CinematicCamera — all camera behavior lives here
 avatar/       the character: model + all procedural animation
 world/        placed structures (LocationPod, Locations, Fountain,
-              Crowd, Villager)
+              Crowd, Villager) and pod dressing props (Tree, Lamppost,
+              FlowerTuft)
 systems/      behavior (movement/: input hook + avatarPose channel)
 hooks/        reusable logic (ambient clock, smoothing, flat-ground
               placement, reduced-motion)
@@ -139,7 +140,9 @@ idle life, waving, and foot shifts are all procedural transforms in one
 - Shared materials per component (useMemo), shared geometries.
 - **Zero allocations in frame loops** — module-level scratch Vector3s.
 - dpr capped at 2; shadow map 1024 tight around the avatar; far plane
-  scaled to the orbit radius.
+  (`CAMERA_FAR`) derives from `SKY_DOME_RADIUS`, not `ISLAND_RADIUS` —
+  deriving it from the island's size once clipped the sky dome out
+  entirely when the island shrank (see PROGRESS.md 2026-07-18).
 - Deterministic seeded randomness (the sky is identical every visit).
 
 ## Asset Organization

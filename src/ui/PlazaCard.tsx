@@ -15,7 +15,7 @@ export const PLAZA_EASE = [0.22, 1, 0.36, 1] as const
  *   3. Content floats on the face with comfortable padding.
  *
  * Enters like an app icon coming to life: scale 0.92 → 1, fade,
- * 320ms, cubic-bezier(0.22,1,0.36,1). Spec: docs/ART_DIRECTION.md.
+ * 320ms, cubic-bezier(0.22,1,0.36,1). Spec: docs/ART_BIBLE.md §13.
  */
 export function PlazaCard({
   children,

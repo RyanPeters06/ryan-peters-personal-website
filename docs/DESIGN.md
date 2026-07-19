@@ -44,28 +44,30 @@ capture the *feeling*, never copy assets, models, or trademarks.
    and waves hello.
 3. **The handoff:** the camera swings around behind him (classic third
    person); a springy keycap card teaches WASD/arrows.
-4. **Exploration:** the visitor strolls the planet. Destinations are
-   sculptural landmarks (see ART_DIRECTION → World Architecture);
+4. **Exploration:** the visitor strolls the plaza. Destinations are
+   sculptural landmarks (see ART_BIBLE.md §11 Landmark Design);
    approaching one springs up a translucent card with its contents —
    no clicks required, like greeting someone in a plaza.
 5. Nothing is modal. The world never stops being playable.
 
 ## Areas of the World (portfolio sections as architecture)
 
-Every area is a landmark from ONE monument family (see ART_DIRECTION →
-World Architecture): a molded monolith grown from the plaza, identical
-construction, distinguished only by its pastel accent and the original
-symbol molded into its face — giant app icons become buildings.
+Every area is a landmark from ONE monument family (see ART_BIBLE.md
+§11 Landmark Design): a molded monolith grown from its own grass pod,
+identical construction, distinguished only by its pastel accent and
+the original symbol molded into its face — giant app icons become
+buildings. All six exist in content and stand on staged pods; only
+Projects has its molded symbol built so far (see `content/locations.ts`,
+`world/Locations.tsx`).
 
 | Area | Molded symbol | Accent | Status |
 |---|---|---|---|
-| Projects | Rounded `</>` mark | Pastel blue | Built (placeholder content) |
-| Experience | Rounded briefcase mark | TBD pastel | Planned |
-| Education | Rounded graduation-cap mark | TBD pastel | Planned |
-| Skills | Rounded spark/bolt mark | TBD pastel | Planned |
-| Contact | Rounded envelope mark | TBD pastel | Planned |
-| Resume | Rounded document mark | TBD pastel | Planned |
-| Achievements | Rounded star mark | TBD pastel | Planned |
+| About | Rounded person mark | Lavender `#CDB9EA` | Pod built; symbol + real content pending |
+| Projects | Rounded `</>` mark | Blue `#A9C9E8` | Built (placeholder content) |
+| Experience | Rounded briefcase mark | Green `#B8E6C9` | Pod built; symbol + real content pending |
+| Skills | Rounded spark mark | Gold `#F2D38F` | Pod built; symbol + real content pending |
+| Contact | Rounded chat-bubble mark | Pink `#F2B8C6` | Pod built; symbol + real content pending |
+| Resume | Rounded document mark | Teal `#A8DDE0` | Pod built; symbol + real content pending |
 
 ## How Visitors Should Feel
 

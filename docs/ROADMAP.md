@@ -26,8 +26,10 @@ Statuses: ✅ done · 🔨 in progress · ⬜ not started
 - **Objective:** an original Mii-language resident.
 - **Features:** head ≈58% proportions, oversized shoes, low face, hood +
   swoosh-fringe hair; breathing/blinking/glances/foot-shifts; one-arm
-  wave greeting; arrival sequence (planet → portrait → wave).
-- **Files:** avatar/Avatar.tsx, store phase state, camera focus mode.
+  wave greeting; arrival sequence (title dissolves → he turns and waves
+  → hands off to free walking), timed off the shared phase machine, no
+  camera mode changes involved (the tableau camera is always fixed).
+- **Files:** avatar/Avatar.tsx, store phase state.
 - **Success:** feels alive within 5 seconds. **Deps:** M1.
 
 ## M3 — Movement ✅
@@ -60,17 +62,18 @@ Statuses: ✅ done · 🔨 in progress · ⬜ not started
 
 ## M5 — Locations & Interaction System 🔨
 - **Objective:** portfolio sections exist as places — as architecture.
-- **Done:** typed content layer (content/locations.ts); LocationPod as
-  a **monument** (one molded monolith growing from a floor swell, its
-  symbol molded flush into the face, accent breathing/brightening on
-  approach — spec in ART_DIRECTION → World Architecture); proximity
-  hysteresis → activeLocation; pillow-shell overlay card; title
-  sequence. First landmark: **Projects** (rounded `</>` mark).
-- **Remaining:** real project content (placeholders now); remaining
-  landmarks — Experience, Education, Skills, Contact, Resume,
-  Achievements — same monument family, each with its own accent +
-  molded symbol; spread placement + possibly a subtle direction hint
-  toward the nearest landmark.
+- **Done:** typed content layer (content/locations.ts) with all **six**
+  locations (About, Projects, Experience, Skills, Contact, Resume);
+  LocationPod as a **monument** (one molded monolith on its own grass
+  pod — steps, trees, lamppost, flush-molded symbol face, accent
+  breathing/brightening on approach — spec in ART_BIBLE.md §11);
+  proximity hysteresis → activeLocation; pillow-shell overlay card;
+  title sequence. Only **Projects** has its molded symbol glyph built
+  (`world/Locations.tsx`'s `SYMBOLS` map) — the other five render an
+  empty face.
+- **Remaining:** real content (all six are placeholders); five more
+  molded symbol glyphs (person, briefcase, spark, chat-bubble,
+  document — see the Areas table in DESIGN.md).
 - **Files:** content/locations.ts, world/*, ui/LocationCard.
 - **Success:** a stranger finds and reads real content unprompted, and
   every landmark is instantly recognizable as one design system.

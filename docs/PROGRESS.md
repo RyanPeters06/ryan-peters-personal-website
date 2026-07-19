@@ -5,6 +5,72 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-19 — Docs consolidation pass
+
+Peter asked for a full pass over every markdown file: fix what's stale,
+cut what's redundant, optimize for what's actually useful as AI
+session-start context (rather than treat `/docs` as append-only).
+
+**Deleted three docs, folding anything durable into ART_BIBLE.md first:**
+- `ART_DIRECTION.md` — fully superseded by `ART_BIBLE.md` since
+  2026-07-17; was supposed to already be "reduced to a one-line
+  pointer" per the old audit but never actually was (still 200 lines
+  of now-contradicted sphere-era spec sitting in the mandatory reading
+  list). Deleted outright.
+- `CODEBASE_AUDIT.md` — a one-time keep/redesign/delete verdict pass
+  that existed to decide and cost the TABLEAU-vs-SPHERE fork. That
+  fork is resolved and shipped; its file-by-file verdicts named files
+  that no longer exist (`spherical.ts`, `Planet.tsx`, `PlanetShadow.tsx`).
+  Its still-actionable items (bloom, sky-blue, staged islands) have all
+  shipped; the one still-open item (PlazaCard's heavy glass) moved into
+  ART_BIBLE.md §13 as a plain note instead of a dangling "see audit."
+- `REFERENCE_ANALYSIS.md` — the concept-art teardown that produced the
+  ranked gap list driving the last week of work. The gap list is now
+  ~entirely resolved (world model, camera, sky, bloom, dressing,
+  fountain). Its durable analysis (squircle shape language, "one
+  molded object" industrial design, A-B-A-B landmark rhythm) was
+  already largely captured in ART_BIBLE.md from its original 2026-07-17
+  consolidation; the one genuinely new insight (A-B-A-B rhythm) got
+  folded into ART_BIBLE.md §9.
+
+**Fixed remaining staleness across the survivors:**
+- `CLAUDE.md` — mandatory reading list still said "world model decided:
+  TABLEAU on the sphere" (wrong since the 07-18 flat-island rewrite);
+  removed the two deleted docs, added `DESIGN_SYSTEM.md` (was never
+  listed despite being load-bearing).
+- `ART_BIBLE.md` — sky-gradient and bloom-threshold values in §6 were
+  the pre-fix numbers; §8 still carried `[TABLEAU]`/`[SPHERE]` fork
+  brackets for a decision that's no longer a fork; §9's "generous
+  negative space, emptiness is a feature" directly contradicted the
+  tight-framing calls from the last two sessions; §11 described pod
+  dressing as a future `[TABLEAU]` bracket instead of shipped work.
+- `ROADMAP.md` — M2 described a "planet → portrait → wave" arrival and
+  a "camera focus mode" that don't exist in the tableau model; M5
+  listed Education/Achievements (never built) and omitted About (which
+  exists) — corrected against the actual `content/locations.ts`.
+- `DESIGN.md` — Areas table had the same wrong location list; fixed to
+  match reality and noted only Projects has its molded symbol built.
+- `ARCHITECTURE.md`, `CODING_STANDARDS.md`, `REFERENCES.md` — repointed
+  every `ART_DIRECTION.md` cross-reference to `ART_BIBLE.md`; fixed a
+  stale "far plane scaled to the orbit radius" comment (it's
+  `SKY_DOME_RADIUS` now, on purpose — see 07-18's haze-fix entry);
+  added `Tree`/`Lamppost`/`FlowerTuft` to the folder-structure listing;
+  replaced `REFERENCES.md`'s stale chase/orbit camera section with the
+  current fixed-tableau framing.
+- `src/ui/PlazaCard.tsx` — one stray code comment pointed at the
+  deleted `ART_DIRECTION.md`; repointed.
+- `README.md` (repo root, public-facing) — still called the project "A
+  Tiny World" / "planet," and its Architecture Notes section described
+  `spherical.ts` and `Planet.tsx` as the load-bearing math/floor files;
+  both were deleted in the 07-18 rewrite. Rewritten for the current
+  flat-island architecture.
+
+**Net result:** 8 docs (was 11) + CLAUDE.md + README.md, all internally
+consistent with the shipped flat-island/pod build. Only non-doc touch:
+one stray code comment in `PlazaCard.tsx` pointing at a deleted file.
+
+---
+
 ## 2026-07-18 — Landmark pods + fountain globe (reference-matched dressing)
 
 **Current milestone:** M4 (World Dressing) — pods shipped; M5 unaffected
