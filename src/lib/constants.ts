@@ -36,10 +36,22 @@ export const AVATAR_SPAWN_Z = 3.4
  * plaza reads as a compressed diorama on a table (~37 degrees down).
  * The character walks freely WITHIN the frame (leashed to the island);
  * the camera never follows. Mouse adds only a gentle eased look. */
-export const TABLEAU_CAMERA_POS: readonly [number, number, number] = [0, 9.5, 15.5]
-export const TABLEAU_CAMERA_TARGET: readonly [number, number, number] = [0, 3.4, -2]
+/** Standing IN the plaza, not looking AT an object (revised
+ * 2026-07-19 per the reference): ~25 degree down-pitch, positioned so
+ * the disc's NEAR rim is just below the frame's bottom edge — ground
+ * runs off the bottom of the screen, the drop-off only shows at far
+ * left/right past the outer panels. Avatar centers ~65% down frame;
+ * sky fills the top ~38%. If these move, re-check three coupled
+ * things: the near-rim ray (rim at z=+ISLAND_RADIUS must stay outside
+ * the bottom half-fov), the sky shader's gradient stops (Sky.tsx,
+ * calibrated to this frustum's elevation band), and TitleWorld's
+ * anchor. */
+export const TABLEAU_CAMERA_POS: readonly [number, number, number] = [0, 5.9, 12]
+export const TABLEAU_CAMERA_TARGET: readonly [number, number, number] = [0, 0.45, -0.5]
 export const TABLEAU_FOV = 42
-/** Static fog band: plaza crisp; distance melts into the sky. */
+/** Static fog band: plaza crisp (far panels sit ~21u from the camera,
+ *  the far rim ~23u — fog must start beyond both or they wash out);
+ *  distance melts into the sky. */
 export const TABLEAU_FOG: readonly [number, number] = [26, 60]
 /** How far from the island's center the character may wander — the
  *  stage ends before the edge does. */

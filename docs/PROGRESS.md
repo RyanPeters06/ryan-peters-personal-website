@@ -5,6 +5,60 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-19 — Standing in the plaza: sun behind, camera low, ink'd panels
+
+Three-part reference-alignment pass (lighting → camera → panels, each
+verified independently per Peter's brief).
+
+### Lighting: sun pushed behind the scene
+Light was already directional (parallel rays ✓) but sat on the
+CAMERA's side of the scene (`SUN_DIR z = +0.55`), throwing shadows
+toward the back. Reference wants shadows cast forward-right toward
+the foreground/player → z flipped negative: `SUN_DIR (-0.85,2.2,0.55)
+→ (-0.8,2.5,-0.55)`, distance 28→30. Elevation ~69° keeps shadows
+short. Shadow frustum (±ISLAND_RADIUS+2, near 10/far 55) still covers
+the disc from the new position — verified, no change needed.
+
+### Camera: standing IN the plaza, not looking AT it
+The defining note from the reference: **the disc's near rim is never
+visible** — ground runs off the bottom of frame; drop-off only shows
+past the outer panels. Old rig `[0,9.5,15.5]→[0,3.4,-2]` fov 42
+(pitch ~19°) showed the whole rim like an object on a table.
+- First attempt honored all of the brief's numbers (pitch 25°, avatar
+  60-65% down, rim hidden, sky 35-40%) simultaneously → geometry
+  forced the camera far back (`[0,10.9,19.3]`), which made the plaza
+  tiny AND brought the rim back into frame. **The four constraints
+  are mutually over-constrained** — hiding the rim with the avatar at
+  65% down demands a low, close camera, which caps sky at ~30%.
+- Final rig: `POS [0,5.9,12]`, `TARGET [0,0.45,-0.5]`, fov 42 —
+  pitch 23.6°, camera nearly above the front rim (rim ray 76° below
+  horizontal vs 44.6° bottom edge → comfortably hidden), avatar ~65%
+  down, panels ~87% of frame width, sky ~30% (the geometric max;
+  noted as the accepted tradeoff vs the 35-40% ask).
+- Coupled retunes that MUST follow any camera move (now noted in
+  constants.ts): sky-shader gradient stops re-centered on the new
+  elevation band (−0.24..−0.04), DOF focus distance 19→10 (avatar is
+  ~10u away now), fog back to [26,60] (panels ~21u away).
+
+### Panels: white + gradient + big saturated ink
+- Face tint removed entirely (was 14% accent lerp — still read
+  "greenish/pinkish"); replaced with a **baked diagonal gradient**
+  (brighter top-left, shaded bottom-right, ±3.4%, onBeforeCompile on
+  the face material) echoing the sun.
+- Icons scaled per-symbol to ~35-40% of panel width (raw builds were
+  17-43%, very uneven): `SYMBOL_SCALE` map in Locations.tsx.
+- Labels: fontSize 0.24→0.33 (9.4%→13% of panel height), moved from
+  y≈0.6 (near the face's bottom edge, reading clipped) to y≈1.1 —
+  directly beneath the icon, well inside the face.
+- **New ink-color rule:** icon + label use the accent pushed deeper
+  (`offsetHSL(0, +0.26, −0.13)`) — the raw pastels are surface-tint
+  colors and wash out as text/glyphs on white. Same hue, more ink.
+  Raw accent stays for emissive glow, cards, and surface washes.
+
+Verified live at each step; `tsc -b` + `npm run build` clean.
+
+---
+
 ## 2026-07-19 — Panel color split: white bodies, accent icons/labels
 
 Peter's correction on the panel treatment: the reference has **white/

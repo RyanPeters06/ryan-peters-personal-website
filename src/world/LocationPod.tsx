@@ -62,14 +62,62 @@ export function LocationPod({
   // The monument now stands on the platform's top, not the bare floor.
   const bodyY = P.height + B.height / 2 - B.sink
 
+  // The icon/label ink: the accent pushed deeper and more saturated so
+  // it's confidently legible on the white card at viewing distance —
+  // the raw pastel accents (tuned for tinting surfaces) read washed
+  // out as text. Same hue, just more ink.
+  const inkAccent = useMemo(
+    () => `#${new Color(location.accent).offsetHSL(0, 0.26, -0.13).getHexString()}`,
+    [location.accent],
+  )
+
   const materials = useMemo(() => {
     const accent = new Color(location.accent)
     // White/frosted card (Peter's call, 2026-07-19, matching the
     // reference): the body is soft white plastic like every other
     // neutral surface — the accent lives ONLY in the icon glyph and
     // the label text, plus a whisper of emissive breathing from
-    // within. (This reverts the fully-saturated-body treatment from
-    // earlier the same day.)
+    // within.
+    // The face carries a very gentle diagonal gradient (brighter
+    // top-left, softly shaded bottom-right, echoing the sun) baked in
+    // via onBeforeCompile — NO accent tint (the earlier 14% wash still
+    // read as "greenish/pinkish body" at a glance).
+    const face = new MeshStandardMaterial({
+      color: '#ffffff',
+      roughness: 0.22,
+      emissive: accent,
+      emissiveIntensity: 0.05,
+    })
+    const W = LANDMARK.body.faceWidth.toFixed(4)
+    const H = LANDMARK.body.faceHeight.toFixed(4)
+    face.onBeforeCompile = (shader) => {
+      shader.vertexShader = shader.vertexShader
+        .replace(
+          '#include <common>',
+          `#include <common>
+varying vec3 vFaceLocal;`,
+        )
+        .replace(
+          '#include <begin_vertex>',
+          `#include <begin_vertex>
+vFaceLocal = position;`,
+        )
+      shader.fragmentShader = shader.fragmentShader
+        .replace(
+          '#include <common>',
+          `#include <common>
+varying vec3 vFaceLocal;`,
+        )
+        .replace(
+          '#include <color_fragment>',
+          `#include <color_fragment>
+{
+  // 1.0 at the top-left corner, 0.0 at the bottom-right.
+  float tl = clamp(((0.5 - vFaceLocal.x / ${W}) + (vFaceLocal.y / ${H} + 0.5)) * 0.5, 0.0, 1.0);
+  diffuseColor.rgb *= 0.966 + tl * 0.068;
+}`,
+        )
+    }
     return {
       body: new MeshStandardMaterial({
         color: '#ffffff',
@@ -77,14 +125,7 @@ export function LocationPod({
         emissive: accent,
         emissiveIntensity: GLOW.bodyIdle,
       }),
-      // The inset face: frosted near-white with only a faint accent
-      // wash — the two-shot molding cue, not a color fill.
-      face: new MeshStandardMaterial({
-        color: new Color('#ffffff').lerp(accent, 0.14),
-        roughness: 0.22,
-        emissive: accent,
-        emissiveIntensity: 0.05,
-      }),
+      face,
       // The swell atop the platform, meeting the monument — ground
       // material, so it reads as the platform rising, never a pedestal.
       swell: new MeshStandardMaterial({ color: PALETTE.ground, roughness: 0.5 }),
@@ -199,15 +240,17 @@ export function LocationPod({
       <group position={[0, P.height + LANDMARK.symbol.centerY, B.depth / 2 + 0.028]}>
         {children}
       </group>
-      {/* 3b — the label: the location's accent, readable on the white card */}
+      {/* 3b — the label: directly beneath the icon, well inside the
+          face (never near the bottom edge), ~13% of the panel's height,
+          in the deepened accent ink. */}
       <Text
         font={fontUrl}
-        fontSize={0.24}
-        letterSpacing={0.08}
-        color={location.accent}
+        fontSize={0.33}
+        letterSpacing={0.04}
+        color={inkAccent}
         anchorX="center"
         anchorY="middle"
-        position={[0, bodyY - 0.62, B.depth / 2 + 0.02]}
+        position={[0, bodyY - 0.1, B.depth / 2 + 0.02]}
       >
         {location.name}
       </Text>

@@ -39,8 +39,8 @@ void main() {
   // the deeper top blue fully in by the top of the frame. (Stops at
   // h >= 0 look correct on paper and render as a flat white void.)
   float h = clamp(normalize(vDir).y, -1.0, 1.0);
-  vec3 col = mix(uHorizon, uMid, smoothstep(-0.29, -0.19, h));
-  col = mix(col, uTop, smoothstep(-0.21, -0.05, h));
+  vec3 col = mix(uHorizon, uMid, smoothstep(-0.24, -0.16, h));
+  col = mix(col, uTop, smoothstep(-0.18, -0.04, h));
   gl_FragColor = vec4(col, 1.0);
 }
 `

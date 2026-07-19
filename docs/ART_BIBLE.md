@@ -140,13 +140,15 @@ painted textures anywhere.
   dropped shadows from every landmark, tree, and bench. The shadow
   camera now covers the whole island (`ISLAND_RADIUS + 2`) from a
   fixed direction — see `scene/lighting/Lighting.tsx`.
-- **Sun angle: upper-left of the camera's view, shadows falling lower-
-  right** (tuned 2026-07-19 to match the reference exactly). Screen-
-  right for the tableau camera is world `+X`; the sun's `SUN_DIR` needs
-  a **negative x** to read as upper-left — a same-magnitude positive x
-  was tried first and put the sun upper-*right* instead, the mirror
-  image of the reference. If the camera rig ever changes, re-derive
-  screen-left/right before retuning this.
+- **Sun angle: upper-left of the camera's view AND behind the scene,
+  shadows falling short toward the lower-right foreground** (final
+  2026-07-19). Screen-right for the tableau camera is world `+X`, and
+  the camera sits on `+Z` — so `SUN_DIR` needs **negative x** (left)
+  and **negative z** (behind the panels), with high elevation (~69°)
+  so shadows stay short, never dramatic streaks. Both signs were
+  gotten wrong once each: positive x put the sun upper-right, and
+  positive z put it on the camera's side throwing shadows backward.
+  If the camera rig ever changes, re-derive screen-left/right first.
 - **Shadows are genuinely soft** via `VSMShadowMap`
   (`shadows="variance"` on the Canvas), not the deprecated
   `PCFSoftShadowMap` — R3F's `shadows` boolean/`"soft"` string both
@@ -219,14 +221,19 @@ black. If a color feels "corporate" or "techy," it is wrong.
   move accelerates and settles.
 - The camera **breathes** — always a whisper of drift, never locked
   fully static.
-- **One fixed elevated 3/4 hero angle** (~35–40° down) that frames the
-  whole plaza with the player low-center and the landmark arc behind —
-  never a chase or orbit; the camera never follows. Gentle mouse-look
-  parallax only; the composition stays legible always. `camera.up` is
+- **One fixed hero angle, standing IN the plaza** (final 2026-07-19):
+  low and close (~24° down-pitch, fov 42), positioned nearly above the
+  disc's front rim so **the near edge is never in frame** — ground
+  runs off the bottom of the screen; the drop-off shows only at far
+  left/right past the outer panels. Never a chase or orbit; the camera
+  never follows. Gentle mouse-look parallax only. `camera.up` is
   always world +Y (the ground has no curvature to level against).
-- Framing rule: the player rides **low-center**; the horizon sits
-  roughly 40–50% down the frame — enough sky to read as a place with
-  air above it, not so much the plaza reads distant or small.
+- Framing rule: the player rides **center, ~65% down the frame**; the
+  panel arc spans most of the frame's width; sky fills the top ~30%.
+  (A 35–40% sky ask was tried and is geometrically incompatible with
+  hiding the near rim while keeping the avatar at 65% — the four
+  constraints over-determine the rig; ~30% is the max. See PROGRESS
+  2026-07-19.)
 
 ## 9. Composition Rules
 
@@ -282,10 +289,19 @@ architecture's life is light, not hopping.
   carries only a faint accent wash (~14% lerp, the two-shot molding
   cue), and the accent still breathes as faint emissive from within
   the white body.
-- **Symbols and labels are accent-colored** against the white card.
-  All six locations have a molded symbol: person (About), `</>`
-  (Projects), briefcase (Experience), gear (Skills), chat bubble
-  (Contact), document (Resume) — see `world/Locations.tsx`.
+- **Symbols and labels use the accent as INK, pushed deeper** — the
+  raw pastel accents are surface-tint colors and wash out as
+  text/glyphs on white, so icon + label use
+  `accent.offsetHSL(0, +0.26, −0.13)` (same hue, more saturation and
+  depth) while the raw accent stays for emissive glow and UI washes.
+  Icons land at ~35–40% of the panel's width (`SYMBOL_SCALE` in
+  `world/Locations.tsx`), centered in the face's upper portion; the
+  label sits directly beneath at ~13% of the panel's height, well
+  inside the face — never at the bottom edge. All six locations have
+  a molded symbol: person (About), `</>` (Projects), briefcase
+  (Experience), gear (Skills), chat bubble (Contact), document
+  (Resume). The face carries a whisper of diagonal gradient (brighter
+  top-left, ±3.4%) echoing the sun — no accent tint in the body.
 - **Grown from the world**, never set on top: the base sinks into a
   swell atop a **low, barely-raised platform** — two shallow steps,
   the shared plaza tile material, one flanking tree, a flower tuft

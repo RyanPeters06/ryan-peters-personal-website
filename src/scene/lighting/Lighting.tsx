@@ -16,11 +16,15 @@ import { ISLAND_RADIUS, PALETTE } from '@/lib/constants'
  * covers the whole island from a fixed direction instead.
  */
 // Screen-right for the tableau camera is world +X (viewDir x up), so a
-// light meant to read as upper-LEFT needs a NEGATIVE x — the previous
-// +0.8 put the sun upper-right, shadows falling lower-left, the mirror
-// of the reference's upper-left sun / lower-right shadows.
-const SUN_DIR = new Vector3(-0.85, 2.2, 0.55).normalize()
-const SUN_DISTANCE = 28
+// light meant to read as upper-LEFT needs a NEGATIVE x. It also needs
+// a NEGATIVE z: the camera sits on +Z, so "pushed back behind the
+// scene" is the -Z side — shadows then cast forward-right toward the
+// foreground and the player, like the reference. (The previous +0.55 z
+// had the sun on the camera's side, throwing shadows toward the back.)
+// High elevation (~69 degrees) keeps the shadows short and soft, not
+// long dramatic streaks.
+const SUN_DIR = new Vector3(-0.8, 2.5, -0.55).normalize()
+const SUN_DISTANCE = 30
 const SUN_POSITION: [number, number, number] = [
   SUN_DIR.x * SUN_DISTANCE,
   SUN_DIR.y * SUN_DISTANCE,

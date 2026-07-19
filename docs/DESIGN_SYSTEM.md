@@ -42,11 +42,15 @@ PlazaDressing.tsx`, scattered across the open plaza — see `LAMPPOSTS`/
 pattern as `Crowd.tsx`'s `GROUPS`).
 
 **Landmark body color** (final, 2026-07-19): body is **white**
-(`#ffffff`, faint accent emissive breathing); inset face is white with
-a ~14% accent lerp (frosted wash). Symbols and labels carry the
-accent color — the accent lives only there, per the reference. (A
-same-day saturated-body experiment — body ~68% accent, white symbols —
-was reverted; see ART_BIBLE.md §11.)
+(`#ffffff`, faint accent emissive breathing); inset face is **pure
+white** with a baked ±3.4% diagonal gradient (brighter top-left) — no
+accent tint anywhere in the body. Symbols and labels carry the accent
+**as ink, deepened** via `offsetHSL(0, +0.26, −0.13)`; raw accents
+stay for glow/washes. Icon ≈35–40% of panel width (`SYMBOL_SCALE`);
+label fontSize 0.33 (~13% of panel height) directly beneath the icon
+at y≈1.1, never near the face's bottom edge. (A same-day
+saturated-body experiment — body ~68% accent, white symbols — was
+reverted; see ART_BIBLE.md §11.)
 
 ## 3. Corner Radii (the squircle law)
 

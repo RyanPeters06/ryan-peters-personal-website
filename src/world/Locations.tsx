@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { MeshStandardMaterial } from 'three'
+import { Color, MeshStandardMaterial } from 'three'
 import { LOCATIONS } from '@/content/locations'
 import type { WorldLocation } from '@/content/locations'
 import { LocationPod } from '@/world/LocationPod'
@@ -20,12 +20,15 @@ import { GLOW, LANDMARK } from '@/lib/designSystem'
  * approach.
  */
 
-/** Shared breathing-glow material + animation for every symbol. */
+/** Shared breathing-glow material + animation for every symbol. The
+ *  color is the accent pushed deeper/more saturated (matching the
+ *  label ink in LocationPod) so glyphs read confidently against the
+ *  white card; the emissive breathing stays on the raw accent. */
 function useSymbolMaterial(location: WorldLocation): MeshStandardMaterial {
   const material = useMemo(
     () =>
       new MeshStandardMaterial({
-        color: location.accent,
+        color: new Color(location.accent).offsetHSL(0, 0.26, -0.13),
         roughness: 0.3,
         emissive: location.accent,
         emissiveIntensity: 0.22,
@@ -176,6 +179,18 @@ function PersonSymbol({ location }: { location: WorldLocation }) {
   )
 }
 
+/** Per-symbol uniform scale so every glyph lands at ~35-40% of the
+ *  panel's width (0.74-0.84 world units on the 2.1-wide body) — the
+ *  raw primitive builds range from 0.36 to 0.9 wide, far too uneven. */
+const SYMBOL_SCALE: Record<string, number> = {
+  about: 1.55,
+  projects: 0.95,
+  experience: 1.5,
+  skills: 1.45,
+  contact: 1.5,
+  resume: 1.4,
+}
+
 const SYMBOLS: Record<string, (loc: WorldLocation) => ReactNode> = {
   about: (loc) => <PersonSymbol location={loc} />,
   projects: (loc) => <CodeSymbol location={loc} />,
@@ -185,13 +200,13 @@ const SYMBOLS: Record<string, (loc: WorldLocation) => ReactNode> = {
   resume: (loc) => <DocumentSymbol location={loc} />,
 }
 
-/** Every portfolio landmark standing on the planet. */
+/** Every portfolio landmark standing on the plaza. */
 export function Locations() {
   return (
     <>
       {LOCATIONS.map((loc) => (
         <LocationPod key={loc.id} location={loc}>
-          {SYMBOLS[loc.id]?.(loc)}
+          <group scale={SYMBOL_SCALE[loc.id] ?? 1}>{SYMBOLS[loc.id]?.(loc)}</group>
         </LocationPod>
       ))}
     </>
