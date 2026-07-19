@@ -25,12 +25,17 @@ anywhere, plain XZ world coordinates, no lat/lon or great-circle math.
   frame. It never follows. Mouse adds only a gentle eased look-around
   (see `TABLEAU_*` constants + `CinematicCamera.tsx`).
 - **The stage is a flat disc (`Ground.tsx`), radius `ISLAND_RADIUS`.**
-  It ends at a defined rounded edge and drops off into open sky —
-  there is no decorative planet ornament and no orbit ring anywhere in
-  the scene. The fountain centerpiece sits at the exact center; the
-  six landmarks fan in a horseshoe opening toward the camera (screen
-  left→right: About, Projects, Experience, Skills, Contact, Resume),
-  each rotated to face the center.
+  It ends at a defined rounded edge and drops off into open sky. The
+  fountain centerpiece (`world/Fountain.tsx`) sits at the exact
+  center: a white basin and grass ring holding a **small ringed blue
+  globe** — reinstated 2026-07-18 per Peter's reference mockup, sized
+  and staged as a modest mascot (basin-height, gentle bob/spin), not
+  the earlier large freestanding planet-plus-orbit-ring ornament that
+  was retired the same day. The six landmarks fan in a horseshoe
+  opening toward the camera (screen left→right: About, Projects,
+  Experience, Skills, Contact, Resume), each on its own small grass
+  mound (steps, two trees, a lamppost, a flower tuft — see `POD` in
+  `designSystem.ts`), rotated to face the center.
 - **The character still walks (WASD)** — freely *within* the frame,
   softly leashed to a walk radius around the island's center
   (`TABLEAU_WALK_RADIUS`; the stage ends where the frame does). Spawns
@@ -288,7 +293,12 @@ quiet and optional.
   seasonal lavender/pink). Lamps are white posts with a softly glowing
   bulb. A **central fountain** with a slowly spinning little planet is
   the plaza's heart and a self-referential wink.
-- **Generous emptiness** between landmarks — room to breathe and wander.
+- **Tight, filled composition** (revised 2026-07-18 per Peter's framing
+  passes): the tableau camera dollies in close enough that the pod
+  arc, avatar, and crowd occupy most of the frame — minimal empty
+  ground at the edges or between camera and plaza. Breathing room
+  lives *within* a pod (mound, steps, trees) and between neighboring
+  pods, not as a wide empty ring around the whole composition.
 
 ## 16. Scale Rules
 

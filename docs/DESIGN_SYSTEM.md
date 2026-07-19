@@ -28,7 +28,12 @@ One mold for every location. Differ ONLY in accent + symbol + label.
 | Ground swell | 3.1 × 0.16 × 3.1, r 0.08 | Floor material |
 | Symbol zone | 0.9 wide, centered at y ≈ 1.56 | Upper-middle of face |
 | Symbol stroke | capsule r 0.055, flush molded | ~0.02 proud |
-| Future: island | grass disc ≈ 3.8 ⌀, steps 1.2 wide | [staging, Phase 3] |
+| Mound | truncated cone, top r 1.85, base r 2.35, h 0.46 | Grass; monument stands on top |
+| Steps | 3, embedded in mound's front (+Z) slope | White; see `POD.steps` |
+| Trees | 2 per pod, flanking at mound corners | Green or blossom-pink canopy |
+| Lamppost / flowers | 1 each per pod | See `world/Lamppost.tsx`, `FlowerTuft.tsx` |
+
+Pod dressing tokens live in `POD` (designSystem.ts), shipped 2026-07-18.
 
 ## 3. Corner Radii (the squircle law)
 

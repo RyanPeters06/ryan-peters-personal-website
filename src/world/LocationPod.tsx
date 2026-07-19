@@ -8,21 +8,28 @@ import { useWorldStore } from '@/store/useWorldStore'
 import { avatarPose } from '@/systems/movement/avatarPose'
 import { expDamp } from '@/lib/math/damp'
 import { PALETTE } from '@/lib/constants'
-import { GLOW, LANDMARK } from '@/lib/designSystem'
+import { GLOW, LANDMARK, POD, ROUGHNESS } from '@/lib/designSystem'
+import { Tree } from '@/world/Tree'
+import { Lamppost } from '@/world/Lamppost'
+import { FlowerTuft } from '@/world/FlowerTuft'
 import fontUrl from '@fontsource/quicksand/files/quicksand-latin-700-normal.woff?url'
 
 /**
- * A landmark monument — the design language every location inherits.
+ * A landmark pod — the design language every location inherits.
  *
- * A giant app icon that became architecture, built exactly like the
- * UI's pillow shell so building and interface are one system:
+ * A giant app icon that became architecture, standing on its own
+ * small grassy mound (a truncated cone: flat top, sloped sides,
+ * steps embedded in the front) so each landmark reads as its own
+ * little place, not just a sign stuck in the shared plaza:
  *
- *   1. BODY — one continuous pillowy white monolith (extremely soft
- *      bevels), its base sunk into a swell of the floor itself.
- *   2. INSET FACE — a flush, accent-washed panel molded into the
+ *   1. MOUND — grass-topped hill, three steps down to the plaza.
+ *   2. BODY — one continuous pillowy white monolith (extremely soft
+ *      bevels), its base sunk into a swell atop the mound.
+ *   3. INSET FACE — a flush, accent-washed panel molded into the
  *      front, barely proud of the surface (two-shot molding).
- *   3. SYMBOL + LABEL — the location's rounded glyph and its name in
+ *   4. SYMBOL + LABEL — the location's rounded glyph and its name in
  *      the accent color, molded onto the face.
+ *   5. DRESSING — two flanking trees, a lamppost, a flower tuft.
  *
  * Nothing is assembled; everything reads as manufactured in one pour.
  * The accent breathes as light inside the body and brightens on
@@ -48,7 +55,9 @@ export function LocationPod({
   )
 
   const { body: B, swell: S } = LANDMARK
-  const bodyY = B.height / 2 - B.sink
+  const { mound: M } = POD
+  // The monument now stands on the mound's flat top, not the plaza floor.
+  const bodyY = M.height + B.height / 2 - B.sink
 
   const materials = useMemo(() => {
     const accent = new Color(location.accent)
@@ -69,9 +78,12 @@ export function LocationPod({
         emissive: accent,
         emissiveIntensity: 0.05,
       }),
-      // The floor swelling up to meet the monument — ground material,
-      // so it reads as the world rising, never a pedestal.
+      // The swell atop the mound, meeting the monument — ground
+      // material, so it reads as the mound rising, never a pedestal.
       swell: new MeshStandardMaterial({ color: PALETTE.ground, roughness: 0.5 }),
+      // The mound: a grassy hill the pod stands on.
+      moundTop: new MeshStandardMaterial({ color: PALETTE.grass, roughness: ROUGHNESS.foliage }),
+      step: new MeshStandardMaterial({ color: '#ffffff', roughness: 0.3 }),
     }
   }, [location.accent])
 
@@ -104,12 +116,50 @@ export function LocationPod({
   return (
     <group position={position} quaternion={quaternion}>
       <group rotation-y={yaw}>
-      {/* The floor rising gently to meet the monument */}
+      {/* The mound: a grassy hill, flat on top, sloped sides meeting
+          the plaza flush at its base — the pod's own little place. */}
+      <mesh
+        material={materials.moundTop}
+        position={[0, M.height / 2, 0]}
+        receiveShadow
+        castShadow
+      >
+        <cylinderGeometry args={[M.topRadius, M.baseRadius, M.height, 28]} />
+      </mesh>
+      {/* Three steps embedded in the mound's front slope, descending
+          toward the plaza (+Z, the direction the pod faces). */}
+      {POD.steps.map((s, i) => (
+        <RoundedBox
+          key={i}
+          args={[s.width, 0.16, s.depth]}
+          radius={0.05}
+          smoothness={3}
+          position={[0, s.y, s.z]}
+          material={materials.step}
+          receiveShadow
+          castShadow
+        />
+      ))}
+      {/* Dressing: two flanking trees, a lamppost, a flower tuft —
+          all riding on the mound's flat top. */}
+      <group position={[-POD.trees.x, M.height, POD.trees.z]}>
+        <Tree variant={location.treeVariant} scale={1.7} />
+      </group>
+      <group position={[POD.trees.x, M.height, POD.trees.z]}>
+        <Tree variant={location.treeVariant} scale={1.85} />
+      </group>
+      <group position={[POD.lamp.x, M.height, POD.lamp.z]}>
+        <Lamppost />
+      </group>
+      <group position={[POD.flowers.x, M.height, POD.flowers.z]}>
+        <FlowerTuft />
+      </group>
+      {/* The mound top rising gently to meet the monument */}
       <RoundedBox
         args={[S.width, S.height, S.depth]}
         radius={S.radius}
         smoothness={4}
-        position={[0, S.height / 2 - S.sink, 0]}
+        position={[0, M.height + S.height / 2 - S.sink, 0]}
         material={materials.swell}
         receiveShadow
       />
@@ -132,7 +182,7 @@ export function LocationPod({
         material={materials.face}
       />
       {/* 3a — the symbol, molded into the face's upper half */}
-      <group position={[0, LANDMARK.symbol.centerY, B.depth / 2 + 0.028]}>
+      <group position={[0, M.height + LANDMARK.symbol.centerY, B.depth / 2 + 0.028]}>
         {children}
       </group>
       {/* 3b — the label: the location's name in its accent */}

@@ -40,16 +40,20 @@ Statuses: ✅ done · 🔨 in progress · ⬜ not started
 - **Success:** walking around the plaza feels natural; controls not
   inverted (see ARCHITECTURE sign conventions). **Deps:** M2.
 
-## M4 — World Dressing 🔨 (atmosphere + crowd done)
+## M4 — World Dressing 🔨 (atmosphere + crowd + pods done)
 - **Objective:** the walks between destinations feel rewarding.
 - **Done:** spring-morning atmosphere (gradient dome, blue ambient,
   personal sun, per-shot fog). **Background crowd** (~24 villagers,
   player-height, varied pastel hair/shirts, chat circles facing inward
   with nods and hops; everyone takes slow strolls between destinations —
   circle members walk out and return home. Deterministic seed, shared
-  geometry/material pools).
-- **Remaining:** benches, lamps, little trees/planters, path hints —
-  all rounded/toy-like, instanced, gently animated.
+  geometry/material pools). **Landmark pods** (2026-07-18): every
+  monument now stands on its own grass mound with 3 embedded steps
+  down to the plaza, two flanking trees (green or blossom-pink canopy
+  per location), a lamppost, and a flower tuft — world/Tree.tsx,
+  Lamppost.tsx, FlowerTuft.tsx, tokens in designSystem.ts POD.
+- **Remaining:** benches, path hints — rounded/toy-like, instanced,
+  gently animated.
 - **Files:** world/* (new props), scene/lighting.
 - **Success:** every camera angle has something charming in it.
   **Deps:** M1 (visual), M5 (placement makes sense around pods).

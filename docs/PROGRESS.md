@@ -5,6 +5,60 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-18 — Landmark pods + fountain globe (reference-matched dressing)
+
+**Current milestone:** M4 (World Dressing) — pods shipped; M5 unaffected
+
+Peter shared his original mockup image mid-session and, given a choice
+between (a) just finishing the in-flight haze/framing fix, (b) also
+reinstating the fountain's ringed globe, or (c) going all the way to
+match the reference's per-landmark grass pods, **picked (c), full
+scope.** Two things shipped together:
+
+### 1. Bloom haze fixed (root cause, not a guess)
+The white glow band washing out the horizon and panels was **not**
+fog or the sky shader — it was `GLOW.bloom.threshold: 0.9` under
+`NoToneMapping`: the plaza's near-white sky/fog/tile surfaces
+genuinely hit ~0.9+ luminance under the scene's flat lighting, so
+*ordinary geometry* bloomed, not just highlights. Threshold raised to
+0.97, intensity 0.22→0.18, smoothing 0.25→0.15 — bloom now only
+catches real highlights (accent glow, lantern), never general white
+surfaces. (designSystem.ts GLOW.bloom)
+
+### 2. Landmark pods (new — matches the reference mockup)
+Every monument now stands on its own small grass mound instead of
+sitting flush on the shared plaza tile:
+- **Mound**: a truncated cone (flat top, sloped sides), grass-topped,
+  meeting the plaza flush at its base. Three steps embed into the
+  front slope, descending toward the plaza center.
+- **Dressing**: two flanking trees (`world/Tree.tsx` — cartoon-cloud
+  canopy construction, green or blossom-pink per location via new
+  `treeVariant` content field), a lamppost (`Lamppost.tsx`, emissive
+  lantern, no real light), a small flower tuft (`FlowerTuft.tsx`).
+- All tokens in `POD` (designSystem.ts) — mound radii/height, step
+  positions, prop offsets. `ISLAND_RADIUS` grown 11→12.5 so the
+  island's cliff edge clears the wider mounds instead of clipping
+  them.
+- **Fountain reinstated a small ringed globe** — reverses the
+  "no planet ornament" call from earlier the same day, per the
+  reference: basin + grass ring (kept) + a modest bobbing/spinning
+  ringed sphere (brought back, ~40% the size of the original retired
+  ornament, no separate orbit-ring mesh).
+- Camera widened to fit the wider composition:
+  `[0,10.5,14.5]/fov 38` → `[0,11.5,16.5]/fov 44`. `TABLEAU_CAMERA_TARGET`
+  y unchanged.
+- Verified live via the Browser pane (Playwright MCP was disconnected
+  mid-session; Claude in Chrome had no browser connected either — the
+  in-app pane worked this time, contradicting [[browser-pane-no-raf]]
+  intermittently. See that memory for the retry pattern that worked:
+  resize to a preset, click/scroll to nudge focus, wait 2-3s.).
+  `tsc -b` and `npm run build` both clean.
+- **Open follow-up:** the top-right icon buttons (map/people/settings)
+  and benches visible in the reference are not yet built — out of
+  scope for this pass, flagged for a future M4/M9 UI session.
+
+---
+
 ## 2026-07-18 — THE FLAT ISLAND (world model pivot, off the sphere)
 
 **Current milestone:** M5 (Locations) — world-model rewrite, content

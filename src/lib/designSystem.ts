@@ -44,6 +44,27 @@ export const LANDMARK = {
   exitDistance: 3.6,
 } as const
 
+/** ---- Landmark pods: each monument stands on its own small grassy
+ * mound — a truncated cone (flat top, sloped sides) so trees, the
+ * lamppost, and the monument itself all place at one known height
+ * (POD.mound.height). Three steps embed into the front (+Z, toward
+ * the plaza center) slope; the rest of the mound's base meets the
+ * plaza tile flush, no seam. */
+export const POD = {
+  mound: { topRadius: 1.85, baseRadius: 2.35, height: 0.46 },
+  steps: [
+    { y: 0.36, z: 1.55, width: 1.5, depth: 0.55 },
+    { y: 0.2, z: 1.95, width: 1.65, depth: 0.55 },
+    { y: 0.04, z: 2.35, width: 1.8, depth: 0.6 },
+  ],
+  /** Trees flank the monument at the back corners of the mound. */
+  trees: { x: 1.35, z: -0.55 },
+  /** The lamppost stands beside the steps. */
+  lamp: { x: 1.55, z: 1.1 },
+  /** Little flower tuft at the base of the steps. */
+  flowers: { x: -1.5, z: 1.9 },
+} as const
+
 /** ---- Corner radii: fraction of the shorter side (squircle law) ----- */
 export const RADIUS_RATIO = {
   pillow: 0.28, // hero: landmark faces, cards, pills (24–33%)
@@ -70,8 +91,13 @@ export const GLOW = {
   symbolBreath: 0.04,
   symbolNear: 0.55,
   lambda: 4,
-  /** Bloom pass: a whisper, never a haze. */
-  bloom: { threshold: 0.9, smoothing: 0.25, intensity: 0.22 },
+  /** Bloom pass: a whisper, never a haze. Threshold sits close to 1.0
+   *  on purpose — under NoToneMapping, the plaza's near-white sky/fog/
+   *  tile surfaces genuinely hit ~0.9+ luminance under the scene's
+   *  lighting, so a 0.9 threshold bloomed the ENTIRE horizon band into
+   *  a soft white haze that washed out the panels near it. Only true
+   *  highlights (accent glow, lantern) should catch bloom now. */
+  bloom: { threshold: 0.97, smoothing: 0.15, intensity: 0.18 },
 } as const
 
 /** ---- Landmark accents: one pastel per location ---------------------- */

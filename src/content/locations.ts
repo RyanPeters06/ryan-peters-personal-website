@@ -28,6 +28,8 @@ export interface WorldLocation {
   /** Where the monument stands on the flat plaza floor, world units. */
   x: number
   z: number
+  /** Canopy palette for the pod's flanking trees. */
+  treeVariant: 'green' | 'pink'
   items: LocationItem[]
 }
 
@@ -40,6 +42,7 @@ export const LOCATIONS: WorldLocation[] = [
     accent: '#cdb9ea',
     x: -7.9,
     z: -1.1,
+    treeVariant: 'pink',
     items: [
       {
         title: 'Hi, I’m Ryan',
@@ -56,6 +59,7 @@ export const LOCATIONS: WorldLocation[] = [
     accent: '#a9c9e8',
     x: -6.0,
     z: -6.2,
+    treeVariant: 'green',
     items: [
       {
         title: 'Ryan Land',
@@ -80,6 +84,7 @@ export const LOCATIONS: WorldLocation[] = [
     accent: '#b8e6c9',
     x: -2.7,
     z: -8.8,
+    treeVariant: 'green',
     items: [
       {
         title: 'Placeholder Role — Company',
@@ -95,6 +100,7 @@ export const LOCATIONS: WorldLocation[] = [
     accent: '#f2d38f',
     x: 2.7,
     z: -8.8,
+    treeVariant: 'green',
     items: [
       {
         title: 'Languages & Tools',
@@ -110,6 +116,7 @@ export const LOCATIONS: WorldLocation[] = [
     accent: '#f2b8c6',
     x: 6.0,
     z: -6.2,
+    treeVariant: 'green',
     items: [
       {
         title: 'petersryan006@gmail.com',
@@ -126,6 +133,7 @@ export const LOCATIONS: WorldLocation[] = [
     accent: '#a8dde0',
     x: 7.9,
     z: -1.1,
+    treeVariant: 'pink',
     items: [
       {
         title: 'Download Resume',
