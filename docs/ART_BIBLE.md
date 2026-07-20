@@ -222,16 +222,17 @@ black. If a color feels "corporate" or "techy," it is wrong.
 - The camera **breathes** — always a whisper of drift, never locked
   fully static.
 - **One fixed hero angle, framed to the reference** (revised
-  2026-07-20): elevated 26° down-pitch at `fov 34`, POS
-  `[0, 11.79, 21.16]` → TARGET `[0, 0.5, -2]`. The near rim stays
+  2026-07-20, second pass): elevated **40° down-pitch at `fov 48`**,
+  POS `[0, 10.76, 11.87]` → TARGET `[0, 0.8, 0]`. Solved against
+  proportions measured off the reference image, not a verbal brief. The near rim stays
   below the frame's bottom edge, so ground still runs off the bottom
   of the screen; the drop-off shows at left/right past the outer
   panels. Never a chase or orbit; the camera never follows. Gentle
   mouse-look parallax only. `camera.up` is always world +Y (the
   ground has no curvature to level against).
-- Framing rule: the player rides **center, ~65% down the frame**; all
-  six panels sit fully inside the frame with ~6% margin each side;
-  sky fills the top ~34%. These were solved numerically, not tuned by
+- Framing rule: the player rides **center, ~66% down the frame**, the
+  fountain ~50% down, and the six landmarks span the frame **edge to
+  edge** (~2% margin) exactly as the reference does. These were solved numerically, not tuned by
   eye — the earlier "the four constraints over-determine the rig"
   finding was a local minimum of a *low, close* camera (fov 42 at
   ~24°, which pushed About and Resume off both edges). Pulling back

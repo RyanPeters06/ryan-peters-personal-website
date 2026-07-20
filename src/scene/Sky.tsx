@@ -31,18 +31,19 @@ uniform vec3 uMid;
 uniform vec3 uHorizon;
 void main() {
   // World-space elevation, calibrated to the TABLEAU camera: it sits
-  // ~11.8u up pitched 26 degrees down at fov 34, so every ray in frame
+  // ~10.8u up pitched 40 degrees down at fov 48, so every ray in frame
   // points BELOW world-horizontal — the visible sky band behind the
-  // island's edge spans h = -0.35 (at the far rim) .. -0.16 (top of
+  // island's edge spans h = -0.43 (at the far rim) .. -0.28 (top of
   // frame). The stops below are centred on THAT band; they must be
-  // re-derived whenever the camera pitch or fov changes.
+  // re-derived whenever the camera pitch or fov changes, or the
+  // visible sky renders as a flat white void.
   // The stops live inside that band: glowing white right where the
   // island meets the sky, light blue within a few degrees above it,
   // the deeper top blue fully in by the top of the frame. (Stops at
   // h >= 0 look correct on paper and render as a flat white void.)
   float h = clamp(normalize(vDir).y, -1.0, 1.0);
-  vec3 col = mix(uHorizon, uMid, smoothstep(-0.35, -0.26, h));
-  col = mix(col, uTop, smoothstep(-0.28, -0.15, h));
+  vec3 col = mix(uHorizon, uMid, smoothstep(-0.44, -0.37, h));
+  col = mix(col, uTop, smoothstep(-0.38, -0.27, h));
   gl_FragColor = vec4(col, 1.0);
 }
 `

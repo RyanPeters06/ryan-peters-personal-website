@@ -36,14 +36,17 @@ export const AVATAR_SPAWN_Z = 2.6
  * plaza reads as a compressed diorama on a table. The character walks
  * freely WITHIN the frame (leashed to the island); the camera never
  * follows. Mouse adds only a gentle eased look. */
-/** Framed to the reference concept image (revised 2026-07-20). Solved
- * numerically against five constraints rather than tuned by eye:
- *   pitch 26.0 deg (target 25-30)     avatar 65.2% down frame (60-65)
- *   sky 34.1% of frame height (35-40) all six panels inside the frame
- *   with 6.1% margin each side        near rim below the bottom edge
- * The previous rig ([0,5.9,12] -> [0,0.45,-0.5] fov 42, pitch 23.6)
- * pushed About and Resume off both edges (panels spanned screen-x
- * -0.13..1.13) — that is what "panels cut off" was.
+/** Framed to the reference concept image (revised 2026-07-20, second
+ * pass). Solved numerically against proportions MEASURED off the
+ * reference rather than against a verbal description:
+ *   avatar 65.6% down frame (ref ~66%)   fountain 51.6% (ref ~50%)
+ *   panels span the frame EDGE TO EDGE, ~2% margin (ref ~1-2%)
+ *   near rim well below the bottom edge (1.54)
+ * Pitch 40 deg / fov 48 — steeper and wider than the previous
+ * 26deg/fov34 rig. That rig satisfied a verbal brief ("25-30 deg") but
+ * left the plaza small and margined; the reference actually has a
+ * steeper look-down and visible wide-lens divergence, with the island
+ * filling the full frame width.
  *
  * If these move, re-check FOUR coupled things or the frame breaks in
  * ways that look like unrelated bugs:
@@ -53,14 +56,14 @@ export const AVATAR_SPAWN_Z = 2.6
  *      band, which this pitch/fov defines)
  *   3. TABLEAU_FOG (panels must sit in front of fog-near)
  *   4. the DOF focus distance in Experience.tsx (avatar distance) */
-export const TABLEAU_CAMERA_POS: readonly [number, number, number] = [0, 11.79, 21.16]
-export const TABLEAU_CAMERA_TARGET: readonly [number, number, number] = [0, 0.5, -2]
-export const TABLEAU_FOV = 34
-/** Static fog band: plaza crisp (at the 2026-07-20 rig the far panels
- *  sit ~32u from the camera and the far rim ~34u — fog must start
- *  beyond both or the whole landmark arc washes out); distance melts
- *  into the sky. */
-export const TABLEAU_FOG: readonly [number, number] = [34, 80]
+export const TABLEAU_CAMERA_POS: readonly [number, number, number] = [0, 10.76, 11.87]
+export const TABLEAU_CAMERA_TARGET: readonly [number, number, number] = [0, 0.8, 0]
+export const TABLEAU_FOV = 48
+/** Static fog band. At the 2026-07-20 second-pass rig the far panels
+ *  sit ~23u from the camera and the far rim ~25u — fog must start
+ *  beyond the panels (or the arc washes out) but close enough that the
+ *  rim still melts into sky. */
+export const TABLEAU_FOG: readonly [number, number] = [25, 65]
 /** How far from the island's center the character may wander — the
  *  stage ends before the edge does. */
 export const TABLEAU_WALK_RADIUS = 9.6

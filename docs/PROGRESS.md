@@ -5,6 +5,48 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-20 — Camera re-solved against MEASURED reference proportions
+
+Peter: "adjust the camera angle to resemble the reference image closer."
+
+The 2026-07-20 first-pass rig (pitch 26 / fov 34) satisfied a *verbal*
+brief ("pitched down 25-30 degrees") but left the plaza small and
+margined. Re-solved instead against proportions measured directly off
+the reference image:
+
+| | Reference | Achieved |
+|---|---|---|
+| Avatar down-frame | ~66% | 65.6% |
+| Fountain down-frame | ~50% | 51.6% |
+| Panel span | edge to edge, ~1-2% margin | 2.0% |
+| Near rim | off-frame bottom | 1.54 (well off) |
+
+New rig: **POS [0, 10.76, 11.87] -> TARGET [0, 0.8, 0], fov 48,
+pitch 40 deg** — steeper and wider than before. The reference genuinely
+has a steeper look-down and visible wide-lens divergence; the earlier
+long-lens reading was wrong.
+
+Coupled retunes (the four the constants.ts checklist calls for): fog
+[34,80] -> [25,65] (camera moved much closer — panels now ~23u, far rim
+~25u); DOF focus 22 -> 14 (avatar now 13.8u away); sky gradient stops
+re-centred to the new visible band h in [-0.43, -0.28].
+
+### What this pass revealed about the remaining gap
+The camera is now about as close to the reference as it can get **given
+the current geometry**. The residual difference is that the reference's
+panels are *smaller* in frame than ours while its islands still span
+edge to edge — because its landmark islands are big wide grass discs,
+where ours are small low platforms. We have to zoom in further than the
+reference did to fill the same width, which oversizes the panels and
+eats the sky band (ours ~13% above the panels, reference ~19%).
+
+**So the next framing improvement is not a camera change — it is the
+grass-island rebuild** (Tier 1, item 1 of the reference gap list). Once
+the platforms are the reference's size, the camera can pull back, the
+panels shrink to reference proportion, and the sky band opens up.
+
+---
+
 ## 2026-07-20 — Look-dev Pass 1: image-based lighting (+ a real tone curve)
 
 Peter's read: the build "looks like a collection of circles and squares"
