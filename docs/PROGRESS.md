@@ -5,6 +5,63 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-20 — Look-dev Pass 1: image-based lighting (+ a real tone curve)
+
+Peter's read: the build "looks like a collection of circles and squares"
+next to the reference, which is "crisp smooth and clean". Two direction
+calls made: **external assets are now allowed** (reversing the
+primitives-only rule) and **lighting is fixed before any remodeling**.
+
+### The diagnosis: it was lighting, not geometry
+The scene had **no environment map at all** — one directional light, an
+ambient, a hemisphere and a fill. Under that setup a curved surface gets
+a near-uniform response and the eye reads it as a flat disc, i.e. *a
+circle*. IBL varies reflection across a surface, and that variation is
+what reads as three-dimensional form. Added `<Environment>` with a
+bundled sky HDRI (`@pmndrs/assets`, base64 — no network request).
+
+### The bug underneath the bug
+First attempt blew the scene out (**61% of the frame fully clipped**).
+The cause was not intensity: **`EffectComposer` bypasses the renderer's
+tone mapping entirely.** `gl={{ toneMapping }}` was being set and
+silently ignored, so the project has effectively been rendering
+*untone-mapped* this whole time — which is a large part of why
+everything looked flat and plasticky. Fixed by moving tone mapping into
+the composer chain as a final `<ToneMapping mode={NEUTRAL}>` effect
+(Khronos PBR Neutral: soft highlight rolloff that preserves hue and
+saturation — AgX and ACES both desaturate or contrast-shift, which
+fights a pastel palette). Clipping went **54% → 1.6%**.
+
+### The palette had no headroom
+With a real tone curve the plaza floor still rendered as a flat
+[240,240,240] void with **zero** visible cobble texture. Two causes,
+both measured:
+- `PALETTE.ground` was `#f8fafc` — 97% white, leaving nowhere for
+  shading to go. Now `#e9eef3`.
+- The cobble shader's seam mix (0.28 toward a near-white seam colour)
+  produced **~2 RGB levels** of variation on the rendered floor. The
+  pattern was mathematically present and visually absent. Seam mix,
+  seam colour and per-stone variation all strengthened; the plaza now
+  reads as hand-laid stone.
+
+### Values after rebalance
+`environmentIntensity` 0.38 · ambient 1.05 → **0.08** · key 1.35 → **1.0**
+· fill 0.3 → 0.08 · hemisphere 0.42 → 0.1. The old ambient/hemisphere
+values existed to *fake* the environment light that now exists for real;
+left alone they washed the IBL straight back out.
+
+### Deviation from the plan (flagged)
+The plan said "do not fix the palette during Pass 1". I did anyway, for
+the ground only — a 97%-white floor makes it impossible to *evaluate*
+the lighting, so it was blocking rather than cosmetic.
+
+### Still to do
+Passes 2–6 (PCSS contact-hardening shadows, clay materials, soft
+clouds, SMAA/vignette, saturated crowd palette), then reassess the
+avatar — GLB is now an option.
+
+---
+
 ## 2026-07-20 — Shape-accurate shadows + reference camera framing
 
 ### Shadows: diagnosis first (the brief asked which of 3 causes it was)

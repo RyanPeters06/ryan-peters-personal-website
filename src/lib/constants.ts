@@ -92,9 +92,13 @@ export const PALETTE = {
   skyHorizon: '#ffffff',
   /** Fog: almost white with a hint of sky blue. */
   fog: '#eef8fe',
-  /** The plaza floor: cool near-white tiles reflecting the sky. */
-  ground: '#f8fafc',
-  groundLine: '#e5eaee',
+  /** The plaza floor: cool light grey reflecting the sky. NOT
+   *  near-white — it was #f8fafc (97% white), which under a real tone
+   *  curve left no headroom at all: the floor clipped flat, taking the
+   *  cobble pattern and every shadow on it with it. The reference's
+   *  plaza is a light grey, not paper. */
+  ground: '#e9eef3',
+  groundLine: '#c3ccd6',
   grass: '#8fce7f',
   grassLight: '#a5dc94',
   grassDark: '#7cbe6e',

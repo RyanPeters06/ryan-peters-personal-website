@@ -8,8 +8,13 @@
   write imperatively (`useWorldStore.getState()`) with zero re-renders,
   while overlay UI subscribes reactively.
 - **Framer Motion + Tailwind CSS** — overlay UI ONLY. Never in-canvas.
-- No backend. No external assets (fonts/models/textures) — everything is
-  primitives + shaders, so the site works offline and loads instantly.
+- No backend. **External assets are permitted as of 2026-07-20** (Peter's
+  call, reversing the original primitives-only rule): the look-dev gap to
+  the concept reference was not closeable without image-based lighting.
+  Assets must still be **bundled, never fetched at runtime** — the sky
+  HDRI ships as a base64 data URI via `@pmndrs/assets`, so the site
+  still works offline and makes no extra requests. GLB models and
+  textures are now allowed under the same bundled-only rule.
 
 ## Folder Structure (src/)
 
@@ -152,7 +157,10 @@ idle life, waving, and foot shifts are all procedural transforms in one
 
 ## Asset Organization
 
-There are no assets. Geometry = three.js primitives; patterns = shaders
+Assets are bundled-only (see Tech Stack). Today: one sky HDRI
+(`@pmndrs/assets/hdri/sky.exr`, base64, used as an environment map for
+IBL) and the Quicksand woff. Otherwise geometry = three.js primitives;
+patterns = shaders
 (`onBeforeCompile` for the tiles, ShaderMaterial for the sky); copy =
 `src/content/*.ts`; every tunable = `src/lib/constants.ts`.
 

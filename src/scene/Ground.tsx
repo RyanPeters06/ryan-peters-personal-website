@@ -89,17 +89,19 @@ vec4 cobble(vec2 x) {
   vec4 c = cobble(vCobbleWorldPos.xz / uStoneSize);
   // 0 at the boundary between two stones, growing toward each center.
   float edgeDist = c.y - c.x;
-  // Seams are soft shading, not lines: a WIDE smooth falloff mixing
-  // only fractionally toward the (already near-white) seam color —
-  // barely perceptible at viewing distance, per the reference.
-  float seam = 1.0 - smoothstep(0.0, 0.14, edgeDist);
-  diffuseColor.rgb = mix(diffuseColor.rgb, uSeamColor, seam * 0.28);
-  // Gentle dome: each stone lifts a touch toward its center, so the
-  // surface reads softly cushioned rather than one flat plane.
-  diffuseColor.rgb *= 1.0 + smoothstep(0.04, 0.4, edgeDist) * 0.014;
-  // Quiet per-stone brightness variation (±2%) — organic, hand-laid.
+  // Seams: soft shading rather than drawn lines, but they must actually
+  // READ. The previous values (0.28 mix on a near-white seam colour)
+  // measured ~2 RGB levels of variation on the rendered floor — the
+  // pattern was mathematically present and visually absent, which is
+  // why the plaza looked like blank paper.
+  float seam = 1.0 - smoothstep(0.0, 0.22, edgeDist);
+  diffuseColor.rgb = mix(diffuseColor.rgb, uSeamColor, seam * 0.55);
+  // Gentle dome: each stone lifts toward its center, so the surface
+  // reads softly cushioned rather than one flat plane.
+  diffuseColor.rgb *= 1.0 + smoothstep(0.04, 0.4, edgeDist) * 0.05;
+  // Per-stone brightness variation — organic, hand-laid.
   float vary = fract(sin(dot(c.zw, vec2(127.1, 311.7))) * 43758.5453);
-  diffuseColor.rgb *= 1.0 + (vary - 0.5) * 0.04;
+  diffuseColor.rgb *= 1.0 + (vary - 0.5) * 0.09;
 }`,
       )
   }

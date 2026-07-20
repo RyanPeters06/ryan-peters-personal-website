@@ -1,4 +1,6 @@
+import { Environment } from '@react-three/drei'
 import { Vector3 } from 'three'
+import skyHdri from '@pmndrs/assets/hdri/sky.exr'
 import { ISLAND_RADIUS, PALETTE } from '@/lib/constants'
 
 /**
@@ -48,18 +50,29 @@ const SHADOW_EXTENT = ISLAND_RADIUS + 2.4
 export function Lighting() {
   return (
     <>
-      {/* Generous, faintly blue base light: sunny spring morning. High
-          ambient keeps shadows gentle and blue-gray, but not so high
-          it flattens the key light's directional falloff — the
-          "single-tone card" look was ambient (1.3) nearly matching the
-          key (1.15); the ratio is now more directional. */}
-      <ambientLight intensity={1.05} color={PALETTE.ambient} />
+      {/* IMAGE-BASED LIGHT — the foundation of the whole look.
+          Bundled sky HDRI (base64 from @pmndrs/assets: no network, no
+          extra request), used ONLY as an environment map — our own
+          gradient dome stays the visible backdrop (`background={false}`).
+
+          Why this matters more than anything else here: without an
+          environment, a curved surface gets a near-uniform response and
+          the eye reads it as a flat disc — "a circle". IBL varies the
+          reflection across the surface, which is what actually reads as
+          three-dimensional form. Every other material tweak in this
+          project was compensating for its absence. */}
+      <Environment files={skyHdri as string} background={false} environmentIntensity={0.38} />
+
+      {/* Ambient is now a SLIVER. It was 1.05 because it had to fake
+          the environment light that now exists for real; leaving it
+          there would wash the IBL straight back out. */}
+      <ambientLight intensity={0.08} color={PALETTE.ambient} />
 
       {/* Warm key: the plaza's sun, fixed, sized to shadow the whole
           island at once. */}
       <directionalLight
         position={SUN_POSITION}
-        intensity={1.35}
+        intensity={1.0}
         color={PALETTE.keyLight}
         castShadow
         shadow-mapSize={[2048, 2048]}
@@ -82,11 +95,15 @@ export function Lighting() {
         shadow-blurSamples={16}
       />
 
-      {/* Cool fill from the opposite side, no shadows. */}
-      <directionalLight position={[-6, -2, -8]} intensity={0.3} color={PALETTE.fillLight} />
+      {/* Cool fill from the opposite side, no shadows. Kept, but low:
+          the environment map now does most of the wrap-around fill this
+          light used to provide alone. */}
+      <directionalLight position={[-6, -2, -8]} intensity={0.08} color={PALETTE.fillLight} />
 
-      {/* Sky/ground bounce: genuine blue sky above, cool floor below. */}
-      <hemisphereLight args={['#dcefff', '#e3ecf2', 0.42]} />
+      {/* Ground bounce only. The sky half of this is now redundant (the
+          HDRI is a sky), so it is dialled right down — its remaining job
+          is the warm-ish kick coming back UP off the pale plaza floor. */}
+      <hemisphereLight args={['#dcefff', '#e8eef3', 0.1]} />
     </>
   )
 }

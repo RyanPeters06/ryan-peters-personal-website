@@ -8,7 +8,9 @@ import {
   EffectComposer,
   HueSaturation,
   N8AO,
+  ToneMapping,
 } from '@react-three/postprocessing'
+import { ToneMappingMode } from 'postprocessing'
 import { NoToneMapping } from 'three'
 import { GLOW } from '@/lib/designSystem'
 import { Sky } from '@/scene/Sky'
@@ -67,9 +69,13 @@ export function Experience() {
         near: 0.1,
         far: CAMERA_FAR,
       }}
-      // Flat tone mapping keeps the whites bright and airy — the pastel
-      // palette needs no filmic compression.
-      gl={{ toneMapping: NoToneMapping }}
+      // The RENDERER stays untone-mapped on purpose: EffectComposer
+      // renders the scene into its own linear buffer, so a tone curve
+      // set here is bypassed entirely (setting it here and seeing no
+      // effect is exactly how the blown-out first attempt happened).
+      // The real tone curve is the <ToneMapping> effect at the END of
+      // the composer chain below.
+      gl={{ toneMapping: NoToneMapping, toneMappingExposure: 1 }}
       className="h-full w-full"
     >
       <Suspense fallback={null}>
@@ -119,6 +125,13 @@ export function Experience() {
               more contrast, without reintroducing wash-out. */}
           <BrightnessContrast brightness={0.015} contrast={0.08} />
           <HueSaturation hue={-0.01} saturation={0.04} />
+          {/* LAST in the chain — everything above works in linear HDR
+              and this maps it to display. Khronos PBR Neutral rolls
+              highlights off softly (the creamy, non-clipping brights
+              the reference has) while PRESERVING hue and saturation;
+              AgX and ACES both desaturate or contrast-shift, which
+              fights a pastel palette. */}
+          <ToneMapping mode={ToneMappingMode.NEUTRAL} />
         </EffectComposer>
         {/* Compile every material/shader up front (gl.compile) so the
             first PRESENTED frame is already fully built — first-frame
