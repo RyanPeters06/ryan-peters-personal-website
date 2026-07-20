@@ -29,30 +29,38 @@ export const CAMERA_FAR = SKY_DOME_RADIUS * 1.3
  *  steps south of the fountain, back to the visitor. Must stay inside
  *  the frame's bottom edge (~43° below the camera's horizontal at the
  *  current TABLEAU rig) or the character spawns head-clipped. */
-export const AVATAR_SPAWN_Z = 3.4
+export const AVATAR_SPAWN_Z = 2.6
 
 /** ---- The tableau: one fixed, art-directed frame --------------------
  * The camera is locked high and pulled back with a long lens so the
- * plaza reads as a compressed diorama on a table (~37 degrees down).
- * The character walks freely WITHIN the frame (leashed to the island);
- * the camera never follows. Mouse adds only a gentle eased look. */
-/** Standing IN the plaza, not looking AT an object (revised
- * 2026-07-19 per the reference): ~25 degree down-pitch, positioned so
- * the disc's NEAR rim is just below the frame's bottom edge — ground
- * runs off the bottom of the screen, the drop-off only shows at far
- * left/right past the outer panels. Avatar centers ~65% down frame;
- * sky fills the top ~38%. If these move, re-check three coupled
- * things: the near-rim ray (rim at z=+ISLAND_RADIUS must stay outside
- * the bottom half-fov), the sky shader's gradient stops (Sky.tsx,
- * calibrated to this frustum's elevation band), and TitleWorld's
- * anchor. */
-export const TABLEAU_CAMERA_POS: readonly [number, number, number] = [0, 5.9, 12]
-export const TABLEAU_CAMERA_TARGET: readonly [number, number, number] = [0, 0.45, -0.5]
-export const TABLEAU_FOV = 42
-/** Static fog band: plaza crisp (far panels sit ~21u from the camera,
- *  the far rim ~23u — fog must start beyond both or they wash out);
- *  distance melts into the sky. */
-export const TABLEAU_FOG: readonly [number, number] = [26, 60]
+ * plaza reads as a compressed diorama on a table. The character walks
+ * freely WITHIN the frame (leashed to the island); the camera never
+ * follows. Mouse adds only a gentle eased look. */
+/** Framed to the reference concept image (revised 2026-07-20). Solved
+ * numerically against five constraints rather than tuned by eye:
+ *   pitch 26.0 deg (target 25-30)     avatar 65.2% down frame (60-65)
+ *   sky 34.1% of frame height (35-40) all six panels inside the frame
+ *   with 6.1% margin each side        near rim below the bottom edge
+ * The previous rig ([0,5.9,12] -> [0,0.45,-0.5] fov 42, pitch 23.6)
+ * pushed About and Resume off both edges (panels spanned screen-x
+ * -0.13..1.13) — that is what "panels cut off" was.
+ *
+ * If these move, re-check FOUR coupled things or the frame breaks in
+ * ways that look like unrelated bugs:
+ *   1. the near-rim ray (rim at z=+ISLAND_RADIUS must stay below the
+ *      bottom edge, or the disc's front lip appears)
+ *   2. Sky.tsx's gradient stops (calibrated to the visible elevation
+ *      band, which this pitch/fov defines)
+ *   3. TABLEAU_FOG (panels must sit in front of fog-near)
+ *   4. the DOF focus distance in Experience.tsx (avatar distance) */
+export const TABLEAU_CAMERA_POS: readonly [number, number, number] = [0, 11.79, 21.16]
+export const TABLEAU_CAMERA_TARGET: readonly [number, number, number] = [0, 0.5, -2]
+export const TABLEAU_FOV = 34
+/** Static fog band: plaza crisp (at the 2026-07-20 rig the far panels
+ *  sit ~32u from the camera and the far rim ~34u — fog must start
+ *  beyond both or the whole landmark arc washes out); distance melts
+ *  into the sky. */
+export const TABLEAU_FOG: readonly [number, number] = [34, 80]
 /** How far from the island's center the character may wander — the
  *  stage ends before the edge does. */
 export const TABLEAU_WALK_RADIUS = 9.6

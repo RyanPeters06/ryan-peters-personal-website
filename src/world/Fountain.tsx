@@ -34,14 +34,14 @@ export function Fountain() {
   return (
     <group position={[0, 0, 0]}>
       {/* Basin: two soft white steps rising from the floor */}
-      <mesh material={materials.basin} position={[0, 0.09, 0]} receiveShadow>
+      <mesh material={materials.basin} position={[0, 0.09, 0]} castShadow receiveShadow>
         <cylinderGeometry args={[1.35, 1.45, 0.18, 36]} />
       </mesh>
-      <mesh material={materials.basin} position={[0, 0.24, 0]} receiveShadow>
+      <mesh material={materials.basin} position={[0, 0.24, 0]} castShadow receiveShadow>
         <cylinderGeometry args={[1.05, 1.15, 0.14, 36]} />
       </mesh>
       {/* Grass ring nested in the basin */}
-      <mesh material={materials.grass} position={[0, 0.32, 0]}>
+      <mesh material={materials.grass} position={[0, 0.32, 0]} castShadow receiveShadow>
         <cylinderGeometry args={[0.95, 1.0, 0.1, 36]} />
       </mesh>
       {/* The little ringed globe, floating just above the basin */}

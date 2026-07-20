@@ -30,7 +30,7 @@ export function Lamppost() {
       <mesh material={materials.pole} position={[0, 0.45, 0]} castShadow>
         <cylinderGeometry args={[0.028, 0.034, 0.9, 8]} />
       </mesh>
-      <mesh material={materials.lantern} position={[0, 0.95, 0]}>
+      <mesh material={materials.lantern} position={[0, 0.95, 0]} castShadow>
         <sphereGeometry args={[0.09, 12, 10]} />
       </mesh>
     </group>

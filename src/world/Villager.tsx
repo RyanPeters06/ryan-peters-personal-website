@@ -16,6 +16,13 @@ import { getAmbientScale } from '@/hooks/useAmbientLoop'
  * character (same visual language, fewer parts) living its own tiny
  * life: chatting in a circle, bouncing softly, or strolling between
  * places at a peaceful pace. Everything is deterministic per spec.
+ *
+ * Shadows: every mesh on the OUTLINE casts — legs, shoes, arms, hood,
+ * body, head. Previously only the body cylinder and head sphere did,
+ * which is exactly why villager shadows were elliptical blobs: the
+ * silhouette being cast genuinely contained no legs or arms. The eyes
+ * are the one deliberate omission (inside the head's outline, so they
+ * would cost fill rate and change nothing).
  */
 
 // ---- Shared GPU resources (one set for the whole crowd) --------------
@@ -241,45 +248,74 @@ export function Villager({ spec }: { spec: VillagerSpec }) {
       <group ref={body}>
         {/* legs + shoes */}
         <group ref={legL} position={[-0.06, 0.18, 0]}>
-          <mesh geometry={GEO.leg} material={MAT.pants} position={[0, -0.07, 0]} />
+          <mesh
+            geometry={GEO.leg}
+            material={MAT.pants}
+            position={[0, -0.07, 0]}
+            castShadow
+          />
           <mesh
             geometry={GEO.shoe}
             material={MAT.shoe}
             position={[0, -0.13, 0.02]}
             scale={[0.075, 0.045, 0.11]}
+            castShadow
           />
         </group>
         <group ref={legR} position={[0.06, 0.18, 0]}>
-          <mesh geometry={GEO.leg} material={MAT.pants} position={[0, -0.07, 0]} />
+          <mesh
+            geometry={GEO.leg}
+            material={MAT.pants}
+            position={[0, -0.07, 0]}
+            castShadow
+          />
           <mesh
             geometry={GEO.shoe}
             material={MAT.shoe}
             position={[0, -0.13, 0.02]}
             scale={[0.075, 0.045, 0.11]}
+            castShadow
           />
         </group>
 
         {/* body */}
-        <mesh geometry={GEO.body} material={shirtMat} position={[0, 0.31, 0]} castShadow />
+        <mesh
+          geometry={GEO.body}
+          material={shirtMat}
+          position={[0, 0.31, 0]}
+          castShadow
+          receiveShadow
+        />
         <mesh geometry={GEO.bodyCap} material={shirtMat} position={[0, 0.44, 0]} />
 
         {/* arms */}
         <group ref={armL} position={[-0.14, 0.38, 0]} rotation={[0, 0, -0.12]}>
-          <mesh geometry={GEO.arm} material={shirtMat} position={[0, -0.1, 0]} />
+          <mesh
+            geometry={GEO.arm}
+            material={shirtMat}
+            position={[0, -0.1, 0]}
+            castShadow
+          />
         </group>
         <group ref={armR} position={[0.14, 0.38, 0]} rotation={[0, 0, 0.12]}>
-          <mesh geometry={GEO.arm} material={shirtMat} position={[0, -0.1, 0]} />
+          <mesh
+            geometry={GEO.arm}
+            material={shirtMat}
+            position={[0, -0.1, 0]}
+            castShadow
+          />
         </group>
 
         {/* head */}
         <group ref={head} position={[0, 0.69, 0]}>
-          <mesh geometry={GEO.head} material={MAT.skin} castShadow />
+          <mesh geometry={GEO.head} material={MAT.skin} castShadow receiveShadow />
           <mesh
             geometry={GEO.hood}
             material={hairMat}
             position={[0, 0.012, -0.015]}
             rotation={[-0.55, 0, 0]}
             scale={[1.02, 1.02, 1.02]}
+            castShadow
           />
           <mesh
             geometry={GEO.eye}

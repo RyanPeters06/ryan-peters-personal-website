@@ -390,8 +390,10 @@ export function Avatar() {
               seams. Two chunky pointed bangs sweep down-outward from a
               center part, plus little points at the temples. */}
           <group>
-            {/* hood */}
+            {/* hood — casts: it sits proud of the head sphere, so it is
+                part of the outline the shadow should show */}
             <mesh
+              castShadow
               material={materials.hair}
               position={[0, 0.012, -0.015]}
               rotation={[-0.55, 0, 0]}

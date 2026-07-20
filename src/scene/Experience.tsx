@@ -92,15 +92,19 @@ export function Experience() {
               (tree-to-mound, panel-to-platform, steps) — never black,
               tinted with the same shadow color as everything else. */}
           <N8AO
-            aoRadius={1.1}
-            intensity={3.2}
+            /* Small radius on purpose: this is CONTACT darkening, not
+               general room occlusion. A tight radius concentrates the
+               shading right where an object meets the ground and lets
+               it soften outward, which is what reads as "grounded". */
+            aoRadius={0.6}
+            intensity={3.4}
             distanceFalloff={1}
             quality="medium"
             color={PALETTE.shadow}
           />
           {/* Subtle depth of field: sharp on the avatar/foreground,
               gently softening toward the landmark arc and sky. */}
-          <DepthOfField worldFocusDistance={10} worldFocusRange={15} bokehScale={1.3} />
+          <DepthOfField worldFocusDistance={22} worldFocusRange={18} bokehScale={1.3} />
           {/* The reference's "gently emits light" finish: a whisper of
               bloom on only the brightest whites and accent glows. */}
           <Bloom

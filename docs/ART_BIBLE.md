@@ -221,19 +221,22 @@ black. If a color feels "corporate" or "techy," it is wrong.
   move accelerates and settles.
 - The camera **breathes** — always a whisper of drift, never locked
   fully static.
-- **One fixed hero angle, standing IN the plaza** (final 2026-07-19):
-  low and close (~24° down-pitch, fov 42), positioned nearly above the
-  disc's front rim so **the near edge is never in frame** — ground
-  runs off the bottom of the screen; the drop-off shows only at far
-  left/right past the outer panels. Never a chase or orbit; the camera
-  never follows. Gentle mouse-look parallax only. `camera.up` is
-  always world +Y (the ground has no curvature to level against).
-- Framing rule: the player rides **center, ~65% down the frame**; the
-  panel arc spans most of the frame's width; sky fills the top ~30%.
-  (A 35–40% sky ask was tried and is geometrically incompatible with
-  hiding the near rim while keeping the avatar at 65% — the four
-  constraints over-determine the rig; ~30% is the max. See PROGRESS
-  2026-07-19.)
+- **One fixed hero angle, framed to the reference** (revised
+  2026-07-20): elevated 26° down-pitch at `fov 34`, POS
+  `[0, 11.79, 21.16]` → TARGET `[0, 0.5, -2]`. The near rim stays
+  below the frame's bottom edge, so ground still runs off the bottom
+  of the screen; the drop-off shows at left/right past the outer
+  panels. Never a chase or orbit; the camera never follows. Gentle
+  mouse-look parallax only. `camera.up` is always world +Y (the
+  ground has no curvature to level against).
+- Framing rule: the player rides **center, ~65% down the frame**; all
+  six panels sit fully inside the frame with ~6% margin each side;
+  sky fills the top ~34%. These were solved numerically, not tuned by
+  eye — the earlier "the four constraints over-determine the rig"
+  finding was a local minimum of a *low, close* camera (fov 42 at
+  ~24°, which pushed About and Resume off both edges). Pulling back
+  and lengthening the lens satisfies all of them at once, given the
+  avatar spawns at z 2.6 rather than 3.4.
 
 ## 9. Composition Rules
 

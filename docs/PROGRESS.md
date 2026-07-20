@@ -5,6 +5,111 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-20 — Shape-accurate shadows + reference camera framing
+
+### Shadows: diagnosis first (the brief asked which of 3 causes it was)
+It was **cause (c) — blur too high — plus a fourth cause the brief
+did not list, which turned out to be dominant**, and behind both a
+*fifth* that no shadow-map setting could have fixed.
+
+- **(a) blob shadows: ruled out.** Real shadow mapping is active
+  (`shadows="variance"` → VSM). No circle textures/decals/discs exist
+  anywhere in `src/`.
+- **(b) resolution: ruled out.** 2048² over a 25-unit frustum is ~82
+  texels per world unit; a villager's shadow occupies ~40×80 texels.
+  Raising the map size would have cost frame time and fixed nothing.
+- **(c) blur: confirmed.** VSM's kernel spans ±`radius` texels, so
+  `shadow-radius 3.5` was a 7-texel gaussian smearing the avatar's
+  (already correct) silhouette. → **1.5**.
+- **(d) incomplete `castShadow` coverage: confirmed, dominant for
+  NPCs.** Villagers cast only **2 of 12** meshes — body cylinder and
+  head sphere. Their shadow was *geometrically* an ellipse + circle;
+  no blur or resolution change could have put legs in it. Fixed:
+  legs, shoes, arms and hood now cast (eyes deliberately excluded —
+  inside the head outline). Also fixed Fountain (1/5 → 4), Lamppost
+  (2/3 → 3), Avatar hair, and added `receiveShadow` to characters and
+  tree canopies so they catch each other's shadows.
+- **(e) the real ceiling — sun elevation.** Even with full coverage
+  and tight blur, shadows still read as blobs, because the sun sat at
+  **~69°, nearly overhead**. A near-vertical sun projects the
+  character straight DOWN, and this character's head is ~58% of its
+  height — the head's disc simply covers the torso and legs, so no
+  silhouette exists to resolve. Lowered `SUN_DIR` to **~55°**
+  (`(-0.8, 1.39, -0.55)`), which stretches the shadow to ~0.7× the
+  object's height. Head, torso and legs are now distinguishable.
+  Frustum widened to `ISLAND_RADIUS + 2.4` to hold the longer shadows.
+- Contact darkening: N8AO `aoRadius` 1.1 → **0.6** (tighter, so the
+  darkening concentrates where an object meets the ground and softens
+  outward). Colour needed no change — shadows already read light
+  grey-blue, since they are the absence of the key light with
+  blue-tinted ambient filling in.
+
+### Camera: solved numerically, not tuned by eye
+A projection model was built and validated by reproducing the old
+rig's documented values exactly, then searched against the brief's
+five constraints.
+
+| | Before | After |
+|---|---|---|
+| POS / TARGET | `[0,5.9,12]` / `[0,0.45,-0.5]` | `[0,11.79,21.16]` / `[0,0.5,-2]` |
+| FOV | 42 | 34 |
+| Pitch | 23.6° | **26.0°** (target 25–30) |
+| Avatar down-frame | 69.6% | **65.2%** (target 60–65) |
+| Sky | 29.7% | **34.1%** (target 35–40) |
+| Panels screen-x | **[−0.13, 1.13]** — cut off both sides | **[0.06, 0.94]** — 6.1% margin |
+| Near rim | out of frame | out of frame |
+
+**This supersedes the 2026-07-19 "the four constraints are mutually
+over-constrained" finding.** That conclusion was true only for a *low,
+close* camera; pulling back and lengthening the lens satisfies all
+five at once. It does require `AVATAR_SPAWN_Z` 3.4 → **2.6** (avatar
+position and sky fraction pull opposite ways; moving the spawn toward
+centre is what reconciles them).
+
+Coupled retunes that had to follow (all four are documented in
+constants.ts as a checklist for the next camera move):
+`TABLEAU_FOG` [26,60] → **[34,80]** (panels moved from ~21u to ~32u —
+the old band would have washed the whole arc out); DOF
+`worldFocusDistance` 10 → **22**; Sky gradient stops re-centred from
+h∈[−0.28,−0.08] to **h∈[−0.35,−0.16]** (skipping this renders the
+visible sky flat white — a bug this project has hit before).
+
+### Changed beyond the ask (flagged per the brief's scope rule)
+1. **Sun elevation 69° → 55°.** Not requested, but the brief's stated
+   goal ("the avatar's shadow shows a distinguishable head, torso and
+   legs") is geometrically unreachable with a near-overhead sun. This
+   is the change that actually delivers it. Easy to revert alone.
+2. **`AVATAR_SPAWN_Z` 3.4 → 2.6** — required by the camera solve.
+3. Stale comments in constants.ts corrected (they still described the
+   old 37°/21u rig).
+
+### Still short of the reference (ranked; recorded, not yet done)
+1. **Panels have no grass-topped islands** — the reference gives each
+   its own raised disc with a green grass top, white rim and a proper
+   staircase. Ours are low flat white platforms with a grass trim.
+   *Biggest remaining structural gap.*
+2. **The island edge reads thin.** Now that the whole disc is in
+   frame it is more obvious: it needs visible cliff depth and a grass
+   fringe over the lip.
+3. **NPC colours are washed out** — the reference has saturated
+   orange/yellow/purple/green/teal/pink; `VILLAGER_SHIRTS` is all
+   pale pastels, so the crowd reads grey. Hair also lacks blonde/
+   light brown.
+4. **Too many NPCs (~23) clustered centrally** vs the reference's ~12
+   spread out.
+5. Too few trees (1/pod vs 2–3); blossom trees under-used as the
+   left/right colour anchors; flowers sparse and absent from platform
+   tops.
+6. Control hint should collapse to one compact pill
+   (`W A S D Move | 🖱 Look Around`) instead of a tall two-cluster card.
+7. Panels read grey rather than crisp white.
+
+Verified live via Playwright (the embedded browser throttles hidden
+tabs to ~2fps and returns blank frames — always check
+`document.hidden`). `tsc -b` + `npm run build` clean.
+
+---
+
 ## 2026-07-19 — Performance pass: flash fix, precompile, dead code
 
 Constraint: rendered output visually identical. Full findings +

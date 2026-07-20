@@ -36,13 +36,13 @@ export function Tree({
       <mesh material={materials.trunk} position={[0, 0.22, 0]} castShadow>
         <cylinderGeometry args={[0.045, 0.065, 0.44, 8]} />
       </mesh>
-      <mesh material={materials.mid} position={[0, 0.64, 0]} castShadow>
+      <mesh material={materials.mid} position={[0, 0.64, 0]} castShadow receiveShadow>
         <sphereGeometry args={[0.34, 16, 12]} />
       </mesh>
-      <mesh material={materials.dark} position={[-0.2, 0.52, 0.1]} castShadow>
+      <mesh material={materials.dark} position={[-0.2, 0.52, 0.1]} castShadow receiveShadow>
         <sphereGeometry args={[0.24, 14, 10]} />
       </mesh>
-      <mesh material={materials.light} position={[0.22, 0.5, -0.12]} castShadow>
+      <mesh material={materials.light} position={[0.22, 0.5, -0.12]} castShadow receiveShadow>
         <sphereGeometry args={[0.22, 14, 10]} />
       </mesh>
     </group>
