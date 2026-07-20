@@ -22,6 +22,9 @@ portfolio. **Not** a modern portfolio website.
    - `docs/CODING_STANDARDS.md` — how code is written here
    - `docs/PROGRESS.md` — the development journal / current state
    - `docs/REFERENCES.md` — inspiration library
+   - `docs/CODEBASE_AUDIT.md` — living performance/dead-code audit
+     (recreated 2026-07-19; the original aesthetic audit is in git
+     history)
 2. These documents are the project's memory. **Do not rely on chat
    history when they exist.** (Two one-time decision-support docs —
    a concept-art teardown and a code/aesthetic audit — did their job

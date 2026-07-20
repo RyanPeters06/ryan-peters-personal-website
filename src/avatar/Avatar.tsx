@@ -302,7 +302,6 @@ export function Avatar() {
           a.waveT = -1
           if (useWorldStore.getState().phase === 'greeting') {
             store.setPhase('idle')
-            store.setCameraFocus(null) // hand the camera to the chase rig
           }
         }
       }

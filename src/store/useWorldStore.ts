@@ -21,13 +21,6 @@ interface WorldState {
   muted: boolean
   toggleMuted: () => void
 
-  /**
-   * Where the camera should focus, in flat XZ world units. `null`
-   * means "the fixed tableau frame" (the current, and only, mode).
-   */
-  cameraFocus: { x: number; z: number } | null
-  setCameraFocus: (focus: { x: number; z: number } | null) => void
-
   /** Which location's pod the avatar is standing beside, if any. */
   activeLocation: string | null
   setActiveLocation: (id: string | null) => void
@@ -39,9 +32,6 @@ export const useWorldStore = create<WorldState>()((set) => ({
 
   muted: false,
   toggleMuted: () => set((s) => ({ muted: !s.muted })),
-
-  cameraFocus: null,
-  setCameraFocus: (cameraFocus) => set({ cameraFocus }),
 
   activeLocation: null,
   setActiveLocation: (activeLocation) => set({ activeLocation }),

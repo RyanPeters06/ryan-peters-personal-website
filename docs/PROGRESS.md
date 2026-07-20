@@ -5,6 +5,32 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-19 — Performance pass: flash fix, precompile, dead code
+
+Constraint: rendered output visually identical. Full findings +
+numbers live in `docs/CODEBASE_AUDIT.md` (recreated as a living
+perf-audit doc). Headlines:
+- **White flash was four stacked white layers** (css html/body/#root,
+  App wrapper `bg-white`, scene clear color `skyHorizon` white,
+  `Suspense fallback={null}` during font load) — all now
+  `PALETTE.skyMid`, plus drei `<Preload all />` so shaders compile
+  before the first presented frame (worst startup frame 141→85ms).
+- **Frame rate:** shadow map (2048) and dpr cap ([1,2]) were already
+  at target; shadow map must update per-frame (movers); all five post
+  passes visibly contribute. The real cost is **villagers ≈576 of
+  ~630 draw calls** (24 × ~12 meshes × shadow pass) — instancing
+  articulated characters flagged as the big future win, not done (real
+  refactor).
+- **Deleted:** `useSmoothValue.ts` (0 refs), store `cameraFocus` +
+  its one write-only use in Avatar. **Kept + flagged:** designSystem
+  doc-mirror tokens (intentional), `IslandShadow` (possibly out of
+  frame now — Peter's call), new dev-only `PerfProbe`
+  (`window.__rlGL`).
+- Verified via Playwright (Browser pane wedged mid-session — timeouts
+  on screenshot/JS with no console errors; switching tools worked).
+
+---
+
 ## 2026-07-19 — Cobblestone floor (Voronoi, no more grid)
 
 Peter lifted the previous prompt's "do not change" list (nothing is

@@ -65,7 +65,11 @@ export function Sky() {
 
   return (
     <>
-      <color attach="background" args={[PALETTE.skyHorizon]} />
+      {/* The dome fully encloses the camera (radius 200 < far plane,
+          frustumCulled off), so this clear color is never visible in a
+          settled frame — but it IS what shows for any frame rendered
+          before the dome, so it must be sky, never white. */}
+      <color attach="background" args={[PALETTE.skyMid]} />
       <fog attach="fog" args={[PALETTE.fog, TABLEAU_FOG[0], TABLEAU_FOG[1]]} />
       <mesh material={material} renderOrder={-1} frustumCulled={false}>
         <sphereGeometry args={[SKY_DOME_RADIUS, 32, 24]} />

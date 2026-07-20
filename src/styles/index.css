@@ -6,7 +6,10 @@ body,
   height: 100%;
   margin: 0;
   overscroll-behavior: none;
-  background: #ffffff;
+  /* Matches PALETTE.skyMid — the page behind/before the canvas must
+     never flash white; anything that shows through pre-mount should
+     already read as sky. */
+  background: #d6ecfa;
   font-family:
     ui-rounded,
     'Hiragino Maru Gothic ProN',

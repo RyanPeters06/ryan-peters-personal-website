@@ -1,5 +1,6 @@
 import { Suspense, useEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
+import { Preload } from '@react-three/drei'
 import {
   Bloom,
   BrightnessContrast,
@@ -15,6 +16,7 @@ import { Ground } from '@/scene/Ground'
 import { IslandShadow } from '@/scene/IslandShadow'
 import { Clouds } from '@/scene/Clouds'
 import { Lighting } from '@/scene/lighting/Lighting'
+import { PerfProbe } from '@/scene/PerfProbe'
 import { Avatar } from '@/avatar/Avatar'
 import { Locations } from '@/world/Locations'
 import { PlazaDressing } from '@/world/PlazaDressing'
@@ -71,6 +73,7 @@ export function Experience() {
       className="h-full w-full"
     >
       <Suspense fallback={null}>
+        <PerfProbe />
         <AmbientLoopDriver />
         <Sky />
         <Lighting />
@@ -113,6 +116,10 @@ export function Experience() {
           <BrightnessContrast brightness={0.015} contrast={0.08} />
           <HueSaturation hue={-0.01} saturation={0.04} />
         </EffectComposer>
+        {/* Compile every material/shader up front (gl.compile) so the
+            first PRESENTED frame is already fully built — first-frame
+            shader compilation was part of the startup flash/stutter. */}
+        <Preload all />
       </Suspense>
     </Canvas>
   )
