@@ -365,9 +365,14 @@ quiet and optional.
 
 ## 15. Environmental Rules
 
-- **Floor:** a quiet rounded-tile UI surface, not pavement. Small
-  squircle tiles, whisper-soft low-contrast seams, faint bevel, tiny
-  per-tile brightness variation. It supports the world; it never shouts.
+- **Floor:** quiet organic near-white cobbles, not pavement and not a
+  grid (revised 2026-07-19 per the reference — the earlier square
+  squircle-tile grid read as an engine default however soft its
+  seams). Irregular rounded stones of varied size (Voronoi, full
+  jitter — no straight lines anywhere), seams that are soft *shading*
+  between stones rather than drawn lines (barely perceptible at
+  viewing distance), a gentle per-stone dome, ±2% per-stone brightness
+  variation. It supports the world; it never shouts.
 - **Sky:** bright blue easing to white horizon; plump instanced clouds
   drift slowly.
 - **Dressing** (trees, benches, lamps, flowers, fountain): every piece

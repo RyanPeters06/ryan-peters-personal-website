@@ -3,16 +3,22 @@ import { Color, MeshStandardMaterial } from 'three'
 import { ISLAND_EDGE_HEIGHT, ISLAND_RADIUS, PALETTE, TILE_SIZE } from '@/lib/constants'
 
 /**
- * The plaza floor: a flat disc drawn as soft rounded-square tiles — a
- * giant friendly menu screen, not a 3D-modeling grid. No curvature
+ * The plaza floor: a flat disc drawn as organic near-white cobbles —
+ * rounded, varied-size stones with no straight lines and whisper-soft
+ * seams, like the reference's hand-laid pebble plaza. No curvature
  * anywhere; the disc simply ends at a rounded edge and drops into the
  * sky, floating-island style (see Ground's cliff wall below).
  *
- * Each tile is shaded like a slightly raised toy button: generously
- * rounded corners, blurred low-contrast seams, a faint inner shadow,
- * and a subtle highlight along its top edge.
+ * Pattern: a Voronoi (Worley) tessellation — one pseudo-random feature
+ * point scattered per grid cell with FULL jitter, so the resulting
+ * cells are irregular rounded polygons of naturally varied size, never
+ * a grid. "Seams" are not drawn lines at all: they're the smooth
+ * F2−F1 distance falloff between neighboring stones, shaded as gentle
+ * darkening. (The previous shader was a square grid of rounded-square
+ * SDF tiles with explicit seam lines — it read as an engine-default
+ * grid at a glance, however soft the lines.)
  */
-function createTiledMaterial(): MeshStandardMaterial {
+function createCobbleMaterial(): MeshStandardMaterial {
   const material = new MeshStandardMaterial({
     color: new Color(PALETTE.ground),
     roughness: 0.5,
@@ -20,71 +26,80 @@ function createTiledMaterial(): MeshStandardMaterial {
   })
 
   material.onBeforeCompile = (shader) => {
-    shader.uniforms.uLineColor = { value: new Color(PALETTE.groundLine) }
-    shader.uniforms.uTileSize = { value: TILE_SIZE }
+    shader.uniforms.uSeamColor = { value: new Color(PALETTE.groundLine) }
+    shader.uniforms.uStoneSize = { value: TILE_SIZE * 1.1 }
 
     shader.vertexShader = shader.vertexShader
       .replace(
         '#include <common>',
         `#include <common>
-varying vec3 vTileWorldPos;`,
+varying vec3 vCobbleWorldPos;`,
       )
       .replace(
         '#include <worldpos_vertex>',
         `#include <worldpos_vertex>
-vTileWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;`,
+vCobbleWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;`,
       )
 
     shader.fragmentShader = shader.fragmentShader
       .replace(
         '#include <common>',
         `#include <common>
-varying vec3 vTileWorldPos;
-uniform vec3 uLineColor;
-uniform float uTileSize;
+varying vec3 vCobbleWorldPos;
+uniform vec3 uSeamColor;
+uniform float uStoneSize;
 
-// Rounded corner radius (~22% of tile width) and seam half-width,
-// in tile-cell units.
-#define TILE_CORNER 0.22
-#define LINE_HALF 0.018
+vec2 cobbleHash(vec2 p) {
+  return fract(
+    sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)))) *
+      43758.5453);
+}
 
-// Flat tiling: the floor has no curvature, so cells are just the
-// world XZ position divided by the tile size — no projection needed.
-// Returns (d, uv.x, uv.y, vary): signed distance to the rounded-square
-// border, in-cell coordinates for bevel shading, and a per-tile
-// pseudo-random value for quiet brightness variation.
-vec4 tileCell(vec2 worldXZ) {
-  vec2 cell = worldXZ / uTileSize;
-  vec2 uv = fract(cell) - 0.5;
-  float vary = fract(sin(dot(floor(cell), vec2(127.1, 311.7))) * 43758.5453);
-  // Hand-laid cobble feel: each tile jitters its center a whisper and
-  // wears its own corner radius (17–27%), so the grid reads organic —
-  // laid by hand, not plotted — while seams still meet cleanly.
-  uv -= (vec2(vary, fract(vary * 7.31)) - 0.5) * 0.05;
-  float corner = TILE_CORNER + (vary - 0.5) * 0.10;
-  vec2 q = abs(uv) - vec2(0.5 - corner);
-  float d = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - corner;
-  return vec4(d, uv, vary);
+// Worley/Voronoi: distance to the nearest (f1) and second-nearest
+// (f2) scattered stone centers, plus the nearest stone's id for
+// per-stone variation. Full-strength jitter makes the stones read as
+// hand-laid pebbles — irregular sizes, no straight lines anywhere.
+vec4 cobble(vec2 x) {
+  vec2 n = floor(x);
+  vec2 f = fract(x);
+  float f1 = 8.0;
+  float f2 = 8.0;
+  vec2 id = vec2(0.0);
+  for (int j = -1; j <= 1; j++) {
+    for (int i = -1; i <= 1; i++) {
+      vec2 g = vec2(float(i), float(j));
+      vec2 r = g + cobbleHash(n + g) - f;
+      float d = dot(r, r);
+      if (d < f1) {
+        f2 = f1;
+        f1 = d;
+        id = n + g;
+      } else if (d < f2) {
+        f2 = d;
+      }
+    }
+  }
+  return vec4(sqrt(f1), sqrt(f2), id);
 }`,
       )
       .replace(
         '#include <color_fragment>',
         `#include <color_fragment>
 {
-  vec4 cellInfo = tileCell(vTileWorldPos.xz);
-  float d = cellInfo.x;
-  vec2 cuv = cellInfo.yz;
-  float aa = fwidth(d);
-  // Whisper-soft seams: blurred, minimal contrast — the pattern
-  // quietly supports the world instead of describing pavement.
-  float seam = 1.0 - smoothstep(LINE_HALF - aa, LINE_HALF + aa * 3.0, abs(d));
-  // A very gentle bevel band just inside each tile's border.
-  float band = smoothstep(-0.12, -0.015, d) * (1.0 - step(0.0, d));
-  float bevel = band * cuv.y * 2.0;
-  diffuseColor.rgb = mix(diffuseColor.rgb, uLineColor, clamp(seam, 0.0, 1.0));
-  diffuseColor.rgb *= 1.0 - band * 0.014 + bevel * 0.018;
-  // Quiet per-tile brightness variation (±1.2%) — handcrafted, alive.
-  diffuseColor.rgb *= 1.0 + (cellInfo.w - 0.5) * 0.024;
+  vec4 c = cobble(vCobbleWorldPos.xz / uStoneSize);
+  // 0 at the boundary between two stones, growing toward each center.
+  float edgeDist = c.y - c.x;
+  // Seams are soft shading, not lines: a WIDE smooth falloff mixing
+  // only fractionally toward the (already near-white) seam color —
+  // barely perceptible at viewing distance, per the reference.
+  float seam = 1.0 - smoothstep(0.0, 0.14, edgeDist);
+  diffuseColor.rgb = mix(diffuseColor.rgb, uSeamColor, seam * 0.28);
+  // Gentle dome: each stone lifts a touch toward its center, so the
+  // surface reads softly cushioned rather than one flat plane.
+  diffuseColor.rgb *= 1.0 + smoothstep(0.04, 0.4, edgeDist) * 0.014;
+  // Quiet per-stone brightness variation (±2%) — organic, hand-laid.
+  float vary = fract(sin(dot(c.zw, vec2(127.1, 311.7))) * 43758.5453);
+  diffuseColor.rgb *= 1.0 + (vary - 0.5) * 0.04;
 }`,
       )
   }
@@ -93,7 +108,7 @@ vec4 tileCell(vec2 worldXZ) {
 }
 
 export function Ground() {
-  const tileMaterial = useMemo(createTiledMaterial, [])
+  const tileMaterial = useMemo(createCobbleMaterial, [])
   const edgeMaterial = useMemo(
     () => new MeshStandardMaterial({ color: PALETTE.groundLine, roughness: 0.7 }),
     [],

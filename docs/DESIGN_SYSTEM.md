@@ -14,7 +14,7 @@ then use it. `ART_BIBLE.md` says *why*; this file says *exactly what*.
 | Villager | 0.96–1.04 | Same as player, whisper of variation |
 | Landmark body | 2.2 tall | Monumental-but-friendly ≈ 2.2× player |
 | Tree | 1.5–2.0 | Between person and building |
-| Tile | 0.42 | Many per stride; floor reads fine-grained |
+| Cobble | ~0.46 avg (TILE_SIZE × 1.1 Voronoi scale) | Irregular stones; floor reads fine-grained |
 | Planet radius | 24 | Horizon ~40% up frame in chase view |
 
 ## 2. Landmark Proportions (the monument family)
@@ -70,7 +70,9 @@ Radius as a fraction of the shorter side. **Never below 15%.**
 - 2D: edges are **light, not lines** — inset top highlight
   `rgba(255,255,255,.95) 0 1.5px 3px`, inset bottom shade
   `rgba(160,180,200,.28) 0 -1.5px 3px`. **Borders: never.**
-- Shader floor: bevel band 0.10–0.12 of cell, brightness ±1.4–1.8%.
+- Shader floor (cobbles, 2026-07-19): seam = wide F2−F1 falloff
+  (0..0.14) mixed only 28% toward `groundLine`; per-stone dome +1.4%;
+  per-stone brightness ±2%. No drawn lines, no bevel band.
 
 ## 5. Materials (the plastic bands)
 

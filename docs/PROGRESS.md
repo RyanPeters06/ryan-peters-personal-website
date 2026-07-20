@@ -5,6 +5,39 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-19 — Cobblestone floor (Voronoi, no more grid)
+
+Peter lifted the previous prompt's "do not change" list (nothing is
+locked now — the only rule is no *accidental* regressions, and any
+unrequested change must be listed with reasoning) and named the floor
+as the biggest remaining reference mismatch.
+
+**Before:** world XZ ÷ TILE_SIZE → square grid; one rounded-square SDF
+per cell (center jittered ~5%, per-tile corner radius), explicit seam
+lines drawn via `smoothstep` on the SDF distance + `uLineColor` mix, a
+bevel band, ±1.2% per-tile brightness. However soft the lines, the
+straight rows/columns read as an engine-default grid.
+
+**After (`createCobbleMaterial`, Ground.tsx):** Voronoi/Worley — one
+feature point per cell with FULL jitter (3×3 neighborhood search), so
+stones are irregular rounded polygons of naturally varied size with no
+straight lines anywhere. Seams aren't drawn at all: they're the smooth
+`F2−F1` distance falloff (0..0.14 band) mixed only 28% toward the
+near-white `groundLine` color — soft shading between stones, barely
+perceptible at distance. Gentle per-stone dome (+1.4% toward centers)
+and ±2% per-stone brightness variation. Stone scale `TILE_SIZE × 1.1`
+(~0.46 avg). Same `PALETTE.ground` base color — pattern change only.
+First render had seam falloff 0.18/mix 0.45, which read as a visible
+cellular net in the foreground; softened to 0.14/0.28.
+
+**Unrequested changes: none** — this pass touched only the floor
+shader (Ground.tsx) plus the floor's own doc entries (ART_BIBLE §15,
+DESIGN_SYSTEM §1/§4).
+
+Verified live; `tsc -b` + `npm run build` clean.
+
+---
+
 ## 2026-07-19 — Standing in the plaza: sun behind, camera low, ink'd panels
 
 Three-part reference-alignment pass (lighting → camera → panels, each
