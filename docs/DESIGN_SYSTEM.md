@@ -26,20 +26,19 @@ One mold for every location. Differ ONLY in accent + symbol + label.
 | Body | 2.96 × 3.6 × 1.13, r 0.47 | One continuous RoundedBox (enlarged x1.41 2026-07-21) |
 | Inset face | 2.28 × 2.89, r 0.37 | Flush sun-graded white panel |
 | Grass island | base 4.3×0.34×3.6 r0.34 + grass top 3.78×0.18×3.08 r0.3 | Raised grass disc + white rim + 3-step stair (POD) |
-| Symbol zone | 0.9 wide, centered at y ≈ 1.56 | Upper-middle of face |
-| Symbol stroke | capsule r 0.055, flush molded | ~0.02 proud |
-| Platform | 3.2 × 0.18 × 2.4, r 0.14 | White tile, same family as the plaza floor |
-| Steps | 2, embedded in platform's front (+Z) slope | White; see `POD.steps` |
-| Grass trim | thin strip behind the platform | The only grass ON the pod |
-| Tree | 1 per pod, flanking the monument | Green or blossom-pink canopy |
-| Flower tuft | 1 per pod, at the base of the steps | See `world/FlowerTuft.tsx` |
+| Symbol zone | 1.27 wide, centered at y ≈ 2.2 above grass | Upper-middle of face |
+| Symbol stroke | capsule r 0.078, flush molded | ~0.02 proud |
+| Steps | 3 white steps down the front (+Z), widening | See `POD.steps` |
+| Trees | 2 per pod, on the grass behind the monument | Green or blossom-pink canopy |
+| Flower tufts | 3 per pod, on the grass | See `world/FlowerTuft.tsx` |
 
-Pod dressing tokens live in `POD` (designSystem.ts). Revised 2026-07-19:
-platforms replaced grass mounds (were reading as separated floating
-islands); lampposts/bench/extra flowers moved to `world/
-PlazaDressing.tsx`, scattered across the open plaza — see `LAMPPOSTS`/
-`FLOWER_TUFTS`/`BENCH` there, hand-placed rather than tokenized (same
-pattern as `Crowd.tsx`'s `GROUPS`).
+Pod dressing tokens live in `POD` / `POD_TOP_Y` (designSystem.ts).
+Revised 2026-07-21: the flat white platform was rebuilt as the
+reference's raised GRASS ISLAND — a rounded grass-topped disc inside a
+white rim, with a 3-step staircase down to the plaza and trees/flowers
+planted on the grass. Lampposts/bench live in `world/PlazaDressing.tsx`,
+scattered across the open plaza (hand-placed, same pattern as
+`Crowd.tsx`'s `GROUPS`).
 
 **Landmark body color** (final, 2026-07-19): body is **white**
 (`#ffffff`, faint accent emissive breathing); inset face is **pure
