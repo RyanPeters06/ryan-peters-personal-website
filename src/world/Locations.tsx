@@ -180,15 +180,16 @@ function PersonSymbol({ location }: { location: WorldLocation }) {
 }
 
 /** Per-symbol uniform scale so every glyph lands at ~35-40% of the
- *  panel's width (0.74-0.84 world units on the 2.1-wide body) — the
- *  raw primitive builds range from 0.36 to 0.9 wide, far too uneven. */
+ *  panel's width — the raw primitive builds range from 0.36 to 0.9
+ *  wide, far too uneven. Scaled up 1.41x with the enlarged 2.96-wide
+ *  body (2026-07-20). */
 const SYMBOL_SCALE: Record<string, number> = {
-  about: 1.55,
-  projects: 0.95,
-  experience: 1.5,
-  skills: 1.45,
-  contact: 1.5,
-  resume: 1.4,
+  about: 2.19,
+  projects: 1.34,
+  experience: 2.12,
+  skills: 2.05,
+  contact: 2.12,
+  resume: 1.98,
 }
 
 const SYMBOLS: Record<string, (loc: WorldLocation) => ReactNode> = {

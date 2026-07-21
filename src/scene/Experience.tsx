@@ -110,7 +110,7 @@ export function Experience() {
           />
           {/* Subtle depth of field: sharp on the avatar/foreground,
               gently softening toward the landmark arc and sky. */}
-          <DepthOfField worldFocusDistance={14} worldFocusRange={14} bokehScale={1.3} />
+          <DepthOfField worldFocusDistance={13} worldFocusRange={16} bokehScale={1.3} />
           {/* The reference's "gently emits light" finish: a whisper of
               bloom on only the brightest whites and accent glows. */}
           <Bloom

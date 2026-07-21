@@ -10,7 +10,7 @@
  *  the landmark arc's low platforms (monuments sit ~9.2 from center;
  *  platforms + steps add ~1.6 more) so the cliff edge clears them
  *  without leaving a wide empty apron of bare tile beyond the arc. */
-export const ISLAND_RADIUS = 10.5
+export const ISLAND_RADIUS = 9.5
 
 /** Height of the island's cliff edge, where the floor drops into the
  *  sky below the rim. */
@@ -36,17 +36,22 @@ export const AVATAR_SPAWN_Z = 2.6
  * plaza reads as a compressed diorama on a table. The character walks
  * freely WITHIN the frame (leashed to the island); the camera never
  * follows. Mouse adds only a gentle eased look. */
-/** Framed to the reference concept image (revised 2026-07-20, second
- * pass). Solved numerically against proportions MEASURED off the
- * reference rather than against a verbal description:
- *   avatar 65.6% down frame (ref ~66%)   fountain 51.6% (ref ~50%)
- *   panels span the frame EDGE TO EDGE, ~2% margin (ref ~1-2%)
- *   near rim well below the bottom edge (1.54)
- * Pitch 40 deg / fov 48 — steeper and wider than the previous
- * 26deg/fov34 rig. That rig satisfied a verbal brief ("25-30 deg") but
- * left the plaza small and margined; the reference actually has a
- * steeper look-down and visible wide-lens divergence, with the island
- * filling the full frame width.
+/** Framed to the reference concept image (revised 2026-07-20, THIRD
+ * pass). Solved numerically (/tmp/cam5.py) TOGETHER with the scene
+ * geometry — the earlier passes failed because they treated the camera
+ * as independent of the islands. Reference targets, all measured off
+ * the image:
+ *   avatar 66% down frame   fountain ~50%   panels ~32% of frame height
+ *   side rims OFF both edges (you cannot see the island's sides)
+ *   near rim OFF the bottom  generous sky above the arc
+ * These are only jointly achievable at a NATURAL lens (fov 42, pitch
+ * 22deg — a genuinely lower, undistorted view) because the landmark arc
+ * was tightened ~22% and the panels enlarged ~40% this same pass. With
+ * the old small islands the only solution was fov 54 / pitch 20, a wide
+ * lens that keystoned the outer panels. (The solve accounts for the
+ * panels sitting RAISED on grass islands ~0.5u up, height 3.6 -> tops
+ * at ~4.1u — a first solve that assumed panels on the bare floor put
+ * their tops through the top edge.)
  *
  * If these move, re-check FOUR coupled things or the frame breaks in
  * ways that look like unrelated bugs:
@@ -56,32 +61,20 @@ export const AVATAR_SPAWN_Z = 2.6
  *      band, which this pitch/fov defines)
  *   3. TABLEAU_FOG (panels must sit in front of fog-near)
  *   4. the DOF focus distance in Experience.tsx (avatar distance) */
-export const TABLEAU_CAMERA_POS: readonly [number, number, number] = [0, 10.76, 11.87]
-export const TABLEAU_CAMERA_TARGET: readonly [number, number, number] = [0, 0.8, 0]
-export const TABLEAU_FOV = 48
-/** Static fog band. At the 2026-07-20 second-pass rig the far panels
- *  sit ~23u from the camera and the far rim ~25u — fog must start
- *  beyond the panels (or the arc washes out) but close enough that the
- *  rim still melts into sky. */
-export const TABLEAU_FOG: readonly [number, number] = [25, 65]
+export const TABLEAU_CAMERA_POS: readonly [number, number, number] = [0, 6.62, 13.91]
+export const TABLEAU_CAMERA_TARGET: readonly [number, number, number] = [0, 1.0, 0]
+export const TABLEAU_FOV = 42
+/** Static fog band. At the 2026-07-20 third-pass rig the far panels sit
+ *  ~22u from the camera and the far rim ~24u — fog must start beyond the
+ *  panels (or the arc washes out) but close enough that the rim still
+ *  melts into sky. */
+export const TABLEAU_FOG: readonly [number, number] = [24, 62]
 /** How far from the island's center the character may wander — the
  *  stage ends before the edge does. */
-export const TABLEAU_WALK_RADIUS = 9.6
+export const TABLEAU_WALK_RADIUS = 8.4
 
 /** Walking speed along the surface, world units per second. */
 export const WALK_SPEED = 1.6
-
-/** Altitude band where clouds live, in world Y. The tableau camera
- *  points below world-horizontal, so the visible sky band sits at RIM
- *  height and below — clouds must float beside/below the island's
- *  edge (selling the floating-island fantasy), not high overhead
- *  where the frame never looks. */
-export const CLOUD_ALTITUDE_MIN = -4.0
-export const CLOUD_ALTITUDE_MAX = 6.0
-
-/** Uniform scale applied to each cloud, so they read from orbit and
- *  still feel like plump companions at walking level. */
-export const CLOUD_SCALE = 2.5
 
 /**
  * The world palette — soft, unsaturated, optimistic.

@@ -23,9 +23,9 @@ One mold for every location. Differ ONLY in accent + symbol + label.
 
 | Part | Dimensions (w × h × d) | Notes |
 |---|---|---|
-| Body | 2.1 × 2.55 × 0.8, r 0.33 | One continuous RoundedBox, base sunk 0.24 |
-| Inset face | 1.62 × 2.05, r 0.26 | Flush accent-washed panel |
-| Ground swell | 3.1 × 0.16 × 3.1, r 0.08 | Floor material |
+| Body | 2.96 × 3.6 × 1.13, r 0.47 | One continuous RoundedBox (enlarged x1.41 2026-07-21) |
+| Inset face | 2.28 × 2.89, r 0.37 | Flush sun-graded white panel |
+| Grass island | base 4.3×0.34×3.6 r0.34 + grass top 3.78×0.18×3.08 r0.3 | Raised grass disc + white rim + 3-step stair (POD) |
 | Symbol zone | 0.9 wide, centered at y ≈ 1.56 | Upper-middle of face |
 | Symbol stroke | capsule r 0.055, flush molded | ~0.02 proud |
 | Platform | 3.2 × 0.18 × 2.4, r 0.14 | White tile, same family as the plaza floor |

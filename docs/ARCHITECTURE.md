@@ -52,7 +52,7 @@ math?"
     Lighting            (ambient + fixed key sun + fill + hemisphere)
     Ground              (flat tiled disc + cliff edge — the island floor)
     IslandShadow        (soft contact disc below the floating island)
-    Clouds              (instanced puff clusters, ring around the island)
+    Clouds              (painted cumulus billboard sprites in the sky)
     Locations           (LocationPod per content entry)
     PlazaDressing       (scattered lampposts, bench, flowers)
     Fountain            (center plinth)

@@ -222,17 +222,20 @@ black. If a color feels "corporate" or "techy," it is wrong.
 - The camera **breathes** — always a whisper of drift, never locked
   fully static.
 - **One fixed hero angle, framed to the reference** (revised
-  2026-07-20, second pass): elevated **40° down-pitch at `fov 48`**,
-  POS `[0, 10.76, 11.87]` → TARGET `[0, 0.8, 0]`. Solved against
-  proportions measured off the reference image, not a verbal brief. The near rim stays
+  2026-07-21): **22° down-pitch at `fov 42`**, POS `[0, 6.62, 13.91]`
+  → TARGET `[0, 1.0, 0]`. A genuinely low, undistorted view. Solved
+  numerically TOGETHER with the island geometry — the camera and the
+  landmark size are one problem (see PROGRESS 2026-07-21). The near rim stays
   below the frame's bottom edge, so ground still runs off the bottom
   of the screen; the drop-off shows at left/right past the outer
   panels. Never a chase or orbit; the camera never follows. Gentle
   mouse-look parallax only. `camera.up` is always world +Y (the
   ground has no curvature to level against).
-- Framing rule: the player rides **center, ~66% down the frame**, the
-  fountain ~50% down, and the six landmarks span the frame **edge to
-  edge** (~2% margin) exactly as the reference does. These were solved numerically, not tuned by
+- Framing rule: the player rides **center, ~62% down the frame**, the
+  fountain ~50%; the six landmarks stand LARGE on their grass islands
+  in a near-touching crescent that fills the frame width, with the
+  island's side rims off both edges (you cannot see the world's sides)
+  and ~15% sky above the panels. These were solved numerically, not tuned by
   eye — the earlier "the four constraints over-determine the rig"
   finding was a local minimum of a *low, close* camera (fov 42 at
   ~24°, which pushed About and Resume off both edges). Pulling back

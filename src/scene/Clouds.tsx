@@ -1,17 +1,30 @@
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Instance, Instances } from '@react-three/drei'
-import { Group } from 'three'
-import { getAmbientTime } from '@/hooks/useAmbientLoop'
+import { Billboard } from '@react-three/drei'
 import {
-  CLOUD_ALTITUDE_MAX,
-  CLOUD_ALTITUDE_MIN,
-  CLOUD_SCALE,
-  PALETTE,
-  TABLEAU_WALK_RADIUS,
-} from '@/lib/constants'
+  Group,
+  MeshBasicMaterial,
+  PlaneGeometry,
+  SRGBColorSpace,
+  Texture,
+  TextureLoader,
+} from 'three'
+import { getAmbientTime } from '@/hooks/useAmbientLoop'
+import { CLOUD_SPRITES } from '@/scene/cloudTextures'
+import { TABLEAU_CAMERA_POS } from '@/lib/constants'
 
-/** Deterministic [0,1) sequence so the sky looks the same every visit. */
+/**
+ * The sky's soft cumulus — painted cloud sprites (see cloudTextures.ts)
+ * billboarded across the upper sky band and behind the landmark arc, to
+ * match the reference's crisp cotton clouds. Replaces the old hard
+ * sphere-mesh puffs, which read as lumpy spheres, not clouds.
+ *
+ * Deterministic seed → the same sky greets every visitor. Each cloud
+ * drifts slowly along its lane and wraps, and bobs a touch; the whole
+ * set rides the shared ambient clock so reduced-motion calms it.
+ */
+
+/** Deterministic [0,1) sequence (same recipe used across the world). */
 function makeRng(seed: number): () => number {
   let s = seed
   return () => {
@@ -21,111 +34,91 @@ function makeRng(seed: number): () => number {
 }
 
 interface CloudSpec {
-  /** Distance from the island's center, world units. */
-  radius: number
-  angle0: number
-  altitude: number
-  /** degrees per ambient second, orbiting the island's center */
-  driftSpeed: number
+  tex: number
+  x0: number
+  y: number
+  z: number
+  scale: number
+  drift: number // world units per ambient second
   bobPhase: number
-  puffs: { offset: [number, number, number]; scale: number }[]
+  span: number // travel distance before wrapping
 }
 
-const CLOUD_COUNT = 36
-const DEG2RAD = Math.PI / 180
+const CLOUD_COUNT = 16
 
-function createCloudSpecs(): CloudSpec[] {
-  const rng = makeRng(20260715)
-  return Array.from({ length: CLOUD_COUNT }, (_, i) => {
-    const puffCount = 3 + Math.floor(rng() * 3)
+function createSpecs(): CloudSpec[] {
+  const rng = makeRng(80510)
+  const [, camY, camZ] = TABLEAU_CAMERA_POS
+  return Array.from({ length: CLOUD_COUNT }, () => {
+    // Place by ELEVATION ANGLE, not raw height. This low camera looks
+    // ~22 degrees DOWN, so the visible sky is a thin band from the far
+    // rim (~-16 deg) up to the frame's top edge (~-1 deg). A cloud's y
+    // is derived from a chosen elevation in that band so it always lands
+    // ON screen — placing by height alone (the first attempt) put the
+    // clouds far above the top edge, invisible.
+    const depth = rng() // 0 near .. 1 far
+    const z = -14 - depth * 30 // -14 .. -44, all behind the arc
+    const span = 48 + depth * 44
+    const x0 = (rng() * 2 - 1) * span * 0.5
+    const horiz = Math.hypot(x0, camZ - z)
+    const elevDeg = -3 - rng() * 8 // -3 .. -11: upper-mid sky, above the rim
+    const y = camY + horiz * Math.tan((elevDeg * Math.PI) / 180)
+    const scale = 3.5 + depth * 6 + rng() * 2
     return {
-      // A distant ring AROUND the island, never over it: clouds drift
-      // beside and below the rim in the open sky, spread over a deep
-      // band so the visible sky reads populated, not fringed. The
-      // minimum radius must clear the tableau camera's own distance
-      // from center (~17u) with margin, or a cloud can drift right up
-      // next to the lens and fill the frame.
-      radius: TABLEAU_WALK_RADIUS + 16 + rng() * 20,
-      angle0: (i / CLOUD_COUNT) * 360 + rng() * 30,
-      altitude:
-        CLOUD_ALTITUDE_MIN + rng() * (CLOUD_ALTITUDE_MAX - CLOUD_ALTITUDE_MIN),
-      driftSpeed: 1.1 + rng() * 1.4,
+      tex: Math.floor(rng() * CLOUD_SPRITES.length),
+      x0,
+      y,
+      z,
+      scale,
+      drift: 0.25 + rng() * 0.5,
       bobPhase: rng() * Math.PI * 2,
-      puffs: (() => {
-        // Classic cartoon cloud: plump center, chunky neighbors, all
-        // heavily overlapped with their *bottoms* roughly aligned so the
-        // silhouette reads as one friendly lumpy mass — never a chain.
-        const scales = Array.from({ length: puffCount }, (_, p) => {
-          const centered =
-            1 - Math.abs(p - (puffCount - 1) / 2) / ((puffCount - 1) / 2 || 1)
-          return 0.52 + centered * 0.3 + rng() * 0.06
-        })
-        const maxScale = Math.max(...scales)
-        return scales.map((scale, p) => ({
-          offset: [
-            (p - (puffCount - 1) / 2) * 0.34 + (rng() - 0.5) * 0.05,
-            (scale - maxScale) * 0.55,
-            (rng() - 0.5) * 0.1,
-          ] as [number, number, number],
-          scale,
-        }))
-      })(),
+      span,
     }
   })
 }
 
-/** One cloud: an animated group of puff instances drifting in a ring
- *  around the island, bobbing gently. */
-function Cloud({ spec }: { spec: CloudSpec }) {
-  const group = useRef<Group>(null)
-
+function One({ spec, material }: { spec: CloudSpec; material: MeshBasicMaterial }) {
+  const ref = useRef<Group>(null)
+  const geo = useMemo(() => new PlaneGeometry(1.6, 1), [])
   useFrame(() => {
-    const g = group.current
-    if (!g) return
+    if (!ref.current) return
     const t = getAmbientTime()
-    const angle = (spec.angle0 + t * spec.driftSpeed) * DEG2RAD
-    const bob = Math.sin(t * 0.4 + spec.bobPhase) * 0.12
-    g.position.set(
-      spec.radius * Math.sin(angle),
-      spec.altitude + bob,
-      spec.radius * Math.cos(angle),
-    )
+    // Drift + wrap across the lane; a gentle vertical bob.
+    let x = spec.x0 + t * spec.drift
+    x = ((((x + spec.span / 2) % spec.span) + spec.span) % spec.span) - spec.span / 2
+    ref.current.position.set(x, spec.y + Math.sin(t * 0.15 + spec.bobPhase) * 0.4, spec.z)
   })
-
   return (
-    <group ref={group} scale={CLOUD_SCALE}>
-      {spec.puffs.map((puff, i) => (
-        // Slightly squashed puffs — friendlier than perfect spheres.
-        <Instance
-          key={i}
-          position={puff.offset}
-          scale={[puff.scale, puff.scale * 0.82, puff.scale]}
-        />
-      ))}
-    </group>
+    <Billboard ref={ref}>
+      <mesh geometry={geo} material={material} scale={[spec.scale, spec.scale, 1]} />
+    </Billboard>
   )
 }
 
-/**
- * All clouds share one sphere geometry + one material through drei's
- * <Instances> — the whole sky is a single draw call.
- */
 export function Clouds() {
-  const specs = useMemo(createCloudSpecs, [])
-  const puffTotal = useMemo(
-    () => specs.reduce((n, s) => n + s.puffs.length, 0),
-    [specs],
-  )
+  const specs = useMemo(createSpecs, [])
+  const materials = useMemo(() => {
+    const loader = new TextureLoader()
+    return CLOUD_SPRITES.map((uri) => {
+      const tex: Texture = loader.load(uri)
+      tex.colorSpace = SRGBColorSpace
+      return new MeshBasicMaterial({
+        map: tex,
+        transparent: true,
+        depthWrite: false,
+        // Crisp against the blue sky — clouds are distant sky elements,
+        // not affected by the plaza's ground haze.
+        fog: false,
+        opacity: 0.96,
+      })
+    })
+  }, [])
 
-  // No castShadow: at plaza scale a cloud shadow reads as a giant
-  // stain on the floor, not a charming detail.
   return (
-    <Instances limit={puffTotal}>
-      <sphereGeometry args={[1, 12, 10]} />
-      <meshStandardMaterial color={PALETTE.cloud} roughness={1} metalness={0} />
+    <group>
       {specs.map((spec, i) => (
-        <Cloud key={i} spec={spec} />
+        <One key={i} spec={spec} material={materials[spec.tex]} />
       ))}
-    </Instances>
+    </group>
   )
 }

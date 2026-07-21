@@ -22,16 +22,16 @@ function makeRng(seed: number): () => number {
   }
 }
 
-/** Chat circles: all staged inside the tableau frame, scattered
- *  between the fountain and the landmark arc like the reference. */
+/** Chat circles: sparse and spread across the OPEN plaza (front and
+ *  sides), deliberately clear of the dead center — the fountain (0,0)
+ *  and the player's spawn (0, 2.6) stay open so the crowd never piles
+ *  on the hero. Matches the reference's scattered, un-clustered plaza. */
 const GROUPS: { x: number; z: number; size: number }[] = [
-  { x: 3.0, z: -3.0, size: 3 },
-  { x: -3.5, z: -2.0, size: 2 },
-  { x: -5.5, z: -4.5, size: 3 },
-  { x: 5.0, z: -5.5, size: 3 },
-  { x: 4.0, z: -1.0, size: 2 },
-  { x: -4.0, z: -6.0, size: 2 },
-  { x: 0.5, z: -2.5, size: 2 },
+  { x: -4.6, z: 1.6, size: 3 },
+  { x: 4.7, z: 2.0, size: 2 },
+  { x: -3.0, z: 4.2, size: 2 },
+  { x: 3.4, z: 4.4, size: 2 },
+  { x: 6.0, z: -1.2, size: 2 },
 ]
 
 /** How far chat-circle members stand from their center, world units. */
@@ -78,14 +78,12 @@ function createCrowd(): VillagerSpec[] {
     }
   }
 
-  // Wanderers: strolling the open plaza between the arc and the front.
+  // Wanderers: a few strolling the open plaza, kept off the hero's spot.
   const wanderSpots = [
-    { x: 2.0, z: 2.0 },
-    { x: -2.5, z: 1.5 },
-    { x: 6.5, z: -3.5 },
-    { x: -6.5, z: -3.0 },
-    { x: 0, z: -5.0 },
-    { x: -1.5, z: 3.0 },
+    { x: -6.2, z: 0.5 },
+    { x: 5.4, z: -3.4 },
+    { x: -1.8, z: 5.8 },
+    { x: 2.4, z: 5.6 },
   ]
   for (const w of wanderSpots) {
     specs.push(make(w.x + (rng() - 0.5) * 1.5, w.z + (rng() - 0.5) * 1.5, null, true))

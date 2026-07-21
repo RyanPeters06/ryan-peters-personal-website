@@ -8,7 +8,7 @@ import { useWorldStore } from '@/store/useWorldStore'
 import { avatarPose } from '@/systems/movement/avatarPose'
 import { expDamp } from '@/lib/math/damp'
 import { PALETTE } from '@/lib/constants'
-import { GLOW, LANDMARK, POD, ROUGHNESS } from '@/lib/designSystem'
+import { GLOW, LANDMARK, POD, POD_TOP_Y, ROUGHNESS } from '@/lib/designSystem'
 import { Tree } from '@/world/Tree'
 import { FlowerTuft } from '@/world/FlowerTuft'
 import fontUrl from '@fontsource/quicksand/files/quicksand-latin-700-normal.woff?url'
@@ -57,10 +57,9 @@ export function LocationPod({
     [location.x, location.z],
   )
 
-  const { body: B, swell: S } = LANDMARK
-  const { platform: P } = POD
-  // The monument now stands on the platform's top, not the bare floor.
-  const bodyY = P.height + B.height / 2 - B.sink
+  const B = LANDMARK.body
+  // The monument stands on the island's grass top, sunk slightly in.
+  const bodyY = POD_TOP_Y + B.height / 2 - B.sink
 
   // The icon/label ink: the accent pushed deeper and more saturated so
   // it's confidently legible on the white card at viewing distance —
@@ -126,13 +125,11 @@ varying vec3 vFaceLocal;`,
         emissiveIntensity: GLOW.bodyIdle,
       }),
       face,
-      // The swell atop the platform, meeting the monument — ground
-      // material, so it reads as the platform rising, never a pedestal.
-      swell: new MeshStandardMaterial({ color: PALETTE.ground, roughness: 0.5 }),
-      // The platform: same white tile family as the shared plaza floor.
-      platform: new MeshStandardMaterial({ color: PALETTE.ground, roughness: 0.5 }),
+      // The island's white rim base + steps: soft white plastic.
+      base: new MeshStandardMaterial({ color: '#ffffff', roughness: 0.3 }),
       step: new MeshStandardMaterial({ color: '#ffffff', roughness: 0.3 }),
-      grassTrim: new MeshStandardMaterial({ color: PALETTE.grass, roughness: ROUGHNESS.foliage }),
+      // The grass top the monument and dressing stand on.
+      grass: new MeshStandardMaterial({ color: PALETTE.grass, roughness: ROUGHNESS.foliage }),
     }
   }, [location.accent])
 
@@ -165,95 +162,92 @@ varying vec3 vFaceLocal;`,
   return (
     <group position={position} quaternion={quaternion}>
       <group rotation-y={yaw}>
-      {/* The platform: barely raised, same white tile family as the
-          shared plaza floor — reads as ONE continuous ground, not a
-          separate island. */}
-      <RoundedBox
-        args={[P.width, P.height, P.depth]}
-        radius={P.radius}
-        smoothness={4}
-        position={[0, P.height / 2, 0]}
-        material={materials.platform}
-        receiveShadow
-        castShadow
-      />
-      {/* A thin grass trim behind the platform — a hint of planting,
-          not a hill. */}
-      <mesh
-        material={materials.grassTrim}
-        position={[0, POD.grassTrim.height / 2, POD.grassTrim.z]}
-        receiveShadow
-      >
-        <boxGeometry args={[POD.grassTrim.width, POD.grassTrim.height, POD.grassTrim.depth]} />
-      </mesh>
-      {/* Two shallow steps down to the plaza (+Z, the direction the
-          pod faces). */}
-      {POD.steps.map((s, i) => (
+        {/* The island: a rounded grass-topped disc inside a white rim,
+            raised above the plaza — the reference's landmark island. */}
         <RoundedBox
-          key={i}
-          args={[s.width, s.height, s.depth]}
-          radius={0.04}
-          smoothness={3}
-          position={[0, s.y, s.z]}
-          material={materials.step}
+          args={[POD.base.width, POD.base.height, POD.base.depth]}
+          radius={POD.base.radius}
+          smoothness={4}
+          position={[0, POD.base.height / 2, 0]}
+          material={materials.base}
           receiveShadow
           castShadow
         />
-      ))}
-      {/* Dressing tied to the pod itself: one flanking tree, a flower
-          tuft at the base of the steps. */}
-      <group position={[POD.tree.x, P.height, POD.tree.z]}>
-        <Tree variant={location.treeVariant} scale={1.8} />
-      </group>
-      <group position={[POD.flowers.x, 0, POD.flowers.z]}>
-        <FlowerTuft />
-      </group>
-      {/* The platform top rising gently to meet the monument */}
-      <RoundedBox
-        args={[S.width, S.height, S.depth]}
-        radius={S.radius}
-        smoothness={4}
-        position={[0, P.height + S.height / 2 - S.sink, 0]}
-        material={materials.swell}
-        receiveShadow
-      />
-      {/* 1 — the body: one continuous pillowy monolith, saturated in
-          the location's accent */}
-      <RoundedBox
-        args={[B.width, B.height, B.depth]}
-        radius={B.radius}
-        smoothness={8}
-        position={[0, bodyY, 0]}
-        material={materials.body}
-        castShadow
-        receiveShadow
-      />
-      {/* 2 — the inset face: a touch lighter, same color family */}
-      <RoundedBox
-        args={[B.faceWidth, B.faceHeight, 0.1]}
-        radius={B.faceRadius}
-        smoothness={6}
-        position={[0, bodyY + 0.05, B.depth / 2 - 0.042]}
-        material={materials.face}
-      />
-      {/* 3a — the symbol, molded into the face's upper half */}
-      <group position={[0, P.height + LANDMARK.symbol.centerY, B.depth / 2 + 0.028]}>
-        {children}
-      </group>
-      {/* 3b — the label: directly beneath the icon, well inside the
-          face (never near the bottom edge), ~13% of the panel's height,
-          in the deepened accent ink. */}
-      <Text
-        font={fontUrl}
-        fontSize={0.33}
-        letterSpacing={0.04}
-        color={inkAccent}
-        anchorX="center"
-        anchorY="middle"
-        position={[0, bodyY - 0.1, B.depth / 2 + 0.02]}
-      >
-        {location.name}
-      </Text>
+        <RoundedBox
+          args={[POD.grass.width, POD.grass.height, POD.grass.depth]}
+          radius={POD.grass.radius}
+          smoothness={4}
+          position={[0, POD.base.height + POD.grass.height / 2, 0]}
+          material={materials.grass}
+          receiveShadow
+          castShadow
+        />
+        {/* Staircase down to the plaza (+Z front), widening as it drops. */}
+        {POD.steps.map((s, i) => (
+          <RoundedBox
+            key={i}
+            args={[s.width, s.height, s.depth]}
+            radius={0.05}
+            smoothness={3}
+            position={[0, s.y, s.z]}
+            material={materials.step}
+            receiveShadow
+            castShadow
+          />
+        ))}
+        {/* Trees + flowers planted on the grass. */}
+        {POD.trees.map((t, i) => (
+          <group key={i} position={[t.x, POD_TOP_Y, t.z]}>
+            <Tree variant={location.treeVariant} scale={2.0} />
+          </group>
+        ))}
+        {POD.flowers.map((fl, i) => (
+          <group key={i} position={[fl.x, POD_TOP_Y, fl.z]}>
+            <FlowerTuft />
+          </group>
+        ))}
+
+        {/* The monument, toward the back of the grass so the visitor
+            reads its face across the greenery. */}
+        <group position={[0, 0, POD.monumentZ]}>
+          {/* 1 — the body: one continuous pillowy monolith */}
+          <RoundedBox
+            args={[B.width, B.height, B.depth]}
+            radius={B.radius}
+            smoothness={8}
+            position={[0, bodyY, 0]}
+            material={materials.body}
+            castShadow
+            receiveShadow
+          />
+          {/* 2 — the inset face: a touch lighter, gently sun-graded */}
+          <RoundedBox
+            args={[B.faceWidth, B.faceHeight, 0.12]}
+            radius={B.faceRadius}
+            smoothness={6}
+            position={[0, bodyY + 0.06, B.depth / 2 - 0.05]}
+            material={materials.face}
+          />
+          {/* 3a — the symbol, molded into the face's upper half */}
+          <group position={[0, POD_TOP_Y + LANDMARK.symbol.centerY, B.depth / 2 + 0.03]}>
+            {children}
+          </group>
+          {/* 3b — the label: beneath the icon, well inside the face,
+              width-capped so long names ("Experience") never bleed past
+              the face onto the body's bevels. */}
+          <Text
+            font={fontUrl}
+            fontSize={0.34}
+            maxWidth={B.faceWidth * 0.9}
+            letterSpacing={0.03}
+            color={inkAccent}
+            anchorX="center"
+            anchorY="middle"
+            position={[0, bodyY - 0.18, B.depth / 2 + 0.02]}
+          >
+            {location.name}
+          </Text>
+        </group>
       </group>
     </group>
   )

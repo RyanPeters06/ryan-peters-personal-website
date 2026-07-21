@@ -5,6 +5,66 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-21 — Reference-match pass: grass islands + camera + painted clouds
+
+Peter: the reference camera is "a lot better — panels large and close,
+the view is lower, you cannot see the sides of the world", plus better
+clouds/backdrop, "external resources 100% okay." Approved the island
+rebuild + painted cloud sprites.
+
+### The root finding (proven, not asserted)
+The camera has been re-solved twice and kept missing because it was
+treated as independent of the scene geometry. Solving the projection
+against the reference's measured proportions proves the tension: with
+the current small islands the ONLY camera that hides the side rims AND
+makes panels large is fov 54 / pitch 20 — a wide lens that keystones the
+outer panels. A natural fov 42 / pitch 22 hits the reference exactly,
+but ONLY if the arc is tightened ~22% and the panels enlarged ~40%.
+Camera and geometry are one problem.
+
+### Part 1 — islands + arc
+- Arc tightened x0.78 (locations.ts): the six panels pull into a big
+  near-touching crescent instead of a thin far arc.
+- Panels enlarged x1.41 (LANDMARK.body 2.55->3.6 tall etc.; symbol
+  scales + label width-cap follow). Labels re-verified inside faces.
+- LocationPod rebuilt as the reference's raised GRASS ISLAND: a rounded
+  grass-topped disc inside a white rim, a 3-step white staircase down to
+  the plaza, two trees + flowers on the grass, monument toward the back.
+  (Was a flat white platform + grass trim.) New POD/POD_TOP_Y tokens.
+- ISLAND_RADIUS 10.5->9.5; TABLEAU_WALK_RADIUS 9.6->8.4.
+- Crowd thinned ~23->~15 and spread into the open plaza, off the hero's
+  spawn and the fountain (was piled in the dead center, hiding the
+  player).
+
+### Part 2 — camera (solved twice)
+First solve assumed panels on the bare floor; the grass islands raise
+them ~0.5u, pushing their tops through the top edge. Re-solved with the
+true raised geometry: POS [0,6.62,13.91] TGT [0,1.0,0] fov 42 pitch 22.
+Result: avatar ~61% down, fountain ~54%, panelH ~0.30 with ~15% sky
+above, side rims off both edges, near rim off the bottom. Coupled
+retunes: fog [25,65]->[24,62], DOF focus ->13, sky gradient stops
+re-centred to the new band h in [-0.27,-0.02].
+
+### Part 3 — painted cloud sprites
+Retired the hard sphere-mesh puffs. Generated 4 soft cumulus alpha
+textures offline (PIL: overlapping soft lobes on a flat underside,
+gaussian-feathered, top-lit white->cool-grey), bundled as base64 PNGs
+in scene/cloudTextures.ts (57KB, offline-safe like the HDRI).
+scene/Clouds.tsx now billboards them across the sky. KEY placement fix:
+this low camera looks ~22deg down, so the visible sky is a thin band
+from the far rim (~-16deg) to the top edge (~-1deg) — clouds are placed
+by ELEVATION ANGLE into that band, not by raw height (the first attempt
+put them at y up to 16, far above the frame, invisible).
+
+Verified live: blue sky gradient [157,209,240] top, 0% clipping, clouds
+present. Closest the build has ever been to the reference.
+
+Still to do (later passes): clay materials on panels/characters (Pass
+3), saturated crowd colour + varied hair (Pass 6), avatar remodel
+reassessment (GLB now allowed).
+
+---
+
 ## 2026-07-20 — Camera re-solved against MEASURED reference proportions
 
 Peter: "adjust the camera angle to resemble the reference image closer."
