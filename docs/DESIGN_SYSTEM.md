@@ -23,9 +23,9 @@ One mold for every location. Differ ONLY in accent + symbol + label.
 
 | Part | Dimensions (w × h × d) | Notes |
 |---|---|---|
-| Body | 2.96 × 3.6 × 1.13, r 0.47 | One continuous RoundedBox (enlarged x1.41 2026-07-21) |
-| Inset face | 2.28 × 2.89, r 0.37 | Flush sun-graded white panel |
-| Grass island | base 4.3×0.34×3.6 r0.34 + grass top 3.78×0.18×3.08 r0.3 | Raised grass disc + white rim + 3-step stair (POD) |
+| Body | 2.96 × 3.15 × 1.13, r 0.82 | Rounded SQUARE / squircle (2026-07-22) |
+| Inset face | 2.34 × 2.5, r 0.6 | White + RADIAL accent glow matching the icon |
+| Grass island | OVAL: base rx1.7×rz1.4×h0.16 + grass rx1.44×rz1.14×h0.12 | Low elliptical grass disc + white rim + 2 steps + tufts (POD) |
 | Symbol zone | 1.27 wide, centered at y ≈ 2.2 above grass | Upper-middle of face |
 | Symbol stroke | capsule r 0.078, flush molded | ~0.02 proud |
 | Steps | 3 white steps down the front (+Z), widening | See `POD.steps` |

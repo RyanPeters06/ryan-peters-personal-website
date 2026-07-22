@@ -5,6 +5,49 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-22 — Panel + island refinement (8 reference gaps)
+
+Peter's close read of the panels/islands against the concept image
+listed eight fixes. All addressed this pass; crowd colour + avatar
+remodel remain deferred to the next pass, as agreed.
+
+- **Squircle panels**: LANDMARK.body 3.6 -> 3.15 tall (near-square) with
+  radius 0.47 -> 0.82 (~28% of width) — a rounded square, not a portrait
+  rectangle.
+- **Clay material** (new src/lib/clay.ts): shared MeshPhysicalMaterial
+  factory — roughness ~0.5, warm sheen ~0.4, low clearcoat 0.06 (a
+  whisper of gloss, NOT glassy transmission). Applied to panel bodies,
+  island rims, steps. Replaces the flat MeshStandard plastic.
+- **Colored face glow** (reverses the 2026-07-19 white-face decision,
+  per Peter's explicit new ask): the inset face carries a RADIAL accent
+  glow via onBeforeCompile (brightest behind the icon, fading to white
+  at the rim) + a uniform accent emissive — reads as soft *lighting*
+  matching each icon, which is what the reference has. A flat tint had
+  read "greenish"; the radial glow does not.
+- **Flat consistent embossed icons** (Locations.tsx): the six glyphs
+  rebuilt from 2D THREE.Shape -> ExtrudeGeometry at ONE consistent depth
+  (0.08) — clean flat relief embossed off the face, no varied bumps. The
+  About person is now a flat disc-head + dome-shoulders silhouette, not
+  the old sphere+cone. Toolkit: roundedRect/barGeo/panelGeo/discGeo/
+  ringGeo/triGeo + a shared <Part> mesh.
+- **Oval, low, detailed islands** (POD tokens + LocationPod +
+  new GrassTuft.tsx): the rounded-rectangle platform became an
+  ELLIPTICAL grass disc inside a white rim (scaled cylinders), lowered
+  (POD_TOP_Y 0.52 -> 0.28), with grass-blade tufts + flower clusters
+  scattered on top. Island width ~3.4 (was 4.3+).
+- **Spread the arc**: locations.ts arc 0.78 -> 0.88 so the six islands
+  have a ~1.35u gap between the center pair instead of merging.
+- **Camera re-solved** (all the above are camera inputs): POS
+  [0,5.98,13.0] TGT [0,0.6,-1] fov 44 pitch 21. Avatar ~61% down,
+  fountain ~54%, panels ~26% tall with ~19% sky above, side rims off
+  both edges, near rim off bottom. Coupled: fog [22,60], DOF focus 12.
+
+Verified live: blue sky, 0% clipping, clouds present, all six labels
+inside their faces, panels separated. Deferred next: crowd colour
+saturation + varied hair, avatar remodel (GLB), clay on characters.
+
+---
+
 ## 2026-07-21 — Reference-match pass: grass islands + camera + painted clouds
 
 Peter: the reference camera is "a lot better — panels large and close,

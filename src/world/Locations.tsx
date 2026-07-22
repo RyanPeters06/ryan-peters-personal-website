@@ -1,14 +1,14 @@
 import { useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Color, MeshStandardMaterial } from 'three'
+import { Color, ExtrudeGeometry, MeshStandardMaterial, Path, Shape } from 'three'
 import { LOCATIONS } from '@/content/locations'
 import type { WorldLocation } from '@/content/locations'
 import { LocationPod } from '@/world/LocationPod'
 import { useWorldStore } from '@/store/useWorldStore'
 import { getAmbientTime } from '@/hooks/useAmbientLoop'
 import { expDamp } from '@/lib/math/damp'
-import { GLOW, LANDMARK } from '@/lib/designSystem'
+import { GLOW } from '@/lib/designSystem'
 
 /**
  * Location symbols — molded flush into each monument's face like a
@@ -48,133 +48,164 @@ function useSymbolMaterial(location: WorldLocation): MeshStandardMaterial {
   return material
 }
 
-/** One rounded bar of a symbol (a capsule lying in the face plane). */
-function Bar({
+// ---- Flat relief icon toolkit ---------------------------------------
+// Every icon is built from 2D shapes extruded to ONE consistent depth,
+// so the six glyphs read as clean flat relief embossed off the panel —
+// no varied bumps, no round capsules (the earlier sphere+cone About
+// person was the worst offender). Geometries are module-level (built
+// once); the accent material is per-location.
+const RELIEF = {
+  depth: 0.08,
+  bevelEnabled: true,
+  bevelThickness: 0.012,
+  bevelSize: 0.012,
+  bevelSegments: 2,
+}
+
+function roundedRect(w: number, h: number, r: number): Shape {
+  const s = new Shape()
+  const x = -w / 2
+  const y = -h / 2
+  s.moveTo(x + r, y)
+  s.lineTo(x + w - r, y)
+  s.quadraticCurveTo(x + w, y, x + w, y + r)
+  s.lineTo(x + w, y + h - r)
+  s.quadraticCurveTo(x + w, y + h, x + w - r, y + h)
+  s.lineTo(x + r, y + h)
+  s.quadraticCurveTo(x, y + h, x, y + h - r)
+  s.lineTo(x, y + r)
+  s.quadraticCurveTo(x, y, x + r, y)
+  return s
+}
+const barGeo = (len: number, thick = 0.12) =>
+  new ExtrudeGeometry(roundedRect(len, thick, thick * 0.5), RELIEF)
+const panelGeo = (w: number, h: number, r = 0.06) =>
+  new ExtrudeGeometry(roundedRect(w, h, r), RELIEF)
+const discGeo = (r: number) => {
+  const s = new Shape()
+  s.absarc(0, 0, r, 0, Math.PI * 2, false)
+  return new ExtrudeGeometry(s, RELIEF)
+}
+const ringGeo = (ro: number, ri: number) => {
+  const s = new Shape()
+  s.absarc(0, 0, ro, 0, Math.PI * 2, false)
+  const hole = new Path()
+  hole.absarc(0, 0, ri, 0, Math.PI * 2, true)
+  s.holes.push(hole)
+  return new ExtrudeGeometry(s, RELIEF)
+}
+const triGeo = (halfW: number, drop: number) => {
+  const s = new Shape()
+  s.moveTo(-halfW, 0)
+  s.lineTo(halfW, 0)
+  s.lineTo(-halfW * 0.3, -drop)
+  s.closePath()
+  return new ExtrudeGeometry(s, RELIEF)
+}
+
+/** One extruded relief piece sharing the icon's accent material. */
+function Part({
   material,
-  x,
-  y,
-  tilt,
-  length,
+  geo,
+  x = 0,
+  y = 0,
+  rot = 0,
 }: {
   material: MeshStandardMaterial
-  x: number
-  y: number
-  tilt: number
-  length: number
+  geo: ExtrudeGeometry
+  x?: number
+  y?: number
+  rot?: number
 }) {
-  return (
-    <mesh material={material} position={[x, y, 0]} rotation={[0, 0, tilt]}>
-      <capsuleGeometry args={[LANDMARK.symbol.barRadius, length, 6, 12]} />
-    </mesh>
-  )
+  return <mesh material={material} geometry={geo} position={[x, y, 0]} rotation={[0, 0, rot]} />
 }
 
-/** Projects: an original rounded, friendly </> mark. */
+// ---- The six glyphs, as flat relief ---------------------------------
+const CODE = { bar: barGeo(0.3, 0.12), slash: barGeo(0.5, 0.12) }
 function CodeSymbol({ location }: { location: WorldLocation }) {
-  const material = useSymbolMaterial(location)
+  const m = useSymbolMaterial(location)
   return (
     <group>
-      {/* < */}
-      <Bar material={material} x={-0.3} y={0.105} tilt={-1.05} length={0.27} />
-      <Bar material={material} x={-0.3} y={-0.105} tilt={1.05} length={0.27} />
-      {/* / */}
-      <Bar material={material} x={0} y={0} tilt={-0.32} length={0.42} />
-      {/* > */}
-      <Bar material={material} x={0.3} y={0.105} tilt={1.05} length={0.27} />
-      <Bar material={material} x={0.3} y={-0.105} tilt={-1.05} length={0.27} />
+      <Part material={m} geo={CODE.bar} x={-0.28} y={0.11} rot={-1.02} />
+      <Part material={m} geo={CODE.bar} x={-0.28} y={-0.11} rot={1.02} />
+      <Part material={m} geo={CODE.slash} rot={-0.34} />
+      <Part material={m} geo={CODE.bar} x={0.28} y={0.11} rot={1.02} />
+      <Part material={m} geo={CODE.bar} x={0.28} y={-0.11} rot={-1.02} />
     </group>
   )
 }
 
-/** Experience: a rounded briefcase — body, handle, divider line. */
+const BRIEF = {
+  body: panelGeo(0.5, 0.34, 0.08),
+  handleTop: barGeo(0.22, 0.075),
+  handleSide: barGeo(0.1, 0.075),
+  clasp: barGeo(0.16, 0.06),
+}
 function BriefcaseSymbol({ location }: { location: WorldLocation }) {
-  const material = useSymbolMaterial(location)
+  const m = useSymbolMaterial(location)
   return (
     <group>
-      <mesh material={material} position={[0, -0.03, 0]}>
-        <boxGeometry args={[0.52, 0.36, 0.05]} />
-      </mesh>
-      <mesh material={material} position={[0, 0.19, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.11, 0.032, 8, 16, Math.PI]} />
-      </mesh>
-      <Bar material={material} x={0} y={-0.03} tilt={Math.PI / 2} length={0.4} />
+      <Part material={m} geo={BRIEF.body} y={-0.03} />
+      <Part material={m} geo={BRIEF.handleTop} y={0.19} />
+      <Part material={m} geo={BRIEF.handleSide} x={-0.1} y={0.14} rot={Math.PI / 2} />
+      <Part material={m} geo={BRIEF.handleSide} x={0.1} y={0.14} rot={Math.PI / 2} />
+      <Part material={m} geo={BRIEF.clasp} y={-0.03} />
     </group>
   )
 }
 
-/** Skills: a rounded gear — ring, six teeth, center hub. */
+const GEAR = { ring: ringGeo(0.19, 0.1), pad: panelGeo(0.12, 0.12, 0.04) }
 function GearSymbol({ location }: { location: WorldLocation }) {
-  const material = useSymbolMaterial(location)
-  const teeth = Array.from({ length: 6 }, (_, i) => (i / 6) * Math.PI * 2)
+  const m = useSymbolMaterial(location)
+  const pads = [0, 1, 2, 3].map((i) => (i * Math.PI) / 2)
   return (
     <group>
-      <mesh material={material}>
-        <torusGeometry args={[0.16, 0.045, 10, 24]} />
-      </mesh>
-      <mesh material={material}>
-        <sphereGeometry args={[0.075, 14, 12]} />
-      </mesh>
-      {teeth.map((a, i) => (
-        <mesh
-          key={i}
-          material={material}
-          position={[Math.cos(a) * 0.23, Math.sin(a) * 0.23, 0]}
-          rotation={[0, 0, a]}
-        >
-          <boxGeometry args={[0.09, 0.07, 0.05]} />
-        </mesh>
+      <Part material={m} geo={GEAR.ring} />
+      {pads.map((a, i) => (
+        <Part key={i} material={m} geo={GEAR.pad} x={Math.cos(a) * 0.19} y={Math.sin(a) * 0.19} rot={a} />
       ))}
     </group>
   )
 }
 
-/** Contact: a rounded chat bubble with a small tail and ellipsis. */
+const CHAT = { body: panelGeo(0.48, 0.34, 0.1), tail: triGeo(0.07, 0.14), dot: discGeo(0.035) }
 function ChatSymbol({ location }: { location: WorldLocation }) {
-  const material = useSymbolMaterial(location)
+  const m = useSymbolMaterial(location)
   return (
     <group>
-      <mesh material={material} position={[0, 0.03, 0]}>
-        <boxGeometry args={[0.5, 0.34, 0.05]} />
-      </mesh>
-      <mesh material={material} position={[-0.16, -0.18, 0]} rotation={[0, 0, Math.PI]}>
-        <coneGeometry args={[0.07, 0.11, 3]} />
-      </mesh>
-      <Bar material={material} x={-0.12} y={0.03} tilt={Math.PI / 2} length={0.04} />
-      <Bar material={material} x={0} y={0.03} tilt={Math.PI / 2} length={0.04} />
-      <Bar material={material} x={0.12} y={0.03} tilt={Math.PI / 2} length={0.04} />
+      <Part material={m} geo={CHAT.body} y={0.04} />
+      <Part material={m} geo={CHAT.tail} x={-0.12} y={-0.13} />
+      <Part material={m} geo={CHAT.dot} x={-0.12} y={0.04} />
+      <Part material={m} geo={CHAT.dot} x={0} y={0.04} />
+      <Part material={m} geo={CHAT.dot} x={0.12} y={0.04} />
     </group>
   )
 }
 
-/** Resume: a rounded document — page, folded corner, three text lines. */
+const DOC = { page: panelGeo(0.36, 0.5, 0.05), line: barGeo(0.22, 0.05), lineShort: barGeo(0.14, 0.05), fold: triGeo(0.08, 0.08) }
 function DocumentSymbol({ location }: { location: WorldLocation }) {
-  const material = useSymbolMaterial(location)
+  const m = useSymbolMaterial(location)
   return (
     <group>
-      <mesh material={material}>
-        <boxGeometry args={[0.36, 0.48, 0.05]} />
-      </mesh>
-      <mesh material={material} position={[0.12, 0.19, 0.01]} rotation={[0, 0, Math.PI / 4]}>
-        <boxGeometry args={[0.1, 0.1, 0.04]} />
-      </mesh>
-      <Bar material={material} x={0} y={0.05} tilt={Math.PI / 2} length={0.22} />
-      <Bar material={material} x={0} y={-0.06} tilt={Math.PI / 2} length={0.22} />
-      <Bar material={material} x={-0.03} y={-0.17} tilt={Math.PI / 2} length={0.16} />
+      <Part material={m} geo={DOC.page} />
+      <Part material={m} geo={DOC.line} y={0.09} rot={Math.PI / 2} />
+      <Part material={m} geo={DOC.line} y={-0.02} rot={Math.PI / 2} />
+      <Part material={m} geo={DOC.lineShort} x={-0.04} y={-0.13} rot={Math.PI / 2} />
     </group>
   )
 }
 
-/** About: a rounded person mark — head over shoulders. */
+const PERSON = (() => {
+  const shoulder = new Shape()
+  shoulder.absellipse(0, 0, 0.3, 0.24, 0, Math.PI, false)
+  return { head: discGeo(0.14), shoulders: new ExtrudeGeometry(shoulder, RELIEF) }
+})()
 function PersonSymbol({ location }: { location: WorldLocation }) {
-  const material = useSymbolMaterial(location)
+  const m = useSymbolMaterial(location)
   return (
     <group>
-      <mesh material={material} position={[0, 0.17, 0]}>
-        <sphereGeometry args={[0.115, 18, 14]} />
-      </mesh>
-      <mesh material={material} position={[0, -0.13, 0]}>
-        <coneGeometry args={[0.21, 0.3, 20]} />
-      </mesh>
+      <Part material={m} geo={PERSON.head} y={0.14} />
+      <Part material={m} geo={PERSON.shoulders} y={-0.2} />
     </group>
   )
 }
@@ -184,12 +215,12 @@ function PersonSymbol({ location }: { location: WorldLocation }) {
  *  wide, far too uneven. Scaled up 1.41x with the enlarged 2.96-wide
  *  body (2026-07-20). */
 const SYMBOL_SCALE: Record<string, number> = {
-  about: 2.19,
-  projects: 1.34,
-  experience: 2.12,
-  skills: 2.05,
-  contact: 2.12,
-  resume: 1.98,
+  about: 1.5,
+  projects: 1.35,
+  experience: 1.65,
+  skills: 1.7,
+  contact: 1.65,
+  resume: 1.55,
 }
 
 const SYMBOLS: Record<string, (loc: WorldLocation) => ReactNode> = {

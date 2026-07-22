@@ -61,14 +61,14 @@ export const AVATAR_SPAWN_Z = 2.6
  *      band, which this pitch/fov defines)
  *   3. TABLEAU_FOG (panels must sit in front of fog-near)
  *   4. the DOF focus distance in Experience.tsx (avatar distance) */
-export const TABLEAU_CAMERA_POS: readonly [number, number, number] = [0, 6.62, 13.91]
-export const TABLEAU_CAMERA_TARGET: readonly [number, number, number] = [0, 1.0, 0]
-export const TABLEAU_FOV = 42
+export const TABLEAU_CAMERA_POS: readonly [number, number, number] = [0, 5.98, 13.0]
+export const TABLEAU_CAMERA_TARGET: readonly [number, number, number] = [0, 0.6, -1]
+export const TABLEAU_FOV = 44
 /** Static fog band. At the 2026-07-20 third-pass rig the far panels sit
  *  ~22u from the camera and the far rim ~24u — fog must start beyond the
  *  panels (or the arc washes out) but close enough that the rim still
  *  melts into sky. */
-export const TABLEAU_FOG: readonly [number, number] = [24, 62]
+export const TABLEAU_FOG: readonly [number, number] = [22, 60]
 /** How far from the island's center the character may wander — the
  *  stage ends before the edge does. */
 export const TABLEAU_WALK_RADIUS = 8.4

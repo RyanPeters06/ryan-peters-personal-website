@@ -7,10 +7,12 @@ import { useFlatPosition } from '@/hooks/useFlatPosition'
 import { useWorldStore } from '@/store/useWorldStore'
 import { avatarPose } from '@/systems/movement/avatarPose'
 import { expDamp } from '@/lib/math/damp'
+import { clay } from '@/lib/clay'
 import { PALETTE } from '@/lib/constants'
 import { GLOW, LANDMARK, POD, POD_TOP_Y, ROUGHNESS } from '@/lib/designSystem'
 import { Tree } from '@/world/Tree'
 import { FlowerTuft } from '@/world/FlowerTuft'
+import { GrassTuft } from '@/world/GrassTuft'
 import fontUrl from '@fontsource/quicksand/files/quicksand-latin-700-normal.woff?url'
 
 /**
@@ -72,23 +74,22 @@ export function LocationPod({
 
   const materials = useMemo(() => {
     const accent = new Color(location.accent)
-    // White/frosted card (Peter's call, 2026-07-19, matching the
-    // reference): the body is soft white plastic like every other
-    // neutral surface — the accent lives ONLY in the icon glyph and
-    // the label text, plus a whisper of emissive breathing from
-    // within.
-    // The face carries a very gentle diagonal gradient (brighter
-    // top-left, softly shaded bottom-right, echoing the sun) baked in
-    // via onBeforeCompile — NO accent tint (the earlier 14% wash still
-    // read as "greenish/pinkish body" at a glance).
-    const face = new MeshStandardMaterial({
+    // The inset face: soft-clay white carrying a RADIAL ACCENT GLOW that
+    // matches the icon's colour (Peter's call, 2026-07-21, reversing the
+    // earlier flat-white face). A flat accent tint read "greenish" — a
+    // radial glow, brightest behind the icon and fading to white at the
+    // rim, reads as soft *lighting* instead, which is what the reference
+    // has. Plus a uniform accent emissive so the face gently lights up.
+    const face = clay({
       color: '#ffffff',
-      roughness: 0.22,
-      emissive: accent,
-      emissiveIntensity: 0.05,
+      roughness: 0.4,
+      sheen: 0.3,
+      emissive: location.accent,
+      emissiveIntensity: 0.12,
     })
-    const W = LANDMARK.body.faceWidth.toFixed(4)
-    const H = LANDMARK.body.faceHeight.toFixed(4)
+    const W = (LANDMARK.body.faceWidth * 0.5).toFixed(4)
+    const H = (LANDMARK.body.faceHeight * 0.5).toFixed(4)
+    const [ar, ag, ab] = [accent.r.toFixed(4), accent.g.toFixed(4), accent.b.toFixed(4)]
     face.onBeforeCompile = (shader) => {
       shader.vertexShader = shader.vertexShader
         .replace(
@@ -111,23 +112,26 @@ varying vec3 vFaceLocal;`,
           '#include <color_fragment>',
           `#include <color_fragment>
 {
-  // 1.0 at the top-left corner, 0.0 at the bottom-right.
-  float tl = clamp(((0.5 - vFaceLocal.x / ${W}) + (vFaceLocal.y / ${H} + 0.5)) * 0.5, 0.0, 1.0);
-  diffuseColor.rgb *= 0.966 + tl * 0.068;
+  // Radial distance from the face center, normalized to its half-size.
+  vec2 fp = vec2(vFaceLocal.x / ${W}, vFaceLocal.y / ${H});
+  float glow = smoothstep(1.15, 0.05, length(fp));   // 1 center .. 0 rim
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(${ar}, ${ag}, ${ab}), glow * 0.26);
 }`,
         )
     }
     return {
-      body: new MeshStandardMaterial({
+      // Soft-clay white body with the accent breathing from within.
+      body: clay({
         color: '#ffffff',
-        roughness: 0.26,
-        emissive: accent,
+        roughness: 0.5,
+        sheen: 0.4,
+        emissive: location.accent,
         emissiveIntensity: GLOW.bodyIdle,
       }),
       face,
-      // The island's white rim base + steps: soft white plastic.
-      base: new MeshStandardMaterial({ color: '#ffffff', roughness: 0.3 }),
-      step: new MeshStandardMaterial({ color: '#ffffff', roughness: 0.3 }),
+      // The island's white rim base + steps: soft-clay white.
+      base: clay({ color: '#ffffff', roughness: 0.5, sheen: 0.35 }),
+      step: clay({ color: '#ffffff', roughness: 0.5, sheen: 0.35 }),
       // The grass top the monument and dressing stand on.
       grass: new MeshStandardMaterial({ color: PALETTE.grass, roughness: ROUGHNESS.foliage }),
     }
@@ -156,33 +160,34 @@ varying vec3 vFaceLocal;`,
       dt,
     )
     materials.body.emissiveIntensity = glow.current
-    materials.face.emissiveIntensity = glow.current + 0.02
+    materials.face.emissiveIntensity = glow.current + 0.1
   })
 
   return (
     <group position={position} quaternion={quaternion}>
       <group rotation-y={yaw}>
-        {/* The island: a rounded grass-topped disc inside a white rim,
-            raised above the plaza — the reference's landmark island. */}
-        <RoundedBox
-          args={[POD.base.width, POD.base.height, POD.base.depth]}
-          radius={POD.base.radius}
-          smoothness={4}
-          position={[0, POD.base.height / 2, 0]}
+        {/* The island: a low OVAL grass disc inside a white rim
+            (elliptical scaled cylinders), matching the reference's
+            rounded blob islands — not a rounded rectangle. */}
+        <mesh
           material={materials.base}
+          position={[0, POD.base.height / 2, 0]}
+          scale={[POD.base.rx, POD.base.height, POD.base.rz]}
           receiveShadow
           castShadow
-        />
-        <RoundedBox
-          args={[POD.grass.width, POD.grass.height, POD.grass.depth]}
-          radius={POD.grass.radius}
-          smoothness={4}
-          position={[0, POD.base.height + POD.grass.height / 2, 0]}
+        >
+          <cylinderGeometry args={[1, 1, 1, 48]} />
+        </mesh>
+        <mesh
           material={materials.grass}
+          position={[0, POD.base.height + POD.grass.height / 2, 0]}
+          scale={[POD.grass.rx, POD.grass.height, POD.grass.rz]}
           receiveShadow
           castShadow
-        />
-        {/* Staircase down to the plaza (+Z front), widening as it drops. */}
+        >
+          <cylinderGeometry args={[1, 1, 1, 48]} />
+        </mesh>
+        {/* Two low steps down to the plaza (+Z front). */}
         {POD.steps.map((s, i) => (
           <RoundedBox
             key={i}
@@ -195,7 +200,7 @@ varying vec3 vFaceLocal;`,
             castShadow
           />
         ))}
-        {/* Trees + flowers planted on the grass. */}
+        {/* Trees, flower clusters, and grass tufts planted on the grass. */}
         {POD.trees.map((t, i) => (
           <group key={i} position={[t.x, POD_TOP_Y, t.z]}>
             <Tree variant={location.treeVariant} scale={2.0} />
@@ -204,6 +209,11 @@ varying vec3 vFaceLocal;`,
         {POD.flowers.map((fl, i) => (
           <group key={i} position={[fl.x, POD_TOP_Y, fl.z]}>
             <FlowerTuft />
+          </group>
+        ))}
+        {POD.grassTufts.map((g, i) => (
+          <group key={i} position={[g.x, POD_TOP_Y - 0.11, g.z]}>
+            <GrassTuft />
           </group>
         ))}
 
