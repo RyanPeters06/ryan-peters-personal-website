@@ -26,30 +26,29 @@ One mold for every location. Differ ONLY in accent + symbol + label.
 | Body | 2.96 × 3.15 × 1.13, r 0.82 | Rounded SQUARE / squircle (2026-07-22) |
 | Inset face | 2.34 × 2.5, r 0.6 | White + RADIAL accent glow matching the icon |
 | Grass island | OVAL: base rx1.7×rz1.4×h0.16 + grass rx1.44×rz1.14×h0.12 | Low elliptical grass disc + white rim + 2 steps + tufts (POD) |
-| Symbol zone | 1.27 wide, centered at y ≈ 2.2 above grass | Upper-middle of face |
-| Symbol stroke | capsule r 0.078, flush molded | ~0.02 proud |
-| Steps | 3 white steps down the front (+Z), widening | See `POD.steps` |
+| Symbol zone | 1.3 wide, centered at y ≈ 2.02 above grass | Upper-middle of face |
+| Symbol relief | 2D Shape -> ExtrudeGeometry, depth 0.08 | Flat consistent emboss, NOT capsules |
+| Steps | 2 low white steps down the front (+Z) | See `POD.steps` |
 | Trees | 2 per pod, on the grass behind the monument | Green or blossom-pink canopy |
 | Flower tufts | 3 per pod, on the grass | See `world/FlowerTuft.tsx` |
 
 Pod dressing tokens live in `POD` / `POD_TOP_Y` (designSystem.ts).
-Revised 2026-07-21: the flat white platform was rebuilt as the
-reference's raised GRASS ISLAND — a rounded grass-topped disc inside a
-white rim, with a 3-step staircase down to the plaza and trees/flowers
-planted on the grass. Lampposts/bench live in `world/PlazaDressing.tsx`,
-scattered across the open plaza (hand-placed, same pattern as
-`Crowd.tsx`'s `GROUPS`).
+Revised 2026-07-22: the island is a LOW OVAL grass disc (elliptical
+scaled cylinders) inside a thin white rim, with 2 steps down to the
+plaza and trees/flower/grass tufts planted on top. Lampposts/bench live
+in `world/PlazaDressing.tsx`, scattered across the open plaza
+(hand-placed, same pattern as `Crowd.tsx`'s `GROUPS`).
 
-**Landmark body color** (final, 2026-07-19): body is **white**
-(`#ffffff`, faint accent emissive breathing); inset face is **pure
-white** with a baked ±3.4% diagonal gradient (brighter top-left) — no
-accent tint anywhere in the body. Symbols and labels carry the accent
-**as ink, deepened** via `offsetHSL(0, +0.26, −0.13)`; raw accents
-stay for glow/washes. Icon ≈35–40% of panel width (`SYMBOL_SCALE`);
-label fontSize 0.33 (~13% of panel height) directly beneath the icon
-at y≈1.1, never near the face's bottom edge. (A same-day
-saturated-body experiment — body ~68% accent, white symbols — was
-reverted; see ART_BIBLE.md §11.)
+**Landmark body color** (revised 2026-07-22): body is **soft-clay
+white** (`clay()`, faint accent emissive breathing); the inset face is
+white carrying a **RADIAL accent glow** (onBeforeCompile: brightest
+behind the icon, fading to white at the rim) + accent emissive, so each
+face reads as softly lit in its icon's colour — the reference's look.
+(This reverses the 2026-07-19 pure-white-face call: a flat accent tint
+read "greenish", but a radial glow reads as lighting.) Symbols + labels
+carry the accent **as ink, deepened** via `offsetHSL(0, +0.26, −0.13)`.
+Icons ≈35–40% of panel width (`SYMBOL_SCALE`); label fontSize 0.34,
+width-capped, beneath the icon.
 
 ## 3. Corner Radii (the squircle law)
 
@@ -77,7 +76,8 @@ Radius as a fraction of the shorter side. **Never below 15%.**
 
 | Band | Roughness | Used for |
 |---|---|---|
-| Gloss | 0.12–0.20 | Landmark bodies, sign faces, fountain |
+| Clay | 0.5 rough + sheen 0.4 + clearcoat 0.06 | Panel bodies, island rims, steps (`clay()`) |
+| Gloss | 0.12–0.20 | Fountain, small props |
 | Sheen | 0.25–0.35 | Molded symbols, accent parts |
 | Ground | 0.45–0.55 | Floor, swells, steps |
 | Soft | 0.55–0.70 | Characters (skin 0.60, shirts 0.55, hair 0.70) |
@@ -103,7 +103,7 @@ shared via pools.
 | Symbol idle | 0.22 ± 0.04 breathing |
 | Symbol near | 0.55 |
 | Lamp bulbs (future) | 0.6 warm |
-| Bloom pass | threshold 0.9, smoothing 0.25, intensity ≈ 0.22 — a whisper |
+| Bloom pass | threshold 0.97, smoothing 0.15, intensity ≈ 0.18 — a whisper |
 
 Glow eases at λ ≈ 4. Nothing flashes; light *breathes*.
 
