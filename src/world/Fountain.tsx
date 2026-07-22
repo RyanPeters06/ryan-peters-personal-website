@@ -3,6 +3,13 @@ import { useFrame } from '@react-three/fiber'
 import { Group, MeshStandardMaterial } from 'three'
 import { getAmbientTime } from '@/hooks/useAmbientLoop'
 import { PALETTE } from '@/lib/constants'
+import { FlowerTuft } from '@/world/FlowerTuft'
+
+/** Flower clusters ringing the fountain's grass, like the reference. */
+const FOUNTAIN_FLOWERS = Array.from({ length: 7 }, (_, i) => {
+  const a = (i / 7) * Math.PI * 2 + 0.4
+  return [Math.cos(a) * 0.92, Math.sin(a) * 0.92] as const
+})
 
 /**
  * The plaza centerpiece: a white basin with a ring of grass, holding a
@@ -44,6 +51,12 @@ export function Fountain() {
       <mesh material={materials.grass} position={[0, 0.32, 0]} castShadow receiveShadow>
         <cylinderGeometry args={[0.95, 1.0, 0.1, 36]} />
       </mesh>
+      {/* Flowers ringing the grass */}
+      {FOUNTAIN_FLOWERS.map(([x, z], i) => (
+        <group key={i} position={[x, 0.37, z]}>
+          <FlowerTuft />
+        </group>
+      ))}
       {/* The little ringed globe, floating just above the basin */}
       <group ref={globe} position={[0, 0.72, 0]}>
         <mesh material={materials.globe} castShadow>

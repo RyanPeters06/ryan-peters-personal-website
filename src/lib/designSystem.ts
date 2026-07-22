@@ -73,8 +73,10 @@ export const POD = {
    *  ~3.4 wide (a touch wider than the 2.96 panel) so the six islands
    *  have small visible gaps along the arc instead of merging. */
   base: { rx: 1.7, rz: 1.4, height: 0.16 },
-  /** Green grass top, inset so a white rim shows around it. */
-  grass: { rx: 1.44, rz: 1.14, height: 0.12 },
+  /** Green grass mound — a low convex DOME (not a flat coin), inset so a
+   *  white rim shows around it. `cap` is the dome's peak height above the
+   *  base; dressing sits on the dome surface (see LocationPod's domeY). */
+  grass: { rx: 1.5, rz: 1.2, cap: 0.32 },
   /** Monument offset toward the back of the grass (local -Z; +Z faces
    *  the plaza after the pod's yaw). */
   monumentZ: -0.35,
@@ -85,30 +87,44 @@ export const POD = {
   ],
   /** Two flanking trees on the grass, behind the monument. */
   trees: [
-    { x: -1.02, z: -0.55 },
-    { x: 1.02, z: -0.55 },
+    { x: -1.05, z: -0.5 },
+    { x: 1.05, z: -0.5 },
+  ],
+  /** Rounded bushes for foliage volume. */
+  bushes: [
+    { x: -1.2, z: 0.0 },
+    { x: 1.18, z: 0.05 },
+    { x: -0.4, z: -0.6 },
   ],
   /** Flower tufts scattered on the grass. */
   flowers: [
-    { x: -0.85, z: 0.5 },
-    { x: 0.8, z: 0.55 },
-    { x: 0.05, z: 0.72 },
+    { x: -0.9, z: 0.55 },
+    { x: 0.85, z: 0.6 },
+    { x: 0.05, z: 0.78 },
+    { x: -0.35, z: 0.3 },
+    { x: 0.45, z: 0.25 },
   ],
-  /** Grass-blade tufts scattered on the grass top for detail. */
+  /** Grass-blade tufts scattered densely across the grass mound. */
   grassTufts: [
     { x: -0.55, z: 0.35 },
     { x: 0.5, z: 0.3 },
-    { x: -1.0, z: 0.1 },
-    { x: 1.02, z: 0.05 },
+    { x: -1.05, z: 0.15 },
+    { x: 1.08, z: 0.1 },
     { x: -0.2, z: 0.62 },
     { x: 0.3, z: 0.68 },
-    { x: -0.7, z: -0.15 },
-    { x: 0.72, z: -0.2 },
+    { x: -0.75, z: -0.15 },
+    { x: 0.78, z: -0.2 },
+    { x: 0.0, z: 0.2 },
+    { x: -0.35, z: -0.35 },
+    { x: 0.4, z: -0.3 },
+    { x: -0.95, z: 0.55 },
+    { x: 0.95, z: 0.5 },
+    { x: 0.15, z: -0.15 },
   ],
 } as const
 
-/** Height of an island's grass top above the plaza floor. */
-export const POD_TOP_Y = POD.base.height + POD.grass.height
+/** The grass mound's peak height above the plaza floor. */
+export const POD_TOP_Y = POD.base.height + POD.grass.cap
 
 /** ---- Corner radii: fraction of the shorter side (squircle law) ----- */
 export const RADIUS_RATIO = {

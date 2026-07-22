@@ -5,6 +5,18 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-22 — Look pass 1: lush grass & foliage
+
+Toward the reference's rich planting (Peter: "make the grass better").
+- Grass top rebuilt from a flat coin to a low convex DOME (top-hemisphere
+  ellipsoid); dressing sits ON the dome via a `domeY(x,z)` surface fn in
+  LocationPod (no more floating).
+- Denser, chunkier `GrassTuft` (8 blades, taller/varied greens), ~14 per
+  island; new `Bush.tsx` (3-lobe shrub) x3 per island; flowers 3 -> 5 per
+  island; flowers ringing the fountain grass.
+- `Tree` canopy: 3 -> 5 rounder puffs, fuller crown.
+Verified live: islands read as lush grassy knolls. Build clean.
+
 ## 2026-07-22 — Panel + island refinement (8 reference gaps)
 
 Peter's close read of the panels/islands against the concept image

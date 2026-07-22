@@ -9,10 +9,11 @@ import { avatarPose } from '@/systems/movement/avatarPose'
 import { expDamp } from '@/lib/math/damp'
 import { clay } from '@/lib/clay'
 import { PALETTE } from '@/lib/constants'
-import { GLOW, LANDMARK, POD, POD_TOP_Y, ROUGHNESS } from '@/lib/designSystem'
+import { GLOW, LANDMARK, POD, ROUGHNESS } from '@/lib/designSystem'
 import { Tree } from '@/world/Tree'
 import { FlowerTuft } from '@/world/FlowerTuft'
 import { GrassTuft } from '@/world/GrassTuft'
+import { Bush } from '@/world/Bush'
 import fontUrl from '@fontsource/quicksand/files/quicksand-latin-700-normal.woff?url'
 
 /**
@@ -60,8 +61,17 @@ export function LocationPod({
   )
 
   const B = LANDMARK.body
-  // The monument stands on the island's grass top, sunk slightly in.
-  const bodyY = POD_TOP_Y + B.height / 2 - B.sink
+  // Surface height of the grass DOME at a local (x, z) — an ellipsoid
+  // cap, so dressing sits ON the mound instead of floating above a flat
+  // disc. Peak at center (POD_TOP_Y), falling to the rim at the edge.
+  const domeY = (x: number, z: number): number => {
+    const { rx, rz, cap } = POD.grass
+    const t = 1 - (x * x) / (rx * rx) - (z * z) / (rz * rz)
+    return POD.base.height + cap * Math.sqrt(Math.max(0, t))
+  }
+  // The monument stands on the mound at its offset, sunk slightly in.
+  const monBaseY = domeY(0, POD.monumentZ)
+  const bodyY = monBaseY + B.height / 2 - B.sink
 
   // The icon/label ink: the accent pushed deeper and more saturated so
   // it's confidently legible on the white card at viewing distance —
@@ -178,14 +188,16 @@ varying vec3 vFaceLocal;`,
         >
           <cylinderGeometry args={[1, 1, 1, 48]} />
         </mesh>
+        {/* The grass MOUND: a low convex dome (top-hemisphere ellipsoid)
+            so the island reads as a rounded grassy knoll, not a coin. */}
         <mesh
           material={materials.grass}
-          position={[0, POD.base.height + POD.grass.height / 2, 0]}
-          scale={[POD.grass.rx, POD.grass.height, POD.grass.rz]}
+          position={[0, POD.base.height, 0]}
+          scale={[POD.grass.rx, POD.grass.cap, POD.grass.rz]}
           receiveShadow
           castShadow
         >
-          <cylinderGeometry args={[1, 1, 1, 48]} />
+          <sphereGeometry args={[1, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2]} />
         </mesh>
         {/* Two low steps down to the plaza (+Z front). */}
         {POD.steps.map((s, i) => (
@@ -200,19 +212,24 @@ varying vec3 vFaceLocal;`,
             castShadow
           />
         ))}
-        {/* Trees, flower clusters, and grass tufts planted on the grass. */}
+        {/* Trees, bushes, flowers, and grass tufts planted ON the dome. */}
         {POD.trees.map((t, i) => (
-          <group key={i} position={[t.x, POD_TOP_Y, t.z]}>
+          <group key={i} position={[t.x, domeY(t.x, t.z) - 0.05, t.z]}>
             <Tree variant={location.treeVariant} scale={2.0} />
           </group>
         ))}
+        {POD.bushes.map((b, i) => (
+          <group key={i} position={[b.x, domeY(b.x, b.z) - 0.04, b.z]}>
+            <Bush />
+          </group>
+        ))}
         {POD.flowers.map((fl, i) => (
-          <group key={i} position={[fl.x, POD_TOP_Y, fl.z]}>
+          <group key={i} position={[fl.x, domeY(fl.x, fl.z) - 0.02, fl.z]}>
             <FlowerTuft />
           </group>
         ))}
         {POD.grassTufts.map((g, i) => (
-          <group key={i} position={[g.x, POD_TOP_Y - 0.11, g.z]}>
+          <group key={i} position={[g.x, domeY(g.x, g.z) - 0.1, g.z]}>
             <GrassTuft />
           </group>
         ))}
@@ -239,7 +256,7 @@ varying vec3 vFaceLocal;`,
             material={materials.face}
           />
           {/* 3a — the symbol, molded into the face's upper half */}
-          <group position={[0, POD_TOP_Y + LANDMARK.symbol.centerY, B.depth / 2 + 0.03]}>
+          <group position={[0, monBaseY + LANDMARK.symbol.centerY, B.depth / 2 + 0.03]}>
             {children}
           </group>
           {/* 3b — the label: beneath the icon, well inside the face,

@@ -34,16 +34,24 @@ export function Tree({
   return (
     <group scale={scale}>
       <mesh material={materials.trunk} position={[0, 0.22, 0]} castShadow>
-        <cylinderGeometry args={[0.045, 0.065, 0.44, 8]} />
+        <cylinderGeometry args={[0.05, 0.07, 0.46, 8]} />
       </mesh>
-      <mesh material={materials.mid} position={[0, 0.64, 0]} castShadow receiveShadow>
-        <sphereGeometry args={[0.34, 16, 12]} />
+      {/* A fuller canopy — five overlapping puffs, rounder and lusher
+          than the old three, so the tree reads as a leafy crown. */}
+      <mesh material={materials.mid} position={[0, 0.68, 0]} castShadow receiveShadow>
+        <sphereGeometry args={[0.38, 18, 14]} />
       </mesh>
-      <mesh material={materials.dark} position={[-0.2, 0.52, 0.1]} castShadow receiveShadow>
-        <sphereGeometry args={[0.24, 14, 10]} />
+      <mesh material={materials.dark} position={[-0.26, 0.54, 0.12]} castShadow receiveShadow>
+        <sphereGeometry args={[0.27, 16, 12]} />
       </mesh>
-      <mesh material={materials.light} position={[0.22, 0.5, -0.12]} castShadow receiveShadow>
+      <mesh material={materials.light} position={[0.27, 0.52, -0.13]} castShadow receiveShadow>
+        <sphereGeometry args={[0.26, 16, 12]} />
+      </mesh>
+      <mesh material={materials.light} position={[0.05, 0.86, 0.16]} castShadow receiveShadow>
         <sphereGeometry args={[0.22, 14, 10]} />
+      </mesh>
+      <mesh material={materials.dark} position={[-0.12, 0.7, -0.24]} castShadow receiveShadow>
+        <sphereGeometry args={[0.21, 14, 10]} />
       </mesh>
     </group>
   )
