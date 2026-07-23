@@ -63,16 +63,16 @@ export function Lighting() {
           project was compensating for its absence. */}
       <Environment files={skyHdri as string} background={false} environmentIntensity={0.38} />
 
-      {/* Ambient is now a SLIVER. It was 1.05 because it had to fake
-          the environment light that now exists for real; leaving it
-          there would wash the IBL straight back out. */}
-      <ambientLight intensity={0.08} color={PALETTE.ambient} />
+      {/* A soft ambient fill — low (the IBL does most of the wrap), just
+          enough that shadowed sides stay gently lit and the scene reads
+          soft, not harsh. Kept modest: too much washes the white panels. */}
+      <ambientLight intensity={0.1} color={PALETTE.ambient} />
 
       {/* Warm key: the plaza's sun, fixed, sized to shadow the whole
           island at once. */}
       <directionalLight
         position={SUN_POSITION}
-        intensity={1.0}
+        intensity={1.05}
         color={PALETTE.keyLight}
         castShadow
         shadow-mapSize={[2048, 2048]}
@@ -82,17 +82,12 @@ export function Lighting() {
         shadow-camera-right={SHADOW_EXTENT}
         shadow-camera-top={SHADOW_EXTENT}
         shadow-camera-bottom={-SHADOW_EXTENT}
-        shadow-bias={-0.0004}
-        /* VSM (see Experience.tsx's `shadows="variance"`) blurs via
-           radius/blurSamples, not a bias trick — this is what actually
-           gives soft, feathered shadow edges instead of a hard PCF line.
-           The kernel spans +/-radius TEXELS (three's vsm_frag offsets by
-           i*radius, i in [-1,1]), so 3.5 was a 7-texel gaussian — enough
-           to smear a correct silhouette into a formless smudge. At ~82
-           texels per world unit, 1.5 keeps edges soft while leaving the
-           avatar's head/torso/legs readable. */
-        shadow-radius={1.5}
-        shadow-blurSamples={16}
+        /* PCSS now (see Experience.tsx's <SoftShadows>): sharp at the
+           contact point, softening with distance — the grounded look.
+           normalBias fights PCF self-shadow acne on the curved
+           characters; a small negative bias handles the flat floor. */
+        shadow-bias={-0.0003}
+        shadow-normalBias={0.02}
       />
 
       {/* Cool fill from the opposite side, no shadows. Kept, but low:

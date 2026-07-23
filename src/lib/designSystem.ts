@@ -68,58 +68,73 @@ export const LANDMARK = {
 // wider than deep), a low profile, two steps, and grass tufts + flowers
 // scattered on top. base/grass are (rx, rz, height): a unit cylinder
 // scaled to [rx, height, rz].
+// Enlarged 2026-07-23 (Peter): the grass ovals were barely wider than
+// the 2.96 panel (grass rx 1.5 vs panel half-width 1.48 — no side
+// margin), so the panel read as filling the island edge-to-edge. The
+// reference has a generous grass apron on ALL sides, with trees/bushes
+// out in the margins. Grown to ~0.4u of clear grass past each panel
+// edge; the tangential (rx) growth is capped so neighbours only kiss
+// into a crescent along the tightest arc join rather than fully merging.
 export const POD = {
-  /** White rim island — the low oval base disc under the grass. Sized
-   *  ~3.4 wide (a touch wider than the 2.96 panel) so the six islands
-   *  have small visible gaps along the arc instead of merging. */
-  base: { rx: 1.7, rz: 1.4, height: 0.16 },
+  /** White rim island — the low oval base disc under the grass. A thin
+   *  (~0.17u) rim around the grass dome. */
+  base: { rx: 2.07, rz: 1.82, height: 0.16 },
   /** Green grass mound — a low convex DOME (not a flat coin), inset so a
    *  white rim shows around it. `cap` is the dome's peak height above the
-   *  base; dressing sits on the dome surface (see LocationPod's domeY). */
-  grass: { rx: 1.5, rz: 1.2, cap: 0.32 },
+   *  base; dressing sits on the dome surface (see LocationPod's domeY).
+   *  rx gives ~0.42u of grass past each side of the 2.96-wide panel. */
+  grass: { rx: 1.9, rz: 1.65, cap: 0.32 },
   /** Monument offset toward the back of the grass (local -Z; +Z faces
-   *  the plaza after the pod's yaw). */
+   *  the plaza after the pod's yaw). Held fixed so the panel — and thus
+   *  the solved camera framing — doesn't move as the island grows. */
   monumentZ: -0.35,
   /** Two low white steps descending toward the plaza (+Z front). */
   steps: [
-    { y: 0.16, z: 1.2, width: 1.5, depth: 0.3, height: 0.1 },
-    { y: 0.06, z: 1.48, width: 1.8, depth: 0.3, height: 0.1 },
+    { y: 0.16, z: 1.55, width: 1.7, depth: 0.32, height: 0.1 },
+    { y: 0.06, z: 1.86, width: 2.05, depth: 0.32, height: 0.1 },
   ],
-  /** Two flanking trees on the grass, behind the monument. */
+  /** Two flanking trees on the grass, pushed OUT into the widened side
+   *  margins so they frame the panel instead of crowding it. */
   trees: [
-    { x: -1.05, z: -0.5 },
-    { x: 1.05, z: -0.5 },
+    { x: -1.62, z: -0.55 },
+    { x: 1.62, z: -0.55 },
   ],
-  /** Rounded bushes for foliage volume. */
+  /** Rounded bushes for foliage volume, in the side/back margins. */
   bushes: [
-    { x: -1.2, z: 0.0 },
-    { x: 1.18, z: 0.05 },
-    { x: -0.4, z: -0.6 },
+    { x: -1.68, z: 0.15 },
+    { x: 1.66, z: 0.2 },
+    { x: -0.5, z: -0.72 },
   ],
-  /** Flower tufts scattered on the grass. */
+  /** A couple of little grey pebbles nestled in the grass, like the
+   *  reference's rocks. (x, z, r) */
+  rocks: [
+    { x: 1.35, z: 0.85, r: 0.14 },
+    { x: -1.2, z: 0.95, r: 0.11 },
+  ],
+  /** Flower tufts scattered on the grass, spread into the fuller lawn. */
   flowers: [
-    { x: -0.9, z: 0.55 },
-    { x: 0.85, z: 0.6 },
-    { x: 0.05, z: 0.78 },
-    { x: -0.35, z: 0.3 },
-    { x: 0.45, z: 0.25 },
+    { x: -1.15, z: 0.7 },
+    { x: 1.05, z: 0.78 },
+    { x: 0.05, z: 1.02 },
+    { x: -0.45, z: 0.42 },
+    { x: 0.55, z: 0.38 },
   ],
   /** Grass-blade tufts scattered densely across the grass mound. */
   grassTufts: [
-    { x: -0.55, z: 0.35 },
-    { x: 0.5, z: 0.3 },
-    { x: -1.05, z: 0.15 },
-    { x: 1.08, z: 0.1 },
-    { x: -0.2, z: 0.62 },
-    { x: 0.3, z: 0.68 },
-    { x: -0.75, z: -0.15 },
-    { x: 0.78, z: -0.2 },
-    { x: 0.0, z: 0.2 },
-    { x: -0.35, z: -0.35 },
-    { x: 0.4, z: -0.3 },
-    { x: -0.95, z: 0.55 },
-    { x: 0.95, z: 0.5 },
-    { x: 0.15, z: -0.15 },
+    { x: -0.6, z: 0.4 },
+    { x: 0.55, z: 0.35 },
+    { x: -1.35, z: 0.2 },
+    { x: 1.38, z: 0.15 },
+    { x: -0.25, z: 0.75 },
+    { x: 0.35, z: 0.82 },
+    { x: -0.85, z: -0.15 },
+    { x: 0.88, z: -0.2 },
+    { x: 0.0, z: 0.25 },
+    { x: -0.4, z: -0.4 },
+    { x: 0.45, z: -0.35 },
+    { x: -1.15, z: 0.62 },
+    { x: 1.18, z: 0.58 },
+    { x: 0.15, z: -0.18 },
   ],
 } as const
 

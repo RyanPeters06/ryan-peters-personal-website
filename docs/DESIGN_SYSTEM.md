@@ -23,20 +23,34 @@ One mold for every location. Differ ONLY in accent + symbol + label.
 
 | Part | Dimensions (w × h × d) | Notes |
 |---|---|---|
-| Body | 2.96 × 3.15 × 1.13, r 0.82 | Rounded SQUARE / squircle (2026-07-22) |
-| Inset face | 2.34 × 2.5, r 0.6 | White + RADIAL accent glow matching the icon |
-| Grass island | OVAL: base rx1.7×rz1.4×h0.16 + grass rx1.44×rz1.14×h0.12 | Low elliptical grass disc + white rim + 2 steps + tufts (POD) |
+| Body | 2.96 × 3.15 × 1.13, top r 0.62 / bottom r 0.16 | Arched-top / squarer-bottom profile (2026-07-23), extruded — see below |
+| Inset face | 2.34 × 2.5, top r 0.5 / bottom r 0.14 | White + RADIAL accent glow; same arched profile as the body |
+| Grass island | OVAL: base rx2.07×rz1.82×h0.16 + grass rx1.9×rz1.65×cap0.32 | Low elliptical grass dome + thin white rim + 2 steps + tufts/rocks (POD) |
 | Symbol zone | 1.3 wide, centered at y ≈ 2.02 above grass | Upper-middle of face |
 | Symbol relief | 2D Shape -> ExtrudeGeometry, depth 0.08 | Flat consistent emboss, NOT capsules |
 | Steps | 2 low white steps down the front (+Z) | See `POD.steps` |
 | Trees | 2 per pod, on the grass behind the monument | Green or blossom-pink canopy |
 | Flower tufts | 3 per pod, on the grass | See `world/FlowerTuft.tsx` |
 
+**Panel body shape** (revised 2026-07-23, per the reference close-ups):
+the body is **no longer a uniform squircle** (`RoundedBox`) — it is an
+`ExtrudeGeometry` of a 2D profile with a **big top radius and a small
+bottom radius** (`panelProfile()` in `LocationPod.tsx`), so the panel is
+pillowy at the crown and nearly square where it meets the grass — it
+reads as *sitting on the ground*, not floating. A soft bevel rounds the
+front/back edges. The inset face uses the same profile. The body clay is
+**opaque matte** (`clay({ env: 0.08, sheen: 0.14 })`) — a higher env
+reflection made the body mirror the sky HDRI and ghost a glassy "second
+shell" around the inset face; low env kills it.
+
 Pod dressing tokens live in `POD` / `POD_TOP_Y` (designSystem.ts).
-Revised 2026-07-22: the island is a LOW OVAL grass disc (elliptical
-scaled cylinders) inside a thin white rim, with 2 steps down to the
-plaza and trees/flower/grass tufts planted on top. Lampposts/bench live
-in `world/PlazaDressing.tsx`, scattered across the open plaza
+Revised 2026-07-23: the island is a LOW OVAL grass DOME (elliptical
+scaled cylinders + a hemisphere cap) inside a thin white rim, enlarged
+so ~0.42u of clear grass shows past each side of the panel (the ovals
+were previously barely wider than the panel — no side margin). Two steps
+down to the plaza; trees/bushes pushed OUT into the widened margins;
+flower/grass tufts + a couple of grey rocks planted on top. Lampposts/
+bench live in `world/PlazaDressing.tsx`, scattered across the open plaza
 (hand-placed, same pattern as `Crowd.tsx`'s `GROUPS`).
 
 **Landmark body color** (revised 2026-07-22): body is **soft-clay
@@ -46,7 +60,8 @@ behind the icon, fading to white at the rim) + accent emissive, so each
 face reads as softly lit in its icon's colour — the reference's look.
 (This reverses the 2026-07-19 pure-white-face call: a flat accent tint
 read "greenish", but a radial glow reads as lighting.) Symbols + labels
-carry the accent **as ink, deepened** via `offsetHSL(0, +0.26, −0.13)`.
+carry the accent **as ink, deepened** via `offsetHSL(0, +0.32, −0.2)`
+(deepened 2026-07-23 so the green/teal labels stay legible on white).
 Icons ≈35–40% of panel width (`SYMBOL_SCALE`); label fontSize 0.34,
 width-capped, beneath the icon.
 

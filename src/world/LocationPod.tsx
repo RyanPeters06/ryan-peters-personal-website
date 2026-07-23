@@ -1,7 +1,7 @@
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RoundedBox, Text } from '@react-three/drei'
-import { Color, MeshStandardMaterial } from 'three'
+import { Color, ExtrudeGeometry, MeshStandardMaterial, Shape } from 'three'
 import type { WorldLocation } from '@/content/locations'
 import { useFlatPosition } from '@/hooks/useFlatPosition'
 import { useWorldStore } from '@/store/useWorldStore'
@@ -15,6 +15,81 @@ import { FlowerTuft } from '@/world/FlowerTuft'
 import { GrassTuft } from '@/world/GrassTuft'
 import { Bush } from '@/world/Bush'
 import fontUrl from '@fontsource/quicksand/files/quicksand-latin-700-normal.woff?url'
+
+/**
+ * A 2D panel silhouette with a DIFFERENT top and bottom corner radius —
+ * a big radius on the top corners, a small one at the bottom. Extruded,
+ * this gives the reference's signature panel: rounded and pillowy up top,
+ * nearly square where it meets the grass, so it reads as *sitting on the
+ * ground* rather than a floating squircle.
+ */
+function panelProfile(w: number, h: number, topR: number, botR: number): Shape {
+  const s = new Shape()
+  const x = w / 2
+  const y = h / 2
+  s.moveTo(-x, -y + botR)
+  s.lineTo(-x, y - topR)
+  s.quadraticCurveTo(-x, y, -x + topR, y) // top-left corner (round)
+  s.lineTo(x - topR, y)
+  s.quadraticCurveTo(x, y, x, y - topR) // top-right corner (round)
+  s.lineTo(x, -y + botR)
+  s.quadraticCurveTo(x, -y, x - botR, -y) // bottom-right corner (square-ish)
+  s.lineTo(-x + botR, -y)
+  s.quadraticCurveTo(-x, -y, -x, -y + botR) // bottom-left corner (square-ish)
+  return s
+}
+
+/**
+ * Extrude a {@link panelProfile} into a solid, pillowy panel: a soft
+ * bevel rounds the front/back edges (the "molded" depth), while the 2D
+ * profile handles the rounder-top/squarer-bottom silhouette. The result
+ * is centered on the origin in all three axes.
+ *
+ * The profile is built inset by the bevel size so the FINAL silhouette
+ * (profile + bevel expansion) lands back on the nominal w x h.
+ */
+function panelGeo(
+  w: number,
+  h: number,
+  depth: number,
+  topR: number,
+  botR: number,
+  bevel: number,
+): ExtrudeGeometry {
+  const g = new ExtrudeGeometry(
+    panelProfile(w - bevel * 2, h - bevel * 2, topR, botR),
+    {
+      depth: depth - bevel * 2,
+      bevelEnabled: true,
+      bevelThickness: bevel,
+      bevelSize: bevel,
+      bevelSegments: 4,
+      curveSegments: 20,
+    },
+  )
+  // Extrude runs z from -bevel to (depth - bevel); recenter on the origin.
+  g.translate(0, 0, -depth / 2 + bevel)
+  g.computeVertexNormals()
+  return g
+}
+
+// Both geometries are identical across every pod, so build them once.
+const BODY_GEO = panelGeo(
+  LANDMARK.body.width,
+  LANDMARK.body.height,
+  LANDMARK.body.depth,
+  0.62, // big top radius — pillowy crown
+  0.16, // small bottom radius — grounded base
+  0.12,
+)
+const FACE_GEO = panelGeo(
+  LANDMARK.body.faceWidth,
+  LANDMARK.body.faceHeight,
+  0.14,
+  0.5,
+  0.14,
+  0.045,
+)
 
 /**
  * A landmark pod — the design language every location inherits.
@@ -78,7 +153,7 @@ export function LocationPod({
   // the raw pastel accents (tuned for tinting surfaces) read washed
   // out as text. Same hue, just more ink.
   const inkAccent = useMemo(
-    () => `#${new Color(location.accent).offsetHSL(0, 0.26, -0.13).getHexString()}`,
+    () => `#${new Color(location.accent).offsetHSL(0, 0.32, -0.2).getHexString()}`,
     [location.accent],
   )
 
@@ -94,6 +169,7 @@ export function LocationPod({
       color: '#ffffff',
       roughness: 0.4,
       sheen: 0.3,
+      env: 0.15,
       emissive: location.accent,
       emissiveIntensity: 0.12,
     })
@@ -130,20 +206,28 @@ varying vec3 vFaceLocal;`,
         )
     }
     return {
-      // Soft-clay white body with the accent breathing from within.
+      // Warm off-white clay body (a hair of cream reads cozy under the
+      // sky IBL rather than stark blue-white) with the accent breathing
+      // from within. OPAQUE MATTE: a near-zero env reflection + low sheen
+      // so the body is solid clay, not the glassy "shell" that used to
+      // ghost a second layer around the inset face.
       body: clay({
-        color: '#ffffff',
-        roughness: 0.5,
-        sheen: 0.4,
+        color: '#faf7f2',
+        roughness: 0.62,
+        sheen: 0.14,
+        env: 0.08,
         emissive: location.accent,
         emissiveIntensity: GLOW.bodyIdle,
       }),
       face,
-      // The island's white rim base + steps: soft-clay white.
-      base: clay({ color: '#ffffff', roughness: 0.5, sheen: 0.35 }),
-      step: clay({ color: '#ffffff', roughness: 0.5, sheen: 0.35 }),
+      // The island's white rim base + steps: soft-clay warm white, kept
+      // matte for the same reason.
+      base: clay({ color: '#faf7f2', roughness: 0.58, sheen: 0.2, env: 0.12 }),
+      step: clay({ color: '#faf7f2', roughness: 0.58, sheen: 0.2, env: 0.12 }),
       // The grass top the monument and dressing stand on.
       grass: new MeshStandardMaterial({ color: PALETTE.grass, roughness: ROUGHNESS.foliage }),
+      // Little grey pebbles nestled in the grass.
+      rock: new MeshStandardMaterial({ color: '#b7bbc0', roughness: 0.85 }),
     }
   }, [location.accent])
 
@@ -223,6 +307,18 @@ varying vec3 vFaceLocal;`,
             <Bush />
           </group>
         ))}
+        {POD.rocks.map((r, i) => (
+          <mesh
+            key={i}
+            material={materials.rock}
+            position={[r.x, domeY(r.x, r.z) + r.r * 0.35, r.z]}
+            scale={[r.r, r.r * 0.72, r.r]}
+            castShadow
+            receiveShadow
+          >
+            <sphereGeometry args={[1, 12, 10]} />
+          </mesh>
+        ))}
         {POD.flowers.map((fl, i) => (
           <group key={i} position={[fl.x, domeY(fl.x, fl.z) - 0.02, fl.z]}>
             <FlowerTuft />
@@ -237,21 +333,20 @@ varying vec3 vFaceLocal;`,
         {/* The monument, toward the back of the grass so the visitor
             reads its face across the greenery. */}
         <group position={[0, 0, POD.monumentZ]}>
-          {/* 1 — the body: one continuous pillowy monolith */}
-          <RoundedBox
-            args={[B.width, B.height, B.depth]}
-            radius={B.radius}
-            smoothness={8}
+          {/* 1 — the body: one continuous pillowy monolith, rounder at
+              the crown and squarer at the base so it reads as SITTING on
+              the grass, not floating (see panelProfile). */}
+          <mesh
+            geometry={BODY_GEO}
             position={[0, bodyY, 0]}
             material={materials.body}
             castShadow
             receiveShadow
           />
-          {/* 2 — the inset face: a touch lighter, gently sun-graded */}
-          <RoundedBox
-            args={[B.faceWidth, B.faceHeight, 0.12]}
-            radius={B.faceRadius}
-            smoothness={6}
+          {/* 2 — the inset face: a touch lighter, gently sun-graded,
+              same rounder-top/squarer-bottom silhouette as the body. */}
+          <mesh
+            geometry={FACE_GEO}
             position={[0, bodyY + 0.06, B.depth / 2 - 0.05]}
             material={materials.face}
           />

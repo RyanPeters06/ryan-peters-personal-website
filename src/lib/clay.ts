@@ -17,6 +17,9 @@ export function clay(opts: {
   roughness?: number
   /** Sheen strength (the velvety rim). */
   sheen?: number
+  /** Environment-map reflection. LOW (≈0.1) for opaque matte panels;
+   *  higher looks glassy/see-through. */
+  env?: number
   /** Emissive tint (accent glow); pair with emissiveIntensity. */
   emissive?: string
   emissiveIntensity?: number
@@ -29,11 +32,17 @@ export function clay(opts: {
     sheenRoughness: 0.6,
     // Warm sheen: the soft-touch highlight leans to the key sun.
     sheenColor: new Color('#fff4e6'),
-    // Low clearcoat, rough: a whisper of top gloss, NOT a glassy
-    // reflective coat (higher values read as see-through frosted glass,
-    // which the reference's opaque soft clay is not).
-    clearcoat: 0.06,
-    clearcoatRoughness: 0.75,
+    // No clearcoat, and a LOW env reflection: at the default
+    // envMapIntensity of 1 a smooth physical surface mirrors the bright
+    // sky HDRI so strongly it reads as see-through frosted glass. The
+    // reference's clay is opaque and matte-soft — keep only a hint of
+    // environment so form still reads.
+    clearcoat: 0,
+    clearcoatRoughness: 1,
+    envMapIntensity: opts.env ?? 0.35,
+    transparent: false,
+    opacity: 1,
+    transmission: 0,
     emissive: new Color(opts.emissive ?? '#000000'),
     emissiveIntensity: opts.emissiveIntensity ?? 0,
   })

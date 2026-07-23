@@ -5,6 +5,41 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-23 — Look pass 2: panel shape, opacity & bigger islands
+
+Peter's close-up feedback on the panels (from a reference Projects panel
++ our About panel), three explicit asks — all addressed and verified
+live at 1512×1024:
+
+- **Rounder top / squarer bottom, grounded**: the body is no longer a
+  uniform squircle `RoundedBox`. New `panelProfile()` + `panelGeo()` in
+  `LocationPod.tsx` build an `ExtrudeGeometry` from a 2D profile with a
+  **big top corner radius (0.62) and a small bottom radius (0.16)** plus
+  a soft bevel — pillowy crown, near-square base that sits ON the grass,
+  so it reads as touching the ground, not floating. The inset face uses
+  the same profile (top r 0.5 / bottom r 0.14).
+- **Removed the glassy "extra layer"**: the `MeshPhysicalMaterial` body
+  was reflecting the sky HDRI strongly enough to ghost a translucent
+  second shell around the inset face. `clay()` gained an `env` knob; the
+  body is now opaque matte (`env: 0.08, sheen: 0.14`), base/steps `env:
+  0.12`, face `env: 0.15`. The ghost shell is gone.
+- **Bigger grass ovals with side margin**: `POD.base`/`POD.grass` grown
+  (grass rx 1.5→1.9, rz 1.2→1.65; base rx 1.7→2.07, rz 1.4→1.82) so
+  ~0.42u of clear grass shows past each panel edge. `monumentZ` held at
+  −0.35 so the panel — and the solved camera framing — doesn't move as
+  the island grows (no camera re-solve needed). Trees/bushes pushed OUT
+  into the widened margins; added a couple of grey `POD.rocks` pebbles.
+- **Label ink deepened** `offsetHSL +0.26/−0.13 → +0.32/−0.2` so the
+  green/teal labels stay legible on the white face.
+
+Also folds in the uncommitted Pass 2 lighting/grade + PCSS shadows
+(IBL env 0.38, ambient 0.1, warm BrightnessContrast/HueSaturation grade,
+`SoftShadows`, SMAA, `multisampling 0` to kill the blit-warning spam).
+
+Still deferred (tracked): crowd colour + clay (3a), GLB player model
+(3b), lamppost/bench restyle + compact controls pill + title-ghost fix
+(4).
+
 ## 2026-07-22 — Look pass 1: lush grass & foliage
 
 Toward the reference's rich planting (Peter: "make the grass better").

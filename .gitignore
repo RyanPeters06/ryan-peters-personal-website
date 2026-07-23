@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local debug / screenshot artifacts (Playwright captures, look refs)
+.playwright-mcp/
+/*.png

@@ -1,6 +1,6 @@
 import { Suspense, useEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { Preload } from '@react-three/drei'
+import { Preload, SoftShadows } from '@react-three/drei'
 import {
   Bloom,
   BrightnessContrast,
@@ -8,7 +8,9 @@ import {
   EffectComposer,
   HueSaturation,
   N8AO,
+  SMAA,
   ToneMapping,
+  Vignette,
 } from '@react-three/postprocessing'
 import { ToneMappingMode } from 'postprocessing'
 import { NoToneMapping } from 'three'
@@ -56,10 +58,10 @@ export function Experience() {
   useMovementKeys()
   return (
     <Canvas
-      // "soft" (and the boolean default) both map to THREE's deprecated
-      // PCFSoftShadowMap, which silently falls back to hard-edged PCF —
-      // "variance" maps to VSMShadowMap, genuinely soft and current.
-      shadows="variance"
+      // PCF shadow map, upgraded to PCSS (percentage-closer soft
+      // shadows) by <SoftShadows> below — contact-hardened: crisp where
+      // an object meets the ground, softening with distance.
+      shadows
       dpr={[1, 2]}
       camera={{
         // The tableau lens: long focal length, fixed high vantage —
@@ -79,6 +81,9 @@ export function Experience() {
       className="h-full w-full"
     >
       <Suspense fallback={null}>
+        {/* PCSS: contact-hardening soft shadows (patches the PCF shader).
+            size = penumbra spread, samples = softness quality. */}
+        <SoftShadows size={26} samples={12} focus={0.85} />
         <PerfProbe />
         <AmbientLoopDriver />
         <Sky />
@@ -93,7 +98,10 @@ export function Experience() {
         <Avatar />
         <TitleWorld />
         <CinematicCamera />
-        <EffectComposer multisampling={4}>
+        {/* multisampling 0: SMAA (below) is the anti-aliaser now. Leaving
+            MSAA on caused a per-frame glBlitFramebuffer depth/stencil
+            mismatch warning against N8AO's depth pass. */}
+        <EffectComposer multisampling={0}>
           {/* Contact AO: soft blue-gray darkening at contact creases
               (tree-to-mound, panel-to-platform, steps) — never black,
               tinted with the same shadow color as everything else. */}
@@ -110,7 +118,12 @@ export function Experience() {
           />
           {/* Subtle depth of field: sharp on the avatar/foreground,
               gently softening toward the landmark arc and sky. */}
-          <DepthOfField worldFocusDistance={12} worldFocusRange={16} bokehScale={1.3} />
+          {/* Focus on the panel arc (~16u) with a wide range, so the
+              whole plaza AND the panels stay crisp; only the far sky and
+              the near foreground soften. A tight range focused on the
+              avatar (12u) left the back panels blurred, which read as
+              see-through frosted glass over the trees behind them. */}
+          <DepthOfField worldFocusDistance={16} worldFocusRange={20} bokehScale={1.1} />
           {/* The reference's "gently emits light" finish: a whisper of
               bloom on only the brightest whites and accent glows. */}
           <Bloom
@@ -119,19 +132,21 @@ export function Experience() {
             luminanceThreshold={GLOW.bloom.threshold}
             luminanceSmoothing={GLOW.bloom.smoothing}
           />
-          {/* A light color grade, applied AFTER bloom so it never
-              shifts what counts as a bloom highlight (that's what
-              caused the earlier haze bug) — slightly warmer, a touch
-              more contrast, without reintroducing wash-out. */}
-          <BrightnessContrast brightness={0.015} contrast={0.08} />
-          <HueSaturation hue={-0.01} saturation={0.04} />
-          {/* LAST in the chain — everything above works in linear HDR
-              and this maps it to display. Khronos PBR Neutral rolls
-              highlights off softly (the creamy, non-clipping brights
-              the reference has) while PRESERVING hue and saturation;
-              AgX and ACES both desaturate or contrast-shift, which
-              fights a pastel palette. */}
+          {/* Warm, richer grade (after bloom so it never shifts what
+              counts as a highlight): lift brightness a touch, ease
+              contrast for softness, and push saturation up so the whole
+              scene reads warm and vivid — the reference's cohesive clay
+              warmth, not a cool wash. */}
+          <BrightnessContrast brightness={0.008} contrast={0.07} />
+          <HueSaturation hue={-0.015} saturation={0.12} />
+          {/* A soft frame — very gentle darkening at the corners. */}
+          <Vignette eskil={false} offset={0.28} darkness={0.42} />
+          {/* Maps linear HDR to display. Khronos PBR Neutral rolls
+              highlights off softly (creamy, non-clipping) while
+              PRESERVING hue + saturation; AgX/ACES desaturate. */}
           <ToneMapping mode={ToneMappingMode.NEUTRAL} />
+          {/* Final: clean edge AA on the composited image. */}
+          <SMAA />
         </EffectComposer>
         {/* Compile every material/shader up front (gl.compile) so the
             first PRESENTED frame is already fully built — first-frame
