@@ -22,8 +22,7 @@
 scene/        what exists (Experience composition, Ground, IslandShadow,
               Sky, Clouds, lighting/)
 camera/       CinematicCamera — all camera behavior lives here
-avatar/       the character: bundled rigged GLB (KayKit Rogue, CC0) +
-              the movement controller that drives its idle/walk/cheer
+avatar/       the character: model + all procedural animation
 world/        placed structures (LocationPod, Locations, Fountain,
               Crowd, Villager) and pod dressing props (Tree, Bush,
               Lamppost, Flower)

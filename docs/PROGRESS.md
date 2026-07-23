@@ -5,34 +5,18 @@ session. This file always reflects the current state of the project.
 
 ---
 
-## 2026-07-23 — Avatar remodel: rigged GLB resident (KayKit Rogue)
+## 2026-07-23 — Reverted the GLB avatar, back to the primitive resident
 
-Peter chose a GLB character over refined primitives, and (after I flagged
-that free CC0 rigs are mostly angular) picked "scout a rounder CC0
-character first." Scouted candidates; Peter chose **KayKit "Adventurers"**
-(Kay Lousberg, CC0) — the roundest/softest CC0 rig with idle/walk.
-
-- Bundled `src/assets/rogue.glb` (KayKit Rogue, CC0, ~3.6 MB, mesh +
-  skeleton + 76 anims + one atlas). Loaded via Vite `?url` → same-origin
-  hashed asset (works offline; no runtime CDN fetch).
-- `src/avatar/Avatar.tsx` rewritten: the movement CONTROLLER is unchanged
-  (camera-relative WASD, flat-XZ integrate, walk leash, writes the root
-  transform + publishes `avatarPose`), but the visual is now the GLB via
-  `useGLTF` + `useAnimations`. A child `RoguePlayer` suspends on load so
-  the controller never stalls.
-- Animation: **Idle** and **Walking_C** run continuously and are
-  weight-blended by `avatarPose.moving` (seamless stand⇄walk); the
-  arrival greeting plays **Cheer** once (LoopOnce, clampWhenFinished) then
-  returns to idle. Scaled to ~0.95u (Box3 measure); KayKit faces +Z so no
-  extra yaw. Weapon nodes (Knife/Crossbows/Throwable) hidden → a plain
-  friendly resident (the little cape stays).
-- Verified live: model renders rounded/on-theme, idle non-T-pose, walked
-  to the Skills pod (proximity card fired) — the phase machine completes,
-  which requires the greeting cheer to run. 0 console errors, build clean.
-- Still open (offered to Peter): optional pastel recolor of the outfit
-  (KayKit uses one baked atlas, so per-region recolor means overriding
-  body-part materials and losing the painted face — a tradeoff to decide).
-  Crowd villagers stay primitives this pass.
+Tried swapping the resident for a rigged CC0 GLB (KayKit "Adventurers"
+Rogue by Kay Lousberg) — bundled `src/assets/rogue.glb`, drove
+Idle/Walking/Cheer via `useGLTF`/`useAnimations`. **Peter didn't like it**
+(commit 224e07a), so it was reverted: `Avatar.tsx` is back to the
+primitive plump-hoodie character (procedural idle/walk/wave, no rig),
+`rogue.glb` + `CREDITS.md` removed. External GLB assets remain *allowed*
+by policy (ARCHITECTURE.md), we just aren't using one for the avatar.
+The avatar remodel, if revisited, stays as **refined primitives** rather
+than an imported character. (The 3.6 MB blob still exists in git history
+under 224e07a; not on the branch tip.)
 
 ## 2026-07-23 — Centerpiece rework + real flowers everywhere
 
@@ -63,8 +47,9 @@ The balls were the `FlowerTuft` clusters (3 spheres each). Verified live.
 - **Plaza floor cleaned**: deleted `PlazaDressing.FLOWER_TUFTS` (the
   clusters that sat on bare tile).
 
-Next (queued): avatar remodel — Peter chose "scout a rounder CC0 rigged
-character first," so I'll present 2–3 candidates before bundling a GLB.
+Next (queued): avatar remodel. (Update: a GLB avatar was tried next and
+reverted — see the newer 2026-07-23 entry; the remodel, if revisited,
+stays primitives.)
 
 ## 2026-07-23 — Look pass 2: panel shape, opacity & bigger islands
 
