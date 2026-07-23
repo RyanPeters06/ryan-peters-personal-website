@@ -5,6 +5,35 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-23 — Avatar remodel: rigged GLB resident (KayKit Rogue)
+
+Peter chose a GLB character over refined primitives, and (after I flagged
+that free CC0 rigs are mostly angular) picked "scout a rounder CC0
+character first." Scouted candidates; Peter chose **KayKit "Adventurers"**
+(Kay Lousberg, CC0) — the roundest/softest CC0 rig with idle/walk.
+
+- Bundled `src/assets/rogue.glb` (KayKit Rogue, CC0, ~3.6 MB, mesh +
+  skeleton + 76 anims + one atlas). Loaded via Vite `?url` → same-origin
+  hashed asset (works offline; no runtime CDN fetch).
+- `src/avatar/Avatar.tsx` rewritten: the movement CONTROLLER is unchanged
+  (camera-relative WASD, flat-XZ integrate, walk leash, writes the root
+  transform + publishes `avatarPose`), but the visual is now the GLB via
+  `useGLTF` + `useAnimations`. A child `RoguePlayer` suspends on load so
+  the controller never stalls.
+- Animation: **Idle** and **Walking_C** run continuously and are
+  weight-blended by `avatarPose.moving` (seamless stand⇄walk); the
+  arrival greeting plays **Cheer** once (LoopOnce, clampWhenFinished) then
+  returns to idle. Scaled to ~0.95u (Box3 measure); KayKit faces +Z so no
+  extra yaw. Weapon nodes (Knife/Crossbows/Throwable) hidden → a plain
+  friendly resident (the little cape stays).
+- Verified live: model renders rounded/on-theme, idle non-T-pose, walked
+  to the Skills pod (proximity card fired) — the phase machine completes,
+  which requires the greeting cheer to run. 0 console errors, build clean.
+- Still open (offered to Peter): optional pastel recolor of the outfit
+  (KayKit uses one baked atlas, so per-region recolor means overriding
+  body-part materials and losing the painted face — a tradeoff to decide).
+  Crowd villagers stay primitives this pass.
+
 ## 2026-07-23 — Centerpiece rework + real flowers everywhere
 
 Peter's close-up of the reference centerpiece (a soft-blue ringed planet
