@@ -31,8 +31,12 @@ The balls were the `FlowerTuft` clusters (3 spheres each). Verified live.
   shared sphere geometry (scaled per mesh) + module-level materials, so
   scattering dozens allocates nothing per instance.
 - **Centerpiece (`Fountain.tsx`) rebuilt to the reference**:
-  - Basin: stacked cylinders → ONE `LatheGeometry` rounded white dish
-    (fat pillowy rim), matte `clay()`.
+  - Basin: stacked cylinders → ONE `LatheGeometry` SOLID low pedestal —
+    near-vertical opaque sides + a gently rounded pillowy top lip (not a
+    fat torus/"donut"). Plain matte `MeshStandardMaterial`, NOT `clay()`:
+    the physical material mirrored the sky HDRI across the smooth revolve
+    and read as frosted glass (Peter: "off and transparent … too round
+    like a donut"). Standard matte reads solid + grounded.
   - Grass: flat coin → low convex dome (fills most of the dish, slim
     white rim), softer green.
   - Ring: thin grey wire hoop → chunky soft-blue Saturn ring,

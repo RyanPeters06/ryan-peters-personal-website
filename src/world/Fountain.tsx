@@ -3,32 +3,30 @@ import { useFrame } from '@react-three/fiber'
 import { Group, MeshStandardMaterial, Vector2 } from 'three'
 import { getAmbientTime } from '@/hooks/useAmbientLoop'
 import { PALETTE } from '@/lib/constants'
-import { clay } from '@/lib/clay'
 import { Flower, type FlowerKind } from '@/world/Flower'
 
-/** The white planter's cross-section, revolved into one smooth rounded
- *  dish (a fat pillowy rim curving down to the floor) — replaces the old
- *  stacked-cylinder "cake tiers". (radius, height) from the inner grass
- *  shelf, up and over the rim, down the outside, tucked under. */
+/** The white planter's cross-section, revolved into a SOLID low pedestal
+ *  — a substantial dish with near-vertical opaque sides and only a gently
+ *  rounded top lip (NOT a fat torus/"donut"). (radius, height) from the
+ *  inner grass shelf, over the modest lip, straight down the wall, a soft
+ *  foot, then a flat underside back to the axis (a closed solid revolve). */
 const BASIN_PROFILE: Vector2[] = [
-  new Vector2(0.0, 0.24), // inner shelf, on the axis (under the grass)
-  new Vector2(0.6, 0.24),
-  new Vector2(0.95, 0.245), // inner shelf edge
-  new Vector2(1.06, 0.29), // inner wall of the rim, rising
-  new Vector2(1.15, 0.335),
-  new Vector2(1.22, 0.335), // rounded crown of the rim
-  new Vector2(1.3, 0.3), // outer shoulder
-  new Vector2(1.33, 0.22),
-  new Vector2(1.31, 0.1), // outer wall
-  new Vector2(1.22, 0.02),
-  new Vector2(1.05, 0.0), // foot meeting the plaza floor
+  new Vector2(0.0, 0.27), // inner shelf, on the axis (under the grass)
+  new Vector2(0.9, 0.27), // flat inner shelf
+  new Vector2(1.03, 0.285), // gentle rise toward the lip
+  new Vector2(1.14, 0.345), // rounded pillowy top lip (not bulging)
+  new Vector2(1.23, 0.32), // over the lip to the outer top corner
+  new Vector2(1.26, 0.22), // outer wall — near vertical, solid body
+  new Vector2(1.26, 0.08), // taller wall so the pedestal reads substantial
+  new Vector2(1.2, 0.015), // soft foot
+  new Vector2(1.02, 0.0), // base meeting the plaza floor
   new Vector2(0.0, 0.0), // flat underside, back to the axis
 ]
 
 // Grass dome that sits on the inner shelf (same construction as the
-// panel islands' domes: a low top-hemisphere ellipsoid). Fills most of
-// the dish, leaving a slim white rim.
-const GRASS = { base: 0.24, rx: 0.97, cap: 0.13 }
+// panel islands' domes: a low top-hemisphere ellipsoid). Sits inside the
+// rim, leaving a white pillowy border.
+const GRASS = { base: 0.27, rx: 0.9, cap: 0.14 }
 /** Surface height of the grass dome at a local (x, z). */
 function domeY(x: number, z: number): number {
   const t = 1 - (x * x + z * z) / (GRASS.rx * GRASS.rx)
@@ -75,8 +73,11 @@ export function Fountain() {
 
   const materials = useMemo(
     () => ({
-      // Matte warm-white clay, same language as the panel bodies/rims.
-      basin: clay({ color: '#faf7f2', roughness: 0.55, sheen: 0.2, env: 0.12 }),
+      // Solid MATTE opaque white — NOT the clay() physical material,
+      // which reflects the sky HDRI across this smooth revolve and reads
+      // as frosted glass. A plain standard material keeps the planter
+      // reading as solid, grounded white like the reference.
+      basin: new MeshStandardMaterial({ color: '#f1eee8', roughness: 0.66 }),
       grass: new MeshStandardMaterial({ color: '#93d183', roughness: 0.72 }),
       globe: new MeshStandardMaterial({ color: PALETTE.skyTop, roughness: 0.28 }),
       // Faint soft cloud patches on the planet.
@@ -91,7 +92,7 @@ export function Fountain() {
     if (!globe.current) return
     const t = getAmbientTime()
     globe.current.rotation.y = t * 0.25
-    globe.current.position.y = 0.56 + Math.sin(t * 0.9) * 0.035
+    globe.current.position.y = 0.64 + Math.sin(t * 0.9) * 0.035
   })
 
   return (
@@ -121,7 +122,7 @@ export function Fountain() {
         </group>
       ))}
       {/* The little ringed planet, nestled into the grass. */}
-      <group ref={globe} position={[0, 0.56, 0]}>
+      <group ref={globe} position={[0, 0.64, 0]}>
         <mesh material={materials.globe} castShadow>
           <sphereGeometry args={[0.36, 28, 22]} />
         </mesh>
