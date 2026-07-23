@@ -5,6 +5,38 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-23 — Centerpiece rework + real flowers everywhere
+
+Peter's close-up of the reference centerpiece (a soft-blue ringed planet
+in a flowered grass bed inside a rounded white planter) vs. ours, plus
+"remove all the purple/pink/yellow balls — some aren't even in grass."
+The balls were the `FlowerTuft` clusters (3 spheres each). Verified live.
+
+- **Retired `FlowerTuft`** (candy gumballs) → new `world/Flower.tsx`:
+  procedural **daisy** (white petals + yellow eye), **forget-me-not**
+  (blue petals + orange eye), **pink** bloom, and **leaf** sprig. One
+  shared sphere geometry (scaled per mesh) + module-level materials, so
+  scattering dozens allocates nothing per instance.
+- **Centerpiece (`Fountain.tsx`) rebuilt to the reference**:
+  - Basin: stacked cylinders → ONE `LatheGeometry` rounded white dish
+    (fat pillowy rim), matte `clay()`.
+  - Grass: flat coin → low convex dome (fills most of the dish, slim
+    white rim), softer green.
+  - Ring: thin grey wire hoop → chunky soft-blue Saturn ring,
+    near-horizontal tilt so it encircles the planet (was reading as a
+    front handle at the first attempt — fixed the rotation) and
+    precesses as the planet turns.
+  - Planet: seated into the grass + faint drifting cloud patches.
+  - Flowers: ~10 daisies/forget-me-nots/pink + 3 leaf sprigs, all seated
+    on the dome surface (local `domeY` helper), none off-grass.
+- **Panel islands** carry the same flowers: `POD.flowers` gained a
+  `kind`, added `POD.leaves`; `LocationPod` renders `Flower`.
+- **Plaza floor cleaned**: deleted `PlazaDressing.FLOWER_TUFTS` (the
+  clusters that sat on bare tile).
+
+Next (queued): avatar remodel — Peter chose "scout a rounder CC0 rigged
+character first," so I'll present 2–3 candidates before bundling a GLB.
+
 ## 2026-07-23 — Look pass 2: panel shape, opacity & bigger islands
 
 Peter's close-up feedback on the panels (from a reference Projects panel

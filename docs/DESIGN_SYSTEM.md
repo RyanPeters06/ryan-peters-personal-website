@@ -30,7 +30,7 @@ One mold for every location. Differ ONLY in accent + symbol + label.
 | Symbol relief | 2D Shape -> ExtrudeGeometry, depth 0.08 | Flat consistent emboss, NOT capsules |
 | Steps | 2 low white steps down the front (+Z) | See `POD.steps` |
 | Trees | 2 per pod, on the grass behind the monument | Green or blossom-pink canopy |
-| Flower tufts | 3 per pod, on the grass | See `world/FlowerTuft.tsx` |
+| Flowers | daisy / forget-me-not / pink + leaf sprigs, on the grass | Real procedural blooms — `world/Flower.tsx` (replaced the old 3-ball `FlowerTuft`) |
 
 **Panel body shape** (revised 2026-07-23, per the reference close-ups):
 the body is **no longer a uniform squircle** (`RoundedBox`) — it is an

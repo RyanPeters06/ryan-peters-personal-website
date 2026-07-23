@@ -24,8 +24,8 @@ scene/        what exists (Experience composition, Ground, IslandShadow,
 camera/       CinematicCamera — all camera behavior lives here
 avatar/       the character: model + all procedural animation
 world/        placed structures (LocationPod, Locations, Fountain,
-              Crowd, Villager) and pod dressing props (Tree, Lamppost,
-              FlowerTuft)
+              Crowd, Villager) and pod dressing props (Tree, Bush,
+              Lamppost, Flower)
 systems/      behavior (movement/: input hook + avatarPose channel)
 hooks/        reusable logic (ambient clock, smoothing, flat-ground
               placement, reduced-motion)

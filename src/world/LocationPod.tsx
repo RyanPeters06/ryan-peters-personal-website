@@ -11,7 +11,7 @@ import { clay } from '@/lib/clay'
 import { PALETTE } from '@/lib/constants'
 import { GLOW, LANDMARK, POD, ROUGHNESS } from '@/lib/designSystem'
 import { Tree } from '@/world/Tree'
-import { FlowerTuft } from '@/world/FlowerTuft'
+import { Flower } from '@/world/Flower'
 import { GrassTuft } from '@/world/GrassTuft'
 import { Bush } from '@/world/Bush'
 import fontUrl from '@fontsource/quicksand/files/quicksand-latin-700-normal.woff?url'
@@ -321,7 +321,12 @@ varying vec3 vFaceLocal;`,
         ))}
         {POD.flowers.map((fl, i) => (
           <group key={i} position={[fl.x, domeY(fl.x, fl.z) - 0.02, fl.z]}>
-            <FlowerTuft />
+            <Flower kind={fl.kind} />
+          </group>
+        ))}
+        {POD.leaves.map((l, i) => (
+          <group key={i} position={[l.x, domeY(l.x, l.z) - 0.02, l.z]}>
+            <Flower kind="leaf" />
           </group>
         ))}
         {POD.grassTufts.map((g, i) => (

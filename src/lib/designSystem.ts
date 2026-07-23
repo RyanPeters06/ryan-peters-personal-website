@@ -111,13 +111,19 @@ export const POD = {
     { x: 1.35, z: 0.85, r: 0.14 },
     { x: -1.2, z: 0.95, r: 0.11 },
   ],
-  /** Flower tufts scattered on the grass, spread into the fuller lawn. */
+  /** Proper blooms (daisies/forget-me-nots/pink) scattered on the grass,
+   *  spread into the fuller lawn — see world/Flower.tsx. */
   flowers: [
-    { x: -1.15, z: 0.7 },
-    { x: 1.05, z: 0.78 },
-    { x: 0.05, z: 1.02 },
-    { x: -0.45, z: 0.42 },
-    { x: 0.55, z: 0.38 },
+    { x: -1.15, z: 0.7, kind: 'daisy' },
+    { x: 1.05, z: 0.78, kind: 'daisy' },
+    { x: 0.05, z: 1.02, kind: 'forgetMeNot' },
+    { x: -0.45, z: 0.42, kind: 'pink' },
+    { x: 0.55, z: 0.38, kind: 'forgetMeNot' },
+  ],
+  /** Green leaf sprigs for low foliage detail on the dome. */
+  leaves: [
+    { x: -0.75, z: 0.85 },
+    { x: 0.8, z: 0.5 },
   ],
   /** Grass-blade tufts scattered densely across the grass mound. */
   grassTufts: [

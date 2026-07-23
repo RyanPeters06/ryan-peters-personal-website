@@ -51,10 +51,12 @@ Statuses: ✅ done · 🔨 in progress · ⬜ not started
   circle members walk out and return home. Deterministic seed, shared
   geometry/material pools). **Landmark pods**, revised 2026-07-19: each
   monument stands on a low platform (2 steps, shared floor tile) with
-  one flanking tree and a flower tuft — world/Tree.tsx, FlowerTuft.tsx,
+  flanking trees/bushes and real flowers (daisy/forget-me-not/pink +
+  leaf sprigs) — world/Tree.tsx, world/Bush.tsx, world/Flower.tsx,
   tokens in designSystem.ts POD. **Scattered plaza dressing**
-  (2026-07-19): lampposts, a bench, and extra flower tufts hand-placed
-  across the open floor — world/Bench.tsx, world/PlazaDressing.tsx —
+  (2026-07-19, revised 2026-07-23): lampposts and a bench hand-placed
+  across the open floor (loose flower tufts on bare tile removed) —
+  world/Bench.tsx, world/PlazaDressing.tsx —
   instead of clustered one-per-pod (that read as isolated islands).
 - **Remaining:** path hints — rounded/toy-like, instanced, gently animated.
 - **Files:** world/* (new props), scene/lighting.

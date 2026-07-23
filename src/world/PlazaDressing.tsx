@@ -1,12 +1,15 @@
 import { Lamppost } from '@/world/Lamppost'
 import { Bench } from '@/world/Bench'
-import { FlowerTuft } from '@/world/FlowerTuft'
 
 /**
  * Dressing scattered across the OPEN plaza floor — not clustered onto
  * any one landmark's platform. Positions are hand-placed in the gaps
  * between pods and along the front apron, echoing the reference's
  * natural, distributed planting rather than one lamppost-per-pod.
+ *
+ * Flowers live only on grass now (the island domes + the centerpiece).
+ * The old loose FLOWER_TUFTS sat on bare tile and read as litter — Peter
+ * had them removed; the plaza floor stays clean white.
  */
 const LAMPPOSTS: [number, number][] = [
   [-6.95, -3.65], // between About and Projects
@@ -15,13 +18,6 @@ const LAMPPOSTS: [number, number][] = [
   [6.95, -3.65], // between Contact and Resume
   [-3.4, 2.3], // front apron, near the avatar's approach
   [3.4, 2.3],
-]
-
-const FLOWER_TUFTS: [number, number][] = [
-  [-2.1, -3.4],
-  [2.1, -3.4],
-  [-1.3, 1.4],
-  [1.6, 0.6],
 ]
 
 /** Bench position + yaw (faces the plaza center, like the pods). */
@@ -34,11 +30,6 @@ export function PlazaDressing() {
       {LAMPPOSTS.map(([x, z], i) => (
         <group key={i} position={[x, 0, z]}>
           <Lamppost />
-        </group>
-      ))}
-      {FLOWER_TUFTS.map(([x, z], i) => (
-        <group key={i} position={[x, 0, z]}>
-          <FlowerTuft />
         </group>
       ))}
       <group position={[BENCH.x, 0, BENCH.z]} rotation-y={benchYaw}>
