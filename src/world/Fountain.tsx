@@ -16,11 +16,15 @@ import { Flower, type FlowerKind } from '@/world/Flower'
  * and looked "off". Just bigger and round, holding the ringed planet
  * instead of a panel.
  */
-// White clay base disc (mirrors POD.base) and the grass dome on top
-// (mirrors POD.grass): a low top-hemisphere ellipsoid. Sized round and a
-// touch larger than a panel island for centerpiece presence.
-const BASE = { r: 1.35, height: 0.18 }
-const GRASS = { base: 0.18, r: 1.24, cap: 0.32 }
+// A white clay planter: a base disc (same clay as POD.base) + a RAISED
+// rounded rim (a torus curb) that walls the grass in, like the
+// reference. The grass dome sits inside, its edge below the rim so the
+// white contains it; the planet rests on top of the mound.
+const BASE = { r: 1.35, height: 0.22 }
+// Raised rounded curb around the grass — a horizontal torus straddling
+// the base's top outer edge, rising above the grass rim.
+const RIM = { major: 1.24, tube: 0.12, y: 0.26 }
+const GRASS = { base: 0.22, r: 1.12, cap: 0.3 }
 /** Surface height of the grass dome at a local (x, z). */
 function domeY(x: number, z: number): number {
   const t = 1 - (x * x + z * z) / (GRASS.r * GRASS.r)
@@ -85,7 +89,7 @@ export function Fountain() {
     if (!globe.current) return
     const t = getAmbientTime()
     globe.current.rotation.y = t * 0.25
-    globe.current.position.y = 0.66 + Math.sin(t * 0.9) * 0.035
+    globe.current.position.y = 0.92 + Math.sin(t * 0.9) * 0.035
   })
 
   return (
@@ -99,6 +103,16 @@ export function Fountain() {
         receiveShadow
       >
         <cylinderGeometry args={[1, 1, 1, 48]} />
+      </mesh>
+      {/* Raised rounded curb — a torus rim that walls the grass in. */}
+      <mesh
+        material={materials.base}
+        position={[0, RIM.y, 0]}
+        rotation={[Math.PI / 2, 0, 0]}
+        castShadow
+        receiveShadow
+      >
+        <torusGeometry args={[RIM.major, RIM.tube, 16, 56]} />
       </mesh>
       {/* Grass dome nested on the disc (low convex knoll, thin white rim). */}
       <mesh
@@ -120,8 +134,8 @@ export function Fountain() {
           <Flower kind="leaf" scale={l.s ?? 1} />
         </group>
       ))}
-      {/* The little ringed planet, nestled into the grass. */}
-      <group ref={globe} position={[0, 0.66, 0]}>
+      {/* The little ringed planet, resting on top of the grass mound. */}
+      <group ref={globe} position={[0, 0.92, 0]}>
         <mesh material={materials.globe} castShadow>
           <sphereGeometry args={[0.36, 28, 22]} />
         </mesh>
