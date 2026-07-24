@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { Group, MeshStandardMaterial, Vector2 } from 'three'
 import { getAmbientTime } from '@/hooks/useAmbientLoop'
 import { PALETTE } from '@/lib/constants'
+import { clay } from '@/lib/clay'
 import { Flower, type FlowerKind } from '@/world/Flower'
 
 /** The white planter's cross-section, revolved into a SOLID low pedestal
@@ -73,11 +74,11 @@ export function Fountain() {
 
   const materials = useMemo(
     () => ({
-      // Solid MATTE opaque white — NOT the clay() physical material,
-      // which reflects the sky HDRI across this smooth revolve and reads
-      // as frosted glass. A plain standard material keeps the planter
-      // reading as solid, grounded white like the reference.
-      basin: new MeshStandardMaterial({ color: '#f1eee8', roughness: 0.66 }),
+      // The SAME clay as the panel islands' base ovals — the plain
+      // standard material read as "rubber" (Peter). Now that the profile
+      // is a solid pedestal (not a thin donut), the soft clay finish
+      // reads solid AND matches the island rims, instead of glassy.
+      basin: clay({ color: '#faf7f2', roughness: 0.58, sheen: 0.2, env: 0.12 }),
       grass: new MeshStandardMaterial({ color: '#93d183', roughness: 0.72 }),
       globe: new MeshStandardMaterial({ color: PALETTE.skyTop, roughness: 0.28 }),
       // Faint soft cloud patches on the planet.
