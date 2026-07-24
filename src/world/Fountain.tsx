@@ -1,58 +1,51 @@
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Group, MeshStandardMaterial, Vector2 } from 'three'
+import { Group, MeshStandardMaterial } from 'three'
 import { getAmbientTime } from '@/hooks/useAmbientLoop'
 import { PALETTE } from '@/lib/constants'
+import { ROUGHNESS } from '@/lib/designSystem'
 import { clay } from '@/lib/clay'
 import { Flower, type FlowerKind } from '@/world/Flower'
 
-/** The white planter's cross-section, revolved into a SOLID low pedestal
- *  — a substantial dish with near-vertical opaque sides and only a gently
- *  rounded top lip (NOT a fat torus/"donut"). (radius, height) from the
- *  inner grass shelf, over the modest lip, straight down the wall, a soft
- *  foot, then a flat underside back to the axis (a closed solid revolve). */
-const BASIN_PROFILE: Vector2[] = [
-  new Vector2(0.0, 0.27), // inner shelf, on the axis (under the grass)
-  new Vector2(0.9, 0.27), // flat inner shelf
-  new Vector2(1.03, 0.285), // gentle rise toward the lip
-  new Vector2(1.14, 0.345), // rounded pillowy top lip (not bulging)
-  new Vector2(1.23, 0.32), // over the lip to the outer top corner
-  new Vector2(1.26, 0.22), // outer wall — near vertical, solid body
-  new Vector2(1.26, 0.08), // taller wall so the pedestal reads substantial
-  new Vector2(1.2, 0.015), // soft foot
-  new Vector2(1.02, 0.0), // base meeting the plaza floor
-  new Vector2(0.0, 0.0), // flat underside, back to the axis
-]
-
-// Grass dome that sits on the inner shelf (same construction as the
-// panel islands' domes: a low top-hemisphere ellipsoid). Sits inside the
-// rim, leaving a white pillowy border.
-const GRASS = { base: 0.27, rx: 0.9, cap: 0.14 }
+/**
+ * The centerpiece is built the SAME way as a panel island (see POD in
+ * designSystem / LocationPod): a low white clay disc + a grass dome that
+ * fills most of the top, leaving a thin white rim. Identical geometry
+ * type + material to the island bases, so the white reads as the exact
+ * same clean clay — no bespoke lathe/pedestal that shaded differently
+ * and looked "off". Just bigger and round, holding the ringed planet
+ * instead of a panel.
+ */
+// White clay base disc (mirrors POD.base) and the grass dome on top
+// (mirrors POD.grass): a low top-hemisphere ellipsoid. Sized round and a
+// touch larger than a panel island for centerpiece presence.
+const BASE = { r: 1.35, height: 0.18 }
+const GRASS = { base: 0.18, r: 1.24, cap: 0.32 }
 /** Surface height of the grass dome at a local (x, z). */
 function domeY(x: number, z: number): number {
-  const t = 1 - (x * x + z * z) / (GRASS.rx * GRASS.rx)
+  const t = 1 - (x * x + z * z) / (GRASS.r * GRASS.r)
   return GRASS.base + GRASS.cap * Math.sqrt(Math.max(0, t))
 }
 
-/** Blooms scattered on the grass (kept inside the rim, off the planet
- *  footprint) — the reference's daisies, forget-me-nots and pink dots. */
+/** Blooms scattered on the grass (kept off the planet's footprint) —
+ *  daisies, forget-me-nots and pink dots, like the reference. */
 const FLOWERS: { x: number; z: number; kind: FlowerKind; s?: number }[] = [
-  { x: -0.52, z: 0.5, kind: 'daisy', s: 1.3 },
-  { x: 0.54, z: 0.42, kind: 'daisy', s: 1.2 },
-  { x: -0.3, z: -0.52, kind: 'daisy', s: 1.05 },
-  { x: 0.1, z: 0.72, kind: 'daisy', s: 1.15 },
-  { x: 0.46, z: 0.6, kind: 'forgetMeNot', s: 1.2 },
-  { x: 0.64, z: 0.46, kind: 'forgetMeNot', s: 1.05 },
-  { x: -0.66, z: 0.14, kind: 'forgetMeNot', s: 1.1 },
-  { x: -0.2, z: 0.62, kind: 'pink', s: 1.1 },
-  { x: 0.68, z: -0.2, kind: 'pink' },
-  { x: -0.5, z: -0.15, kind: 'pink', s: 0.95 },
+  { x: -0.72, z: 0.6, kind: 'daisy', s: 1.3 },
+  { x: 0.72, z: 0.5, kind: 'daisy', s: 1.2 },
+  { x: -0.42, z: -0.68, kind: 'daisy', s: 1.05 },
+  { x: 0.14, z: 0.9, kind: 'daisy', s: 1.15 },
+  { x: 0.6, z: 0.76, kind: 'forgetMeNot', s: 1.2 },
+  { x: 0.84, z: 0.58, kind: 'forgetMeNot', s: 1.05 },
+  { x: -0.86, z: 0.18, kind: 'forgetMeNot', s: 1.1 },
+  { x: -0.26, z: 0.8, kind: 'pink', s: 1.1 },
+  { x: 0.88, z: -0.26, kind: 'pink' },
+  { x: -0.66, z: -0.2, kind: 'pink', s: 0.95 },
 ]
 /** Green leaf sprigs hugging the planet's base. */
 const LEAVES: { x: number; z: number; s?: number }[] = [
-  { x: 0.3, z: 0.28 },
-  { x: -0.28, z: 0.3, s: 1.1 },
-  { x: 0.06, z: -0.34 },
+  { x: 0.4, z: 0.36 },
+  { x: -0.36, z: 0.4, s: 1.1 },
+  { x: 0.08, z: -0.44 },
 ]
 
 /** Faint cloud patches on the planet's surface (sit just proud of the
@@ -65,21 +58,20 @@ const CLOUDS: { p: [number, number, number]; s: [number, number, number] }[] = [
 
 /**
  * The plaza centerpiece: a soft-blue ringed planet nestled in a flowered
- * grass bed inside a rounded white planter — the world's own mascot,
- * echoing the flat island it sits on. Its only motion is the world's
- * kind: a slow turn, a gentle bob, the ring precessing like a lazy halo.
+ * grass bed on a white clay disc — the world's own mascot, echoing the
+ * flat island it sits on. Its only motion is the world's kind: a slow
+ * turn, a gentle bob, the ring precessing like a lazy halo.
  */
 export function Fountain() {
   const globe = useRef<Group>(null)
 
   const materials = useMemo(
     () => ({
-      // The SAME clay as the panel islands' base ovals — the plain
-      // standard material read as "rubber" (Peter). Now that the profile
-      // is a solid pedestal (not a thin donut), the soft clay finish
-      // reads solid AND matches the island rims, instead of glassy.
-      basin: clay({ color: '#faf7f2', roughness: 0.58, sheen: 0.2, env: 0.12 }),
-      grass: new MeshStandardMaterial({ color: '#93d183', roughness: 0.72 }),
+      // EXACTLY the panel islands' base clay (see LocationPod materials.base)
+      // so the centerpiece white matches every panel's grass rim.
+      base: clay({ color: '#faf7f2', roughness: 0.58, sheen: 0.2, env: 0.12 }),
+      // EXACTLY the islands' grass material.
+      grass: new MeshStandardMaterial({ color: PALETTE.grass, roughness: ROUGHNESS.foliage }),
       globe: new MeshStandardMaterial({ color: PALETTE.skyTop, roughness: 0.28 }),
       // Faint soft cloud patches on the planet.
       cloud: new MeshStandardMaterial({ color: '#eaf5ff', roughness: 0.5 }),
@@ -93,20 +85,26 @@ export function Fountain() {
     if (!globe.current) return
     const t = getAmbientTime()
     globe.current.rotation.y = t * 0.25
-    globe.current.position.y = 0.64 + Math.sin(t * 0.9) * 0.035
+    globe.current.position.y = 0.66 + Math.sin(t * 0.9) * 0.035
   })
 
   return (
     <group position={[0, 0, 0]}>
-      {/* Basin: one smooth rounded white dish revolved from the profile. */}
-      <mesh material={materials.basin} castShadow receiveShadow>
-        <latheGeometry args={[BASIN_PROFILE, 48]} />
+      {/* White clay base disc — same geometry + material as a panel island. */}
+      <mesh
+        material={materials.base}
+        position={[0, BASE.height / 2, 0]}
+        scale={[BASE.r, BASE.height, BASE.r]}
+        castShadow
+        receiveShadow
+      >
+        <cylinderGeometry args={[1, 1, 1, 48]} />
       </mesh>
-      {/* Grass dome nested in the dish (low convex knoll, not a coin). */}
+      {/* Grass dome nested on the disc (low convex knoll, thin white rim). */}
       <mesh
         material={materials.grass}
         position={[0, GRASS.base, 0]}
-        scale={[GRASS.rx, GRASS.cap, GRASS.rx]}
+        scale={[GRASS.r, GRASS.cap, GRASS.r]}
         receiveShadow
       >
         <sphereGeometry args={[1, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2]} />
@@ -123,7 +121,7 @@ export function Fountain() {
         </group>
       ))}
       {/* The little ringed planet, nestled into the grass. */}
-      <group ref={globe} position={[0, 0.64, 0]}>
+      <group ref={globe} position={[0, 0.66, 0]}>
         <mesh material={materials.globe} castShadow>
           <sphereGeometry args={[0.36, 28, 22]} />
         </mesh>

@@ -31,14 +31,17 @@ The balls were the `FlowerTuft` clusters (3 spheres each). Verified live.
   shared sphere geometry (scaled per mesh) + module-level materials, so
   scattering dozens allocates nothing per instance.
 - **Centerpiece (`Fountain.tsx`) rebuilt to the reference**:
-  - Basin: stacked cylinders → ONE `LatheGeometry` SOLID low pedestal —
-    near-vertical opaque sides + a gently rounded pillowy top lip (not a
-    fat torus/"donut"). Plain matte `MeshStandardMaterial`, NOT `clay()`:
-    the physical material mirrored the sky HDRI across the smooth revolve
-    and read as frosted glass (Peter: "off and transparent … too round
-    like a donut"). Standard matte reads solid + grounded.
-  - Grass: flat coin → low convex dome (fills most of the dish, slim
-    white rim), softer green.
+  - Base: went through a few shapes (stacked cylinders → lathe pedestal)
+    that all read "off" / not matching the world. FINAL: built the SAME
+    way as a panel island (`POD`) — a low white **clay** disc
+    (cylinder, `clay(#faf7f2 …)`, identical to `LocationPod` `base`) + a
+    grass dome that fills most of it, just bigger and round. Same
+    geometry type + material as every panel's grass rim, so the white
+    reads as the exact same clean clay (Peter: it "needs the same
+    material as the ones below the panels"; the reference's darker side
+    is only a cast shadow — the whole planter is one white).
+  - Grass: flat coin → low convex dome (`PALETTE.grass`, same as the
+    islands), fills most of the disc leaving a thin white rim.
   - Ring: thin grey wire hoop → chunky soft-blue Saturn ring,
     near-horizontal tilt so it encircles the planet (was reading as a
     front handle at the first attempt — fixed the rotation) and
