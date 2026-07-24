@@ -79,8 +79,9 @@ math?"
 - `hooks/useFlatPosition.ts` places things at `(x, altitude, z)` with
   an identity quaternion (the ground has no curvature, so nothing
   needs a per-position "standing up" rotation). Callers that need a
-  facing direction (e.g. `LocationPod` turning to face the fountain)
-  add their own yaw via `Math.atan2`.
+  facing direction (e.g. `LocationPod` turning to face a focus point out
+  in front of the plaza — `PANEL_FOCUS_Z`, so the row fans toward the
+  viewer) add their own yaw via `Math.atan2`.
 - **Up is always world +Y**, everywhere — the avatar, villagers, and
   camera never recompute it per-position the way the old sphere model
   did.
@@ -140,6 +141,16 @@ Camera-relative input (`getMoveInput`) → flat XZ move direction →
 * dt`, clamped to a radius around the island's center. Facing, walking,
 idle life, waving, and foot shifts are all procedural transforms in one
 `useFrame` — no rig, no animation clips.
+
+**Collision** (`systems/collision.ts`): solid props are a cheap set of
+XZ circles — the six raised islands, the centerpiece planter, lampposts,
+the bench (`OBSTACLES`, derived from `LOCATIONS` + `PlazaDressing`). After
+each integration step the player and every villager call
+`resolveCollision(pos, radius)`, which pushes the mover back out of any
+circle it penetrated so it slides along the boundary (no pathfinding on a
+plaza this open). Villager wander targets are pulled onto open floor (in
+front of pods, not inside them) + a 14 s give-up timer, so none get stuck
+pushing against an island.
 
 ## Performance Strategy
 

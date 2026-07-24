@@ -42,9 +42,17 @@ function createCrowd(): VillagerSpec[] {
   const specs: VillagerSpec[] = []
   let id = 0
 
-  // Destinations wanderers stroll between: pods + chat circles.
+  // Destinations wanderers stroll between: the OPEN FLOOR in front of
+  // each pod (pulled ~2.8u toward the plaza center so the target sits off
+  // the raised island, not inside it — otherwise collision would block
+  // the last stretch and the villager would push against the island
+  // forever), plus the chat circles.
   const pois = [
-    ...LOCATIONS.map((l) => ({ x: l.x, z: l.z })),
+    ...LOCATIONS.map((l) => {
+      const d = Math.hypot(l.x, l.z) || 1
+      const s = Math.max(0, (d - 2.8) / d)
+      return { x: l.x * s, z: l.z * s }
+    }),
     ...GROUPS.map((g) => ({ x: g.x, z: g.z })),
   ]
 

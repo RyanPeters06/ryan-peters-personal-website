@@ -11,7 +11,7 @@ import { Bench } from '@/world/Bench'
  * The old loose FLOWER_TUFTS sat on bare tile and read as litter — Peter
  * had them removed; the plaza floor stays clean white.
  */
-const LAMPPOSTS: [number, number][] = [
+export const LAMPPOSTS: [number, number][] = [
   [-6.95, -3.65], // between About and Projects
   [-4.35, -7.3], // between Projects and Experience
   [4.35, -7.3], // between Skills and Contact
@@ -21,7 +21,7 @@ const LAMPPOSTS: [number, number][] = [
 ]
 
 /** Bench position + yaw (faces the plaza center, like the pods). */
-const BENCH: { x: number; z: number } = { x: -4.35, z: -6.5 }
+export const BENCH: { x: number; z: number } = { x: -4.35, z: -6.5 }
 
 export function PlazaDressing() {
   const benchYaw = Math.atan2(-BENCH.x, -BENCH.z)

@@ -73,6 +73,12 @@ function panelGeo(
   return g
 }
 
+// The on-axis point out in front of the plaza that every pod turns to
+// face (see the yaw note below). Closer than the camera (z 13) so the
+// side panels angle in toward the middle; not so close that they swing
+// back to the old fountain-facing, edge-on look.
+const PANEL_FOCUS_Z = 8
+
 // Both geometries are identical across every pod, so build them once.
 const BODY_GEO = panelGeo(
   LANDMARK.body.width,
@@ -128,10 +134,18 @@ export function LocationPod({
   const near = useRef(false)
   const glow = useRef<number>(GLOW.bodyIdle)
 
-  // Turn the monument to face the plaza center (the fountain) — the
-  // tableau's horseshoe. Flat ground, so this is a plain yaw.
+  // Angle the monument to face a focus point out in front of the plaza
+  // (on the axis, toward the viewer) rather than the fountain — the whole
+  // row fans toward the screen. Because every pod aims at ONE point, the
+  // turn-in is GRADED automatically by how far off-axis a pod sits: the
+  // far-left/right panels (About/Resume) angle in the most, the next pair
+  // (Projects/Contact) a bit less, and the middle pair sits near-straight
+  // — the reference's arrangement. The focus sits closer than the camera
+  // (z 13) so the sides read clearly angled toward the middle without
+  // overshooting into the old edge-on, fountain-facing look. Plain yaw on
+  // flat ground.
   const yaw = useMemo(
-    () => Math.atan2(-location.x, -location.z),
+    () => Math.atan2(-location.x, PANEL_FOCUS_Z - location.z),
     [location.x, location.z],
   )
 

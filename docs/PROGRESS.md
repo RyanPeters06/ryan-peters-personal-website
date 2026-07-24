@@ -5,6 +5,26 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-24 — Panels face the viewer + plaza collision
+
+- **Panels angled toward the viewer** (`LocationPod.tsx`): each pod's yaw
+  now aims at an on-axis focus point in FRONT of the plaza
+  (`PANEL_FOCUS_Z = 8`) instead of the fountain, so the whole row fans
+  toward the screen. Because every pod aims at one point, the turn-in is
+  graded automatically by off-axis distance: About/Resume angle in most,
+  Projects/Contact less, Experience/Skills near-straight (the reference's
+  arrangement, legible titles). Focus sits closer than the camera (z 13)
+  so the sides read clearly angled without swinging back to edge-on.
+- **Panels spaced out** (`content/locations.ts`): the six positions
+  scaled radially ×1.04 for a bit more gap between islands; still all fit
+  the fixed frame with margin.
+- **Collision** (new `systems/collision.ts`): the player and villagers
+  could walk through everything. Solid props are now XZ circles (islands,
+  centerpiece, lampposts, bench) and both controllers push out of them
+  each frame (slide along boundaries). Villager POIs moved to open floor
+  in front of pods + a give-up timer so none get stuck on an island.
+  Exposed `LAMPPOSTS`/`BENCH` from `PlazaDressing` for the obstacle list.
+
 ## 2026-07-24 — Dressing & UI polish (Pass 4)
 
 - **Lampposts** (`Lamppost.tsx`): bare white stick → soft **lavender

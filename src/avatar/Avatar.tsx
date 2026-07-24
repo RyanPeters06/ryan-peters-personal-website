@@ -5,7 +5,11 @@ import { useWorldStore } from '@/store/useWorldStore'
 import { expDamp } from '@/lib/math/damp'
 import { avatarPose } from '@/systems/movement/avatarPose'
 import { getMoveInput } from '@/systems/movement/useMovementInput'
+import { resolveCollision } from '@/systems/collision'
 import { PALETTE, TABLEAU_WALK_RADIUS, WALK_SPEED } from '@/lib/constants'
+
+/** The player's body radius for collision push-out. */
+const AVATAR_RADIUS = 0.28
 
 /**
  * The resident of the tiny world — an original character that speaks
@@ -201,6 +205,10 @@ export function Avatar() {
         pose.position.x *= scale
         pose.position.z *= scale
       }
+
+      // Solid props: slide along island/planter/prop boundaries instead
+      // of walking through them.
+      resolveCollision(pose.position, AVATAR_RADIUS)
     }
 
     // ----- Write the root transform -------------------------------------

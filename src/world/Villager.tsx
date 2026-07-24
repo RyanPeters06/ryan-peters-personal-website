@@ -10,6 +10,7 @@ import {
   Vector3,
 } from 'three'
 import { getAmbientScale } from '@/hooks/useAmbientLoop'
+import { resolveCollision } from '@/systems/collision'
 
 /**
  * One background villager — a simplified cousin of the player's
@@ -79,6 +80,7 @@ export interface VillagerSpec {
 }
 
 const WALK_SPEED = 0.5 // slow and peaceful — a third of the player's pace
+const VILLAGER_RADIUS = 0.24 // body radius for collision push-out
 
 // Scratch (safe: used synchronously within one callback)
 const _dir = new Vector3()
@@ -93,6 +95,8 @@ interface VillagerState {
   mode: 'idle' | 'walk'
   target: Vector3
   nextWalkAt: number
+  /** When the current stroll began — used to give up if blocked. */
+  walkStartT: number
   /** Out on a stroll, away from the home spot / chat circle. */
   away: boolean
   /** Currently walking back to the home spot. */
@@ -131,6 +135,7 @@ export function Villager({ spec }: { spec: VillagerSpec }) {
       target: new Vector3(),
       // Stagger departures: wanderers leave soon, chatters linger first.
       nextWalkAt: spec.seed * 10 + (spec.wanderer ? 3 + spec.seed * 8 : 9 + spec.seed * 22),
+      walkStartT: 0,
       away: false,
       goingHome: false,
       stride: 0,
@@ -156,16 +161,18 @@ export function Villager({ spec }: { spec: VillagerSpec }) {
         s.goingHome = true
       } else {
         const poi = spec.pois[Math.floor((s.t * 7.31 + spec.seed * 13) % spec.pois.length)]
-        // Small deterministic jitter so villagers don't stack on a point.
+        // Small deterministic jitter so villagers don't stack on a point
+        // (kept modest so targets rarely land inside a solid footprint).
         s.target.set(
-          poi.x + Math.sin(spec.seed * 12.9 + s.t) * 3,
+          poi.x + Math.sin(spec.seed * 12.9 + s.t) * 1.5,
           0,
-          poi.z + Math.cos(spec.seed * 7.7 + s.t) * 3,
+          poi.z + Math.cos(spec.seed * 7.7 + s.t) * 1.5,
         )
         s.away = true
         s.goingHome = false
       }
       s.mode = 'walk'
+      s.walkStartT = s.t
     }
 
     // ---- act ----------------------------------------------------------
@@ -174,7 +181,9 @@ export function Villager({ spec }: { spec: VillagerSpec }) {
       _dir.copy(s.target).sub(s.pos)
       _dir.y = 0
       const remaining = _dir.length()
-      if (remaining < 0.45) {
+      // Give up if arrived OR blocked too long (a solid prop between us
+      // and the target, so we can never close the last stretch).
+      if (remaining < 0.45 || s.t - s.walkStartT > 14) {
         s.mode = 'idle'
         if (s.goingHome) {
           // Back with the group — settle in and chat a good while.
@@ -189,6 +198,8 @@ export function Villager({ spec }: { spec: VillagerSpec }) {
         s.fwd.lerp(_dir, 1 - Math.exp(-4 * dt)).normalize()
         moveTarget = 1
         s.pos.addScaledVector(s.fwd, WALK_SPEED * dt)
+        // Solid props: slide around islands/planter/props, never through.
+        resolveCollision(s.pos, VILLAGER_RADIUS)
       }
     } else if (spec.chatCenter && !s.away) {
       // Chat posture: at home, keep facing the group's center.
