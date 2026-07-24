@@ -91,7 +91,13 @@ export function TitleWorld() {
     const pulse = 0.68 + 0.32 * Math.sin(s.t * 1.5)
     apply(cta, rCta * (1 - dis) * 0.75 * pulse, 0.06)
 
-    if (s.dissolveT > 1.5) s.done = true
+    if (s.dissolveT > 1.5) {
+      s.done = true
+      // Setting the ref flag alone doesn't re-render, so the mesh could
+      // linger mounted at ~0 opacity (the faint "title ghost" in the
+      // sky). Hard-hide the group so nothing survives the dissolve.
+      if (group.current) group.current.visible = false
+    }
   })
 
   if (tl.current.done || (phase !== 'title' && tl.current.dissolveT > 1.4)) {

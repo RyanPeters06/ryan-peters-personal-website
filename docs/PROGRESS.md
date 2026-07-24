@@ -5,6 +5,19 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-24 — Dressing & UI polish (Pass 4)
+
+- **Lampposts** (`Lamppost.tsx`): bare white stick → soft **lavender
+  post** + a round, warm, gently-glowing **globe** lamp (emissive cream,
+  catches a touch of bloom), taller so it reads as a storybook lamppost.
+- **Controls hint** (`ControlsHint.tsx`): the tall stacked keycap card →
+  a single compact horizontal **pill** — `W A S D  Move · 🖱 Look
+  around`. Dropped the `PlazaCard` shell + arrow-key block.
+- **Title ghost fix** (`TitleWorld.tsx`): the dissolve set a ref flag
+  that never re-rendered, so the title mesh lingered mounted at ~0
+  opacity. Now hard-hides the group (`visible = false`) when the
+  dissolve completes.
+
 ## 2026-07-24 — Centerpiece as a planter + colourful crowd
 
 - **Centerpiece finalised** (`Fountain.tsx`): rebuilt as a panel-island

@@ -1,22 +1,25 @@
 import { useMemo } from 'react'
 import { MeshStandardMaterial } from 'three'
-import { PALETTE } from '@/lib/constants'
 
 /**
- * A small plaza lamppost dressing each pod: a white pole on a stub
- * base, topped with a warm glowing lantern. Emissive only — no real
- * light source, matching the "light is life" glow language used for
- * accents rather than adding per-pod point lights.
+ * A plaza lamppost dressing the gaps between pods: a soft LAVENDER post
+ * on a stub base, topped with a round, warm, gently glowing globe lamp —
+ * the reference's storybook lamppost, not a bare white stick. Emissive
+ * only (no real light source), matching the "light is life" glow
+ * language used for accents rather than adding per-post point lights.
  */
 export function Lamppost() {
   const materials = useMemo(
     () => ({
-      pole: new MeshStandardMaterial({ color: '#ffffff', roughness: 0.35 }),
-      lantern: new MeshStandardMaterial({
-        color: '#fff6e2',
-        roughness: 0.25,
-        emissive: PALETTE.keyLight,
-        emissiveIntensity: 0.5,
+      // Soft lavender clay post + collar.
+      post: new MeshStandardMaterial({ color: '#c3b4e0', roughness: 0.5 }),
+      // The globe: warm cream that reads as lit — a soft glow, catches a
+      // touch of bloom without a hard light.
+      globe: new MeshStandardMaterial({
+        color: '#fff3d4',
+        roughness: 0.22,
+        emissive: '#ffd9a0',
+        emissiveIntensity: 0.7,
       }),
     }),
     [],
@@ -24,14 +27,21 @@ export function Lamppost() {
 
   return (
     <group>
-      <mesh material={materials.pole} position={[0, 0.06, 0]} castShadow>
-        <cylinderGeometry args={[0.09, 0.11, 0.08, 10]} />
+      {/* Stub base */}
+      <mesh material={materials.post} position={[0, 0.06, 0]} castShadow>
+        <cylinderGeometry args={[0.1, 0.13, 0.12, 12]} />
       </mesh>
-      <mesh material={materials.pole} position={[0, 0.45, 0]} castShadow>
-        <cylinderGeometry args={[0.028, 0.034, 0.9, 8]} />
+      {/* Slim post */}
+      <mesh material={materials.post} position={[0, 0.62, 0]} castShadow>
+        <cylinderGeometry args={[0.035, 0.042, 1.05, 10]} />
       </mesh>
-      <mesh material={materials.lantern} position={[0, 0.95, 0]} castShadow>
-        <sphereGeometry args={[0.09, 12, 10]} />
+      {/* Collar/fixture under the globe */}
+      <mesh material={materials.post} position={[0, 1.16, 0]} castShadow>
+        <cylinderGeometry args={[0.06, 0.05, 0.07, 12]} />
+      </mesh>
+      {/* Round warm-glowing globe */}
+      <mesh material={materials.globe} position={[0, 1.28, 0]} castShadow>
+        <sphereGeometry args={[0.14, 16, 12]} />
       </mesh>
     </group>
   )
