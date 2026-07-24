@@ -26,11 +26,17 @@ import { getAmbientScale } from '@/hooks/useAmbientLoop'
  */
 
 // ---- Shared GPU resources (one set for the whole crowd) --------------
-export const VILLAGER_HAIR = ['#584639', '#3d3833', '#7a5a3a', '#8a8f96', '#5c4a63']
+// Recoloured 2026-07-24 (Peter: the crowd read grey/pale vs. the
+// reference's colourful villagers). Hair drops the greys for
+// black/blonde/browns; shirts are deeper and warmer (orange/gold/teal/
+// coral join the pastels); pants gain variety so no one is uniform grey.
+// Still soft, never neon (ART_BIBLE).
+export const VILLAGER_HAIR = ['#4a3728', '#2a2521', '#7c5a38', '#d8ad5b', '#b06a3a']
 export const VILLAGER_SHIRTS = [
-  '#f2b8c6', '#a9c9e8', '#b8e6c9', '#f7dfa8',
-  '#d8c6ef', '#a8dde0', '#f6c8a8', '#c9d2f0',
+  '#ef9455', '#f2c94c', '#7ec98a', '#4fbfc4',
+  '#ee8fb0', '#a97fd6', '#e0705f', '#5b93d6',
 ]
+export const VILLAGER_PANTS = ['#5f7391', '#7a6350', '#63707e', '#8a7a5a']
 
 const GEO = {
   head: new SphereGeometry(0.26, 16, 12),
@@ -46,11 +52,11 @@ const GEO = {
 const MAT = {
   // Premium molded plastic, matching the player's finish.
   skin: new MeshStandardMaterial({ color: '#f6cfae', roughness: 0.6 }),
-  pants: new MeshStandardMaterial({ color: '#8d99a6', roughness: 0.65 }),
   shoe: new MeshStandardMaterial({ color: '#f2f5f7', roughness: 0.55 }),
   face: new MeshStandardMaterial({ color: '#2e2c2a', roughness: 0.55 }),
   hair: VILLAGER_HAIR.map((c) => new MeshStandardMaterial({ color: c, roughness: 0.7 })),
   shirt: VILLAGER_SHIRTS.map((c) => new MeshStandardMaterial({ color: c, roughness: 0.55 })),
+  pants: VILLAGER_PANTS.map((c) => new MeshStandardMaterial({ color: c, roughness: 0.65 })),
 }
 
 export interface VillagerSpec {
@@ -61,6 +67,7 @@ export interface VillagerSpec {
   scale: number
   hair: number
   shirt: number
+  pants: number
   /** Point to face while chatting (group center), or null for wanderers. */
   chatCenter: Vector3 | null
   /** Wanderers occasionally stroll to another destination. */
@@ -242,6 +249,7 @@ export function Villager({ spec }: { spec: VillagerSpec }) {
 
   const hairMat = MAT.hair[spec.hair % MAT.hair.length]
   const shirtMat = MAT.shirt[spec.shirt % MAT.shirt.length]
+  const pantsMat = MAT.pants[spec.pants % MAT.pants.length]
 
   return (
     <group ref={root} scale={spec.scale}>
@@ -250,7 +258,7 @@ export function Villager({ spec }: { spec: VillagerSpec }) {
         <group ref={legL} position={[-0.06, 0.18, 0]}>
           <mesh
             geometry={GEO.leg}
-            material={MAT.pants}
+            material={pantsMat}
             position={[0, -0.07, 0]}
             castShadow
           />
@@ -265,7 +273,7 @@ export function Villager({ spec }: { spec: VillagerSpec }) {
         <group ref={legR} position={[0.06, 0.18, 0]}>
           <mesh
             geometry={GEO.leg}
-            material={MAT.pants}
+            material={pantsMat}
             position={[0, -0.07, 0]}
             castShadow
           />

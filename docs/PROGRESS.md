@@ -5,6 +5,23 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-24 — Centerpiece as a planter + colourful crowd
+
+- **Centerpiece finalised** (`Fountain.tsx`): rebuilt as a panel-island
+  (white `clay` disc + `PALETTE.grass` dome) so its white/green match the
+  panels exactly, then added a **raised rounded curb** (a torus rim in
+  the same clay) that walls the grass in, and lifted the planet to **rest
+  on top of the mound** (was buried). Reference's darker side is only a
+  cast shadow — the whole planter is one white.
+- **Crowd colour (Pass 3a)** (`Villager.tsx`, `Crowd.tsx`): the crowd
+  read grey/pale. Hair dropped the greys for black/blonde/brown/auburn;
+  shirts deepened + warmed (orange/gold/teal/coral join the pastels);
+  added a **pants palette** (denim/brown/slate/khaki) via a new `pants`
+  spec field so no one is uniform grey. Kept `MeshStandard` (not physical
+  clay) — ~24 villagers on screen, so this protects frame rate while
+  still reading soft. Pulled the two front wanderers back (z 5.8→4.9) so
+  none loom in the foreground corners.
+
 ## 2026-07-23 — Reverted the GLB avatar, back to the primitive resident
 
 Tried swapping the resident for a rigged CC0 GLB (KayKit "Adventurers"

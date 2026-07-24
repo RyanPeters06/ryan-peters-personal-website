@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Vector3 } from 'three'
-import { Villager, VILLAGER_HAIR, VILLAGER_SHIRTS } from '@/world/Villager'
+import { Villager, VILLAGER_HAIR, VILLAGER_SHIRTS, VILLAGER_PANTS } from '@/world/Villager'
 import type { VillagerSpec } from '@/world/Villager'
 import { LOCATIONS } from '@/content/locations'
 
@@ -61,6 +61,7 @@ function createCrowd(): VillagerSpec[] {
     scale: 0.96 + rng() * 0.08,
     hair: Math.floor(rng() * VILLAGER_HAIR.length),
     shirt: Math.floor(rng() * VILLAGER_SHIRTS.length),
+    pants: Math.floor(rng() * VILLAGER_PANTS.length),
     chatCenter,
     wanderer,
     seed: rng(),
@@ -79,11 +80,13 @@ function createCrowd(): VillagerSpec[] {
   }
 
   // Wanderers: a few strolling the open plaza, kept off the hero's spot.
+  // Pulled the two front wanderers back (z 5.8/5.6 -> 4.9) so no one
+  // looms in the very-foreground corners of the fixed frame.
   const wanderSpots = [
     { x: -6.2, z: 0.5 },
     { x: 5.4, z: -3.4 },
-    { x: -1.8, z: 5.8 },
-    { x: 2.4, z: 5.6 },
+    { x: -1.8, z: 4.9 },
+    { x: 2.4, z: 4.9 },
   ]
   for (const w of wanderSpots) {
     specs.push(make(w.x + (rng() - 0.5) * 1.5, w.z + (rng() - 0.5) * 1.5, null, true))
