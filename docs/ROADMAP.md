@@ -46,10 +46,14 @@ Statuses: ✅ done · 🔨 in progress · ⬜ not started
 - **Objective:** the walks between destinations feel rewarding.
 - **Done:** spring-morning atmosphere (gradient dome, blue ambient,
   personal sun, per-shot fog). **Background crowd** (~24 villagers,
-  player-height, varied pastel hair/shirts, chat circles facing inward
-  with nods and hops; everyone takes slow strolls between destinations —
-  circle members walk out and return home. Deterministic seed, shared
-  geometry/material pools). **Landmark pods**, revised 2026-07-19: each
+  player-height, **colourful** hair/shirts/pants (recoloured 2026-07-24
+  off the grey/pale palette), chat circles facing inward with nods and
+  hops; everyone takes slow strolls between destinations — circle
+  members walk out and return home. Deterministic seed, shared
+  geometry/material pools). **Centerpiece planter** (2026-07-24): white
+  clay disc + raised torus curb containing a grass dome + the ringed
+  planet + real flowers, built to match the island material exactly.
+  **Lampposts** restyled to lavender post + warm glowing globe. **Landmark pods**, revised 2026-07-19: each
   monument stands on a low platform (2 steps, shared floor tile) with
   flanking trees/bushes and real flowers (daisy/forget-me-not/pink +
   leaf sprigs) — world/Tree.tsx, world/Bush.tsx, world/Flower.tsx,
