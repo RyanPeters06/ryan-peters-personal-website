@@ -5,6 +5,17 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-24 — Even panel spacing + a touch more angle
+
+- **Even spacing** (`content/locations.ts`): Projects/Contact (2nd & 5th)
+  sat angularly too close to the back-centre pair. Redistributed all six
+  along the arc by EVEN ARC LENGTH (script kept About/Resume as the
+  endpoints so framing holds) — all five neighbour gaps now ≈4.75u.
+  Projects/Contact moved outward, away from centre.
+- **+5° more angle** (`LocationPod.tsx`): `PANEL_FOCUS_Z` 5.3 → 4.25, so
+  the row faces the centre ~5° more (About/Resume ~55°, still graded and
+  legible).
+
 ## 2026-07-24 — Panels face the viewer + plaza collision
 
 - **Panels angled toward the viewer** (`LocationPod.tsx`): each pod's yaw

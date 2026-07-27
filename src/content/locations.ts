@@ -41,7 +41,7 @@ export const LOCATIONS: WorldLocation[] = [
     tagline: 'Who I am',
     accent: '#cdb9ea',
     x: -7.592,
-    z: -1.057,
+    z: -1.054,
     treeVariant: 'pink',
     items: [
       {
@@ -57,8 +57,8 @@ export const LOCATIONS: WorldLocation[] = [
     icon: '</>',
     tagline: 'Things I have built',
     accent: '#a9c9e8',
-    x: -5.766,
-    z: -5.958,
+    x: -6.078,
+    z: -5.554,
     treeVariant: 'green',
     items: [
       {
@@ -82,8 +82,8 @@ export const LOCATIONS: WorldLocation[] = [
     icon: '💼',
     tagline: 'Where I have worked',
     accent: '#b8e6c9',
-    x: -2.595,
-    z: -8.457,
+    x: -2.376,
+    z: -8.532,
     treeVariant: 'green',
     items: [
       {
@@ -98,8 +98,8 @@ export const LOCATIONS: WorldLocation[] = [
     icon: '⚙️',
     tagline: 'What I work with',
     accent: '#f2d38f',
-    x: 2.595,
-    z: -8.457,
+    x: 2.376,
+    z: -8.532,
     treeVariant: 'green',
     items: [
       {
@@ -114,8 +114,8 @@ export const LOCATIONS: WorldLocation[] = [
     icon: '💬',
     tagline: 'Say hello',
     accent: '#f2b8c6',
-    x: 5.766,
-    z: -5.958,
+    x: 6.078,
+    z: -5.554,
     treeVariant: 'green',
     items: [
       {
@@ -132,7 +132,7 @@ export const LOCATIONS: WorldLocation[] = [
     tagline: 'The paper version',
     accent: '#a8dde0',
     x: 7.592,
-    z: -1.057,
+    z: -1.054,
     treeVariant: 'pink',
     items: [
       {
