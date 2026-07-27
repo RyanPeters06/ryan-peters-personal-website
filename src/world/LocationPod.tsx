@@ -12,6 +12,7 @@ import { PALETTE } from '@/lib/constants'
 import { GLOW, LANDMARK, POD, ROUGHNESS } from '@/lib/designSystem'
 import { Tree } from '@/world/Tree'
 import { Flower } from '@/world/Flower'
+import { Beacon } from '@/world/Beacon'
 import { GrassTuft } from '@/world/GrassTuft'
 import { Bush } from '@/world/Bush'
 import fontUrl from '@fontsource/quicksand/files/quicksand-latin-700-normal.woff?url'
@@ -353,6 +354,14 @@ varying vec3 vFaceLocal;`,
             <GrassTuft />
           </group>
         ))}
+
+        {/* Proximity beacon: a soft column of light rising from the pod
+            while the visitor stands at it (see world/Beacon.tsx). Placed
+            just in front of the panel so the column reads cleanly instead
+            of being sliced by the opaque body. */}
+        <group position={[0, 0, 0.7]}>
+          <Beacon locationId={location.id} />
+        </group>
 
         {/* The monument, toward the back of the grass so the visitor
             reads its face across the greenery. */}

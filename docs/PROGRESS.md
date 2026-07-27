@@ -5,6 +5,18 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-27 — Proximity beacon at landmarks
+
+New `world/Beacon.tsx`, rendered per-pod in `LocationPod` and gated on
+`activeLocation === location.id` (so it eases in when the visitor arrives
+at a panel and out when they leave). It's a soft translucent white column
+— an additive, depth-write-off `cylinderGeometry` (open-ended) with a
+ShaderMaterial that fades the alpha toward the top (not a hard-cut laser)
+— plus ~34 white motes drifting upward through it and a gentle brightness
+pulse. Being bright + additive, it catches a little of the existing
+Bloom. Placed just in front of the panel so the column reads cleanly
+instead of being sliced by the opaque body.
+
 ## 2026-07-27 — Crowd avoidance, bulletproof collision, title to the front
 
 - **Villagers never inside anything** (`Villager.tsx`): the static
