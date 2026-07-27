@@ -121,16 +121,23 @@ function Part({
 }
 
 // ---- The six glyphs, as flat relief ---------------------------------
-const CODE = { bar: barGeo(0.3, 0.12), slash: barGeo(0.5, 0.12) }
+// A proper `</>`: two chevron arms per side meeting at a vertex, and a
+// steep centre slash. (The old build used ~58° arms + a near-horizontal
+// slash, which collapsed into a bowtie/X instead of reading as code.)
+const CODE = { arm: barGeo(0.34, 0.13), slash: barGeo(0.46, 0.13) }
+const CHEVRON = 0.576 // arm tilt, ±33° from horizontal
 function CodeSymbol({ location }: { location: WorldLocation }) {
   const m = useSymbolMaterial(location)
   return (
     <group>
-      <Part material={m} geo={CODE.bar} x={-0.28} y={0.11} rot={-1.02} />
-      <Part material={m} geo={CODE.bar} x={-0.28} y={-0.11} rot={1.02} />
-      <Part material={m} geo={CODE.slash} rot={-0.34} />
-      <Part material={m} geo={CODE.bar} x={0.28} y={0.11} rot={1.02} />
-      <Part material={m} geo={CODE.bar} x={0.28} y={-0.11} rot={-1.02} />
+      {/* `<` — vertex on the left, arms opening to the right */}
+      <Part material={m} geo={CODE.arm} x={-0.297} y={0.093} rot={CHEVRON} />
+      <Part material={m} geo={CODE.arm} x={-0.297} y={-0.093} rot={-CHEVRON} />
+      {/* `/` — steep centre slash, low-left to up-right, clear of the chevrons */}
+      <Part material={m} geo={CODE.slash} rot={1.15} />
+      {/* `>` — vertex on the right, arms opening to the left */}
+      <Part material={m} geo={CODE.arm} x={0.297} y={0.093} rot={-CHEVRON} />
+      <Part material={m} geo={CODE.arm} x={0.297} y={-0.093} rot={CHEVRON} />
     </group>
   )
 }
@@ -216,7 +223,7 @@ function PersonSymbol({ location }: { location: WorldLocation }) {
  *  body (2026-07-20). */
 const SYMBOL_SCALE: Record<string, number> = {
   about: 1.5,
-  projects: 1.35,
+  projects: 1.2,
   experience: 1.65,
   skills: 1.7,
   contact: 1.65,

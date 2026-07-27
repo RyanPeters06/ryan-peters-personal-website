@@ -5,6 +5,20 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-24 — Projects `</>` glyph + labels pop off the face
+
+- **Projects `</>` rebuilt** (`Locations.tsx` `CodeSymbol`): the old
+  build used ~58° chevron arms + a near-horizontal (−19°) slash, which
+  collapsed into a bowtie/X. Now: two chevron arms per side meeting at a
+  vertex (±33°) + a steep centre slash (+66°), spaced clear of each other
+  — reads as real code, matching Peter's reference close-up. Scale 1.35→
+  1.2 for the wider clean glyph.
+- **Labels pop** (`LocationPod.tsx`): every panel label sat at
+  `z = B.depth/2 + 0.02`, exactly the face-front plane, so the text
+  z-fought the face and looked like it sank into the panel (letters
+  clipping). Pushed to `+0.09` so the lettering reads clearly raised and
+  legible on every panel.
+
 ## 2026-07-24 — Even panel spacing + a touch more angle
 
 - **Even spacing** (`content/locations.ts`): Projects/Contact (2nd & 5th)

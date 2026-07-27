@@ -373,9 +373,12 @@ varying vec3 vFaceLocal;`,
           <group position={[0, monBaseY + LANDMARK.symbol.centerY, B.depth / 2 + 0.03]}>
             {children}
           </group>
-          {/* 3b — the label: beneath the icon, well inside the face,
-              width-capped so long names ("Experience") never bleed past
-              the face onto the body's bevels. */}
+          {/* 3b — the label: beneath the icon, width-capped so long names
+              ("Experience") never bleed past the face onto the body's
+              bevels. Pushed clearly PROUD of the face front (which sits at
+              ~B.depth/2 + 0.02) so the letters read as raised lettering —
+              at the old +0.02 they were coincident with the face and
+              z-fought, so the words looked like they sank into the panel. */}
           <Text
             font={fontUrl}
             fontSize={0.34}
@@ -384,7 +387,7 @@ varying vec3 vFaceLocal;`,
             color={inkAccent}
             anchorX="center"
             anchorY="middle"
-            position={[0, bodyY - 0.18, B.depth / 2 + 0.02]}
+            position={[0, bodyY - 0.18, B.depth / 2 + 0.09]}
           >
             {location.name}
           </Text>
