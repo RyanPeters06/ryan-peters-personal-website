@@ -77,7 +77,7 @@ function panelGeo(
 // face (see the yaw note below). Closer than the camera (z 13) so the
 // side panels angle in toward the middle; not so close that they swing
 // back to the old fountain-facing, edge-on look.
-const PANEL_FOCUS_Z = 8
+const PANEL_FOCUS_Z = 5.3
 
 // Both geometries are identical across every pod, so build them once.
 const BODY_GEO = panelGeo(

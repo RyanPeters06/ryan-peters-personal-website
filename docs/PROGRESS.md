@@ -9,15 +9,16 @@ session. This file always reflects the current state of the project.
 
 - **Panels angled toward the viewer** (`LocationPod.tsx`): each pod's yaw
   now aims at an on-axis focus point in FRONT of the plaza
-  (`PANEL_FOCUS_Z = 8`) instead of the fountain, so the whole row fans
+  (`PANEL_FOCUS_Z = 5.3`) instead of the fountain, so the whole row fans
   toward the screen. Because every pod aims at one point, the turn-in is
-  graded automatically by off-axis distance: About/Resume angle in most,
-  Projects/Contact less, Experience/Skills near-straight (the reference's
-  arrangement, legible titles). Focus sits closer than the camera (z 13)
-  so the sides read clearly angled without swinging back to edge-on.
+  graded automatically by off-axis distance: About/Resume angle in most
+  (~49°), Projects/Contact less, Experience/Skills near-straight (the
+  reference's arrangement, legible titles). Focus started at z 8 and was
+  pulled to 5.3 (Peter: face the centre ~10° more) — still well short of
+  the fountain-facing edge-on look.
 - **Panels spaced out** (`content/locations.ts`): the six positions
-  scaled radially ×1.04 for a bit more gap between islands; still all fit
-  the fixed frame with margin.
+  scaled radially ~×1.09 total for more gap between islands; still all
+  fit the fixed frame with margin.
 - **Collision** (new `systems/collision.ts`): the player and villagers
   could walk through everything. Solid props are now XZ circles (islands,
   centerpiece, lampposts, bench) and both controllers push out of them
