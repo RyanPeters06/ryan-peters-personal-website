@@ -167,7 +167,7 @@ export function LocationPod({
   // the raw pastel accents (tuned for tinting surfaces) read washed
   // out as text. Same hue, just more ink.
   const inkAccent = useMemo(
-    () => `#${new Color(location.accent).offsetHSL(0, 0.32, -0.2).getHexString()}`,
+    () => `#${new Color(location.accent).offsetHSL(0, 0.32, -0.46).getHexString()}`,
     [location.accent],
   )
 
@@ -179,13 +179,18 @@ export function LocationPod({
     // radial glow, brightest behind the icon and fading to white at the
     // rim, reads as soft *lighting* instead, which is what the reference
     // has. Plus a uniform accent emissive so the face gently lights up.
+    // The face base is now a LIGHT TINT of the accent (not pure white) so
+    // the inset reads as a soft coloured panel — the reference's green
+    // Experience face, blue Projects face, etc. — with the radial glow
+    // brightening the accent further behind the icon.
+    const faceTint = new Color('#ffffff').lerp(accent, 0.22)
     const face = clay({
-      color: '#ffffff',
+      color: `#${faceTint.getHexString()}`,
       roughness: 0.4,
       sheen: 0.3,
       env: 0.15,
       emissive: location.accent,
-      emissiveIntensity: 0.12,
+      emissiveIntensity: 0.16,
     })
     const W = (LANDMARK.body.faceWidth * 0.5).toFixed(4)
     const H = (LANDMARK.body.faceHeight * 0.5).toFixed(4)
@@ -215,7 +220,7 @@ varying vec3 vFaceLocal;`,
   // Radial distance from the face center, normalized to its half-size.
   vec2 fp = vec2(vFaceLocal.x / ${W}, vFaceLocal.y / ${H});
   float glow = smoothstep(1.15, 0.05, length(fp));   // 1 center .. 0 rim
-  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(${ar}, ${ag}, ${ab}), glow * 0.26);
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(${ar}, ${ag}, ${ab}), glow * 0.28);
 }`,
         )
     }
@@ -362,8 +367,10 @@ varying vec3 vFaceLocal;`,
             castShadow
             receiveShadow
           />
-          {/* 2 — the inset face: a touch lighter, gently sun-graded,
-              same rounder-top/squarer-bottom silhouette as the body. */}
+          {/* 2 — the inset face: RECESSED behind the body's front so the
+              white body reads as a raised pillowy frame around it (the
+              reference's inset look), same rounder-top/squarer-bottom
+              silhouette as the body. */}
           <mesh
             geometry={FACE_GEO}
             position={[0, bodyY + 0.06, B.depth / 2 - 0.05]}
@@ -387,7 +394,7 @@ varying vec3 vFaceLocal;`,
             color={inkAccent}
             anchorX="center"
             anchorY="middle"
-            position={[0, bodyY - 0.18, B.depth / 2 + 0.09]}
+            position={[0, bodyY - 0.18, B.depth / 2 + 0.05]}
           >
             {location.name}
           </Text>

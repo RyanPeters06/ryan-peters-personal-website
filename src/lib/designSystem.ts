@@ -34,7 +34,11 @@ export const LANDMARK = {
     radius: 0.82, // squircle — big soft corners
     /** How deep the base sinks into the grass top. */
     sink: 0.3,
-    /** The flush colored inset panel on the front. */
+    /** The colored inset panel on the front. (Kept full-width: narrowing
+     *  it exposed foliage/bevel slivers at the panel's angled right edge;
+     *  the reference's "inset" look is carried by the accent tint below,
+     *  not a physical recess, which shadowed the face and threw an
+     *  artifact.) */
     faceWidth: 2.34,
     faceHeight: 2.5,
     faceRadius: 0.6,

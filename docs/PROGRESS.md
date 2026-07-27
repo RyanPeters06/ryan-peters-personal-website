@@ -5,6 +5,26 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-24 — Panel labels legible + coloured inset faces
+
+Matching the reference panels (Peter: "Experience" is hard to read; give
+the face its green tint; try the recessed/thicker frame).
+- **Labels darkened** (`LocationPod` `inkAccent` `−0.2 → −0.46`
+  lightness): every label now reads as confident dark ink on the face —
+  green "Experience", teal "Resume" etc. were washed out before.
+- **Coloured inset faces**: the face base is now a LIGHT TINT of the
+  accent (`white.lerp(accent, 0.22)`) instead of pure white, so each face
+  reads as a soft coloured panel (green Experience, blue Projects, …) —
+  the reference's look. Bumped face emissive `0.12→0.16` + radial glow
+  mix `0.26→0.28` for a touch more presence.
+- **Recess/thicker-frame: tried and dropped.** Recessing the face behind
+  the body front threw a bevel-corner artifact (a little accent "diamond"
+  by the label) AND sat the face in shadow so the tint read grey.
+  Narrowing the face alone exposed foliage slivers at the angled panels'
+  right edge. So the face stays full-width + proud; the "inset" reads via
+  the accent TINT, which matches the reference's coloured face better than
+  a physical recess did.
+
 ## 2026-07-24 — Projects `</>` glyph + labels pop off the face
 
 - **Projects `</>` rebuilt** (`Locations.tsx` `CodeSymbol`): the old
