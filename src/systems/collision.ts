@@ -21,12 +21,12 @@ export interface Obstacle {
   r: number
 }
 
-// Footprint radii. Islands use a circle a touch inside the oval base so
-// you can stand right at the grassy edge; the rest trace their prop.
-const ISLAND_R = 1.7
-const CENTER_R = 1.3
-const LAMP_R = 0.2
-const BENCH_R = 0.5
+// Footprint radii — sized so a mover's BODY doesn't clip onto the raised
+// grass/base (the old 1.7 let bodies overlap the grass edge by ~0.2u).
+const ISLAND_R = 1.9
+const CENTER_R = 1.4
+const LAMP_R = 0.22
+const BENCH_R = 0.55
 
 export const OBSTACLES: Obstacle[] = [
   ...LOCATIONS.map((l) => ({ x: l.x, z: l.z, r: ISLAND_R })),

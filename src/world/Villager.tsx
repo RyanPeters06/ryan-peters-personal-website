@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import {
   CapsuleGeometry,
@@ -11,6 +11,8 @@ import {
 } from 'three'
 import { getAmbientScale } from '@/hooks/useAmbientLoop'
 import { resolveCollision } from '@/systems/collision'
+import { crowdAgents, registerAgent, unregisterAgent, separate } from '@/systems/crowd'
+import { avatarPose } from '@/systems/movement/avatarPose'
 
 /**
  * One background villager — a simplified cousin of the player's
@@ -81,6 +83,9 @@ export interface VillagerSpec {
 
 const WALK_SPEED = 0.5 // slow and peaceful — a third of the player's pace
 const VILLAGER_RADIUS = 0.24 // body radius for collision push-out
+// The player's personal space: villagers keep at least this + their own
+// radius clear of the player, stepping fully aside so the crowd parts.
+const PLAYER_CLEAR = 0.34
 
 // Scratch (safe: used synchronously within one callback)
 const _dir = new Vector3()
@@ -145,6 +150,13 @@ export function Villager({ spec }: { spec: VillagerSpec }) {
     }
   }
 
+  // Join the crowd registry with a LIVE reference to our position so the
+  // other villagers can separate from us and we from them.
+  useEffect(() => {
+    registerAgent({ id: spec.id, pos: st.current!.pos, radius: VILLAGER_RADIUS })
+    return () => unregisterAgent(spec.id)
+  }, [spec.id])
+
   useFrame((_, rawDt) => {
     const s = st.current!
     // Ambient-scaled time: reduced motion calms the crowd too.
@@ -198,8 +210,6 @@ export function Villager({ spec }: { spec: VillagerSpec }) {
         s.fwd.lerp(_dir, 1 - Math.exp(-4 * dt)).normalize()
         moveTarget = 1
         s.pos.addScaledVector(s.fwd, WALK_SPEED * dt)
-        // Solid props: slide around islands/planter/props, never through.
-        resolveCollision(s.pos, VILLAGER_RADIUS)
       }
     } else if (spec.chatCenter && !s.away) {
       // Chat posture: at home, keep facing the group's center.
@@ -212,6 +222,24 @@ export function Villager({ spec }: { spec: VillagerSpec }) {
     s.fwd.y = 0
     s.fwd.normalize()
     s.move += (moveTarget - s.move) * (1 - Math.exp(-6 * dt))
+
+    // Solid props: push out of any island/planter/prop EVERY frame (not
+    // just while walking) so a villager can never end up inside anything,
+    // exactly like the player — slides along boundaries instead.
+    resolveCollision(s.pos, VILLAGER_RADIUS)
+
+    // Crowd: separate from every other villager (each takes half the
+    // correction, so nobody overlaps or walks through anyone), then STEP
+    // ASIDE for the player (we take the FULL correction — the player never
+    // yields, so the crowd parts around it and it can't walk through us).
+    for (let i = 0; i < crowdAgents.length; i++) {
+      const a = crowdAgents[i]
+      if (a.id === spec.id) continue
+      separate(s.pos, a.pos.x, a.pos.z, VILLAGER_RADIUS + a.radius, 0.5)
+    }
+    separate(s.pos, avatarPose.position.x, avatarPose.position.z, VILLAGER_RADIUS + PLAYER_CLEAR, 1)
+    // Re-resolve static props so a crowd shove can't push us into one.
+    resolveCollision(s.pos, VILLAGER_RADIUS)
 
     // ---- write transform ------------------------------------------------
     if (root.current) {

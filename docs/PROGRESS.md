@@ -5,6 +5,25 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-27 — Crowd avoidance, bulletproof collision, title to the front
+
+- **Villagers never inside anything** (`Villager.tsx`): the static
+  `resolveCollision` now runs EVERY frame (not just while walking), so no
+  villager can rest inside an island/planter/prop — same guarantee the
+  player has. Obstacle radii tightened (`collision.ts`: island 1.7→1.9,
+  centre 1.3→1.4, lamp/bench up) so bodies don't clip the raised edges.
+- **Crowd avoidance** (new `systems/crowd.ts`): every villager registers
+  a live-position agent. Each frame a villager SEPARATES from the others
+  (each takes half the correction → nobody overlaps or walks through
+  anyone) and STEPS ASIDE for the player (villager takes the full
+  correction; the player yields to no one, so the crowd parts around it
+  and it can't walk through a villager, yet is never blocked).
+- **Title to the front** (`TitleWorld.tsx`): "Ryan Land" hung at z-9,
+  behind the back panels (which the spacing pass pushed to ~z-8.5), so it
+  was occluded ("behind the map"). The reveal now draws it depth-test-off
+  (renderOrder 30), pulled to z-5 + scaled (`TITLE_SCALE 0.62`) so it fits
+  the low-headroom frame and reads clearly over the scene.
+
 ## 2026-07-24 — Panel labels legible + coloured inset faces
 
 Matching the reference panels (Peter: "Experience" is hard to read; give

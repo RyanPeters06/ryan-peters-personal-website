@@ -31,7 +31,14 @@ import fontUrl from '@fontsource/quicksand/files/quicksand-latin-700-normal.woff
  *  clipping. Compact: it crowns the scene, it never overlaps the
  *  monuments or leaves the frame. */
 const ANCHOR_Y = 0
-const ANCHOR_Z = -9
+// Sits in front of the plaza (the back panels reach ~z-8.5); with the
+// depth-test disabled in the reveal loop it draws over the scene rather
+// than being occluded ("behind the map"). Pulled forward from the old
+// z-9 (which the low-headroom camera pushed off the top of the frame).
+const ANCHOR_Z = -5
+// Because it's now nearer the camera, the whole title block is scaled
+// down so "Ryan Land" + the subtitle fit within the frame width.
+const TITLE_SCALE = 0.62
 
 const ease = (p: number) => {
   const t = Math.min(1, Math.max(0, p))
@@ -71,7 +78,7 @@ export function TitleWorld() {
     if (group.current) {
       // Slow upward easing on reveal; a gentle release upward on dissolve.
       group.current.position.set(0, ANCHOR_Y - (1 - rTitle) * 1.1 + dis * 2.6, ANCHOR_Z)
-      group.current.scale.setScalar((0.965 + rTitle * 0.035) * (1 + dis * 0.05))
+      group.current.scale.setScalar(TITLE_SCALE * (0.965 + rTitle * 0.035) * (1 + dis * 0.05))
     }
 
     const apply = (
@@ -85,6 +92,16 @@ export function TitleWorld() {
       m.outlineOpacity = opacity * 0.9
       // The glow widens as the text dissolves back into the light.
       m.outlineBlur = blur * (1 + dis * 2.4)
+      // Draw the title ON TOP of the world — it hangs at z=-9, behind the
+      // back panels (which the spacing pass pushed to ~z-8.5), so without
+      // this it's occluded ("behind the map"). Depth-test off + a high
+      // render order keeps it in front while it reveals/dissolves.
+      m.renderOrder = 30
+      const mat = m.material as { depthTest?: boolean; depthWrite?: boolean }
+      if (mat) {
+        mat.depthTest = false
+        mat.depthWrite = false
+      }
     }
     apply(title, rTitle * (1 - dis) * 0.96, 0.09)
     apply(sub, rSub * (1 - dis) * 0.85, 0.06)
