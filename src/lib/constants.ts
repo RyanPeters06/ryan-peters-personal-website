@@ -73,6 +73,32 @@ export const TABLEAU_FOG: readonly [number, number] = [22, 60]
  *  stage ends before the edge does. */
 export const TABLEAU_WALK_RADIUS = 8.4
 
+/** ---- Touch-only framing guards -------------------------------------
+ * A phone's frame is far narrower than the aspect this rig was solved
+ * for, so the walk leash — a circle of radius TABLEAU_WALK_RADIUS —
+ * sticks out well past the visible frustum, which NARROWS as it comes
+ * toward the viewer. Measured worst case at 390x844: the avatar reaches
+ * ndcX 3.84 (frame edge is 1.0) around the front-right diagonal, and
+ * falls below the bottom edge (ndcY 1.37) walking toward the camera.
+ *
+ * Two guards fix it together, both touch-only — desktop keeps the
+ * authored frame untouched (Peter, 2026-07-28):
+ *
+ *  1. The camera PANS to follow (see CinematicCamera). It never travels:
+ *     position and fov stay exactly as solved; only the look target
+ *     slides, like a security camera on a fixed mount. Panning alone is
+ *     NOT enough — it bottoms out at ndcX 1.18, still off frame.
+ *  2. This cap on how far FORWARD (toward the camera) the avatar may
+ *     walk. That near strip is empty plaza — every pod sits at negative
+ *     z — so the walk radius is untouched and nothing becomes
+ *     unreachable. Note the avatar spawns at z 2.6, just inside it.
+ *
+ * Together: ndcX 0.76, ndcY 0.33. Re-measure both if the rig moves. */
+export const TABLEAU_WALK_Z_MAX_TOUCH = 3.0
+/** 1.0 = the look target tracks the avatar's x exactly. Lower values
+ *  leave the avatar off-centre and stop clearing the frame edge. */
+export const TABLEAU_LOOK_FOLLOW_TOUCH = 1.0
+
 /** Walking speed along the surface, world units per second. */
 export const WALK_SPEED = 1.6
 

@@ -104,10 +104,19 @@ Statuses: ✅ done · 🔨 in progress · ⬜ not started
   the existing mute contract; no autoplaying music.
 - **Files:** new systems/audio, ui wiring. **Deps:** M7.
 
-## M9 — Polish & Ship ⬜
+## M9 — Polish & Ship 🔨
 - **Objective:** production quality.
-- **Features:** performance audit (code-split three bundle), mobile/touch
-  controls (virtual stick), keyboard accessibility, loading experience,
-  SEO/meta/OG image, deploy (GitHub Pages/Vercel).
+- **Done:** loading experience (`ui/LoadingScreen.tsx`). **Mobile/touch
+  controls** (2026-07-28): an invisible thumb stick that materializes
+  under the finger (`ui/TouchJoystick.tsx`) + a centred teaching card
+  (`ui/TouchHint.tsx`); analog tilt-sets-speed; safe-area insets and
+  `viewport-fit=cover`; touch-only camera look-follow + forward walk cap
+  so the avatar cannot leave the frame on a phone.
+- **Remaining:** performance audit (code-split the ~1.9MB three bundle —
+  still one chunk), keyboard accessibility, SEO/meta/OG image, deploy
+  finish (Vercel + Namecheap DNS in progress).
+- **Known bug, deliberately unfixed:** the avatar walks out of frame on
+  **desktop** too, at any aspect narrower than 1.77 (see PROGRESS
+  2026-07-28 for measurements). Peter scoped this pass to mobile only.
 - **Success:** Lighthouse respectable; works on a phone; shareable URL.
   **Deps:** everything.

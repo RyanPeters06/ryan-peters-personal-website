@@ -5,6 +5,67 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-28 — Mobile: thumb stick, teaching card, and a camera that pans
+
+The site is deploying to Vercel on a real domain, so phones stop being
+hypothetical. Before this pass a phone visitor could watch the avatar
+wave and then do nothing at all — there was no touch input anywhere, and
+not one media query, safe-area inset, or touch check in `src/`.
+
+- **Invisible thumb stick** (`ui/TouchJoystick.tsx`). Nothing on screen
+  at rest; wherever the thumb lands becomes the centre. A transparent
+  activation zone (mounted FIRST in `Overlay` so all chrome keeps its own
+  taps) plus a `fixed` ring/knob positioned from raw `clientX/Y`.
+  `pointerdown` on the zone, move/up/cancel on `window` so a drag that
+  leaves the zone keeps steering. One `pointerId` only — a second finger
+  is ignored. Zero React renders during a drag: transforms are written
+  straight to refs.
+- **Discoverability** (`ui/TouchHint.tsx`): a dead-centre plaza card that
+  *shows* the gesture (a knob easing out of a ring) over "Drag anywhere
+  to walk", up during `idle` and gone on the first step. This is what
+  buys the right to make the stick invisible. `ControlsHint`'s WASD pill
+  and the `WelcomeCard` are both suppressed on touch (the latter sat
+  exactly where a left thumb goes).
+- **Analog speed**: `Avatar.tsx` hard-set `moveTarget = 1`, discarding
+  magnitude. Now `Math.min(1, inputMag)`, so tilt sets pace and the
+  stride/waddle scale with it. Keyboard is bit-identical — `Math.hypot`
+  returns exactly 1 for both a single key and a normalized diagonal
+  (`Math.sqrt(n*n+n*n)` does NOT, which is why the magnitude is taken
+  from `input.x/z` and never from `_moveDir.length()`).
+- **THE REAL FIND — the avatar walks out of frame, and always has.**
+  Measured by projecting the walk leash against the shipped rig: the
+  avatar leaves the frame on **every aspect narrower than 1.77**, hitting
+  ndcX 1.06 at 1512×900 and 1.11 on a 1440×900 laptop (1.0 is the edge),
+  worst around the front-right diagonal — i.e. walking toward Resume.
+  Cause: the leash is a circle of radius 8.4, but the frustum NARROWS as
+  it comes toward the viewer. Portrait is far worse (ndcX 3.84), and
+  every aspect also drops the avatar off the BOTTOM (ndcY 1.37) walking
+  camera-ward.
+- **Fix, touch-only** (Peter: "like a security camera that follows you",
+  and "no changes on desktop"): the look TARGET tracks the avatar's x
+  while `camera.position` and `fov 44` stay exactly as solved — the mount
+  never travels, so ART_BIBLE §8 holds in the sense it was written.
+  Panning alone is NOT sufficient (it bottoms out at ndcX 1.18), so it is
+  paired with `TABLEAU_WALK_Z_MAX_TOUCH = 3.0`, capping how far *toward*
+  the camera one may walk. That strip is empty plaza — every pod is at
+  negative z — so the walk radius is untouched and nothing becomes
+  unreachable. Together: **ndcX 0.76, ndcY 0.33.**
+  **Desktop still has this bug and was deliberately left alone** —
+  flagged for Peter, not fixed.
+- Also: `viewport-fit=cover` + the `Overlay` root inset by
+  `env(safe-area-inset-*)` (on its own offsets — padding does NOT inset
+  absolutely positioned children, the containing block is the padding
+  box). `TitleSequence` moved `absolute` → `fixed` so "click anywhere"
+  still means the whole screen. The mouse look-pan is zeroed on touch (a
+  finger cannot hover, and `state.pointer` never resets).
+
+Verified live in Playwright at 390×844 and 1512×900: ring placement,
+the 56px knob leash, deadzone, release, both walk directions (walked into
+the Skills pod and back out), full-tilt delivering exactly `{x:1,z:0}`,
+and the camera panning to frame Resume. `tsc -b` + `npm run build` clean.
+Still to check on a real iPhone: safe-area insets and how the deadzone
+and `MIN_SPEED` feel under an actual thumb.
+
 ## 2026-07-28 — Cute loading screen for a smooth open
 
 New `ui/LoadingScreen.tsx` (mounted top-most in `App`): a plaza-style

@@ -1,6 +1,7 @@
 import { AnimatePresence } from 'framer-motion'
 import { LOCATIONS } from '@/content/locations'
 import { useWorldStore } from '@/store/useWorldStore'
+import { useCoarsePointer } from '@/hooks/useCoarsePointer'
 import { PlazaCard } from '@/ui/PlazaCard'
 
 /**
@@ -12,15 +13,28 @@ import { PlazaCard } from '@/ui/PlazaCard'
 export function LocationCard() {
   const activeId = useWorldStore((s) => s.activeLocation)
   const location = LOCATIONS.find((l) => l.id === activeId)
+  const coarse = useCoarsePointer()
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-8 flex justify-center">
+    // On touch the card rides higher, leaving the bottom band clear for
+    // the thumb — otherwise a 92vw card in portrait covers most of the
+    // space you need to drag in, and you'd have to walk away blind.
+    <div
+      className={`pointer-events-none absolute inset-x-0 flex justify-center ${
+        coarse ? 'bottom-40 landscape:bottom-24' : 'bottom-8'
+      }`}
+    >
       <AnimatePresence>
         {location && (
           <PlazaCard
             key={location.id}
             accent={location.accent}
-            className="pointer-events-auto w-[min(92vw,26rem)]"
+            // Height-capped on touch: an iPhone in landscape is only
+            // ~390px tall, so a card with three items runs off the top
+            // of the frame entirely.
+            className={`pointer-events-auto w-[min(92vw,26rem)] ${
+              coarse ? 'max-h-[52vh] overflow-y-auto' : ''
+            }`}
           >
             {/* Icon centered at the top — a miniature pillow tile */}
             <div className="mb-2 flex justify-center">

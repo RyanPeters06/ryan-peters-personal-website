@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useWorldStore } from '@/store/useWorldStore'
+import { useCoarsePointer } from '@/hooks/useCoarsePointer'
 import { MOTION } from '@/lib/designSystem'
 
 /** One small rounded keycap, game-console style. */
@@ -16,9 +17,16 @@ function Key({ label }: { label: string }) {
  * stacked card): `W A S D  Move  ·  🖱 Look around`. Pops in once the
  * avatar finishes its hello, floats gently, and slips away on the first
  * step.
+ *
+ * Keyboard and mouse only. A finger gets `TouchHint` instead, which
+ * teaches the gesture that device actually has — the two are never on
+ * screen together.
  */
 export function ControlsHint() {
   const phase = useWorldStore((s) => s.phase)
+  const coarse = useCoarsePointer()
+
+  if (coarse) return null
 
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-8 flex justify-center">

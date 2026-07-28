@@ -231,6 +231,16 @@ black. If a color feels "corporate" or "techy," it is wrong.
   panels. Never a chase or orbit; the camera never follows. Gentle
   mouse-look parallax only. `camera.up` is always world +Y (the
   ground has no curvature to level against).
+- **On touch, the mount PANS (added 2026-07-28).** A phone's frame is far
+  narrower than the aspect this rig was solved for, and the avatar walked
+  clean out of shot. So on coarse pointers the look *target* tracks the
+  avatar while **`camera.position` and `fov` stay exactly as solved** —
+  a security camera on a fixed mount, not a chase cam. "The camera never
+  follows" still holds in the sense it was written: the frame never
+  travels. Desktop is untouched (Peter, 2026-07-28). Panning alone does
+  not suffice, so it is paired with a cap on how far toward the camera
+  one may walk — see `TABLEAU_WALK_Z_MAX_TOUCH` and the measurements in
+  PROGRESS 2026-07-28.
 - Framing rule: the player rides **center, ~62% down the frame**, the
   fountain ~50%; the six landmarks stand LARGE on their grass islands
   in a near-touching crescent that fills the frame width, with the
@@ -361,6 +371,17 @@ Floating, rounded, soft — the world is never blocked by a wall of UI.
   both edges of the screen — don't let that happen again.)
 - **Never:** nav bars, scrolling pages, hero sections, dashboards,
   tables, skill bars, timelines, sharp rectangles, hard borders.
+- **Touch controls (added 2026-07-28).** The thumb stick is **invisible
+  at rest** — a phone screen is small and the plaza is the point, so no
+  control sits on top of it until a thumb lands, and wherever it lands
+  becomes the centre. That is only allowed because a **dead-centre card
+  teaches the gesture** during the idle beat (`ui/TouchHint.tsx`), the
+  one piece of chrome permitted to sit over the plaza, and gone on the
+  first step. The ring is tinted from the palette's shadow family, NOT
+  white — over a near-white plaza a white ring genuinely disappears — and
+  carries no backdrop-blur (the backdrop is a live canvas; blurring it
+  every frame is a real cost on the phones this exists for). On touch the
+  WASD pill and the welcome card are both suppressed.
 
 ## 14. Sound Direction (future)
 

@@ -1,15 +1,21 @@
 import { AnimatePresence } from 'framer-motion'
 import { useWorldStore } from '@/store/useWorldStore'
+import { useCoarsePointer } from '@/hooks/useCoarsePointer'
 import { PlazaCard } from '@/ui/PlazaCard'
 
 /**
  * The bottom-left greeting card from the reference: a short welcome
  * once the visitor has control, sitting alongside the controls hint
  * rather than replacing it.
+ *
+ * Not shown on touch: it occupies exactly the corner a left thumb
+ * reaches for, over the same phases the joystick is live, and a phone
+ * screen has no room to spend on a pleasantry.
  */
 export function WelcomeCard() {
   const phase = useWorldStore((s) => s.phase)
-  const visible = phase === 'idle' || phase === 'exploring'
+  const coarse = useCoarsePointer()
+  const visible = !coarse && (phase === 'idle' || phase === 'exploring')
 
   return (
     <div className="pointer-events-none absolute bottom-8 left-8">

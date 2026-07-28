@@ -6,7 +6,13 @@ import { expDamp } from '@/lib/math/damp'
 import { avatarPose } from '@/systems/movement/avatarPose'
 import { getMoveInput } from '@/systems/movement/useMovementInput'
 import { resolveCollision } from '@/systems/collision'
-import { PALETTE, TABLEAU_WALK_RADIUS, WALK_SPEED } from '@/lib/constants'
+import { useCoarsePointer } from '@/hooks/useCoarsePointer'
+import {
+  PALETTE,
+  TABLEAU_WALK_RADIUS,
+  TABLEAU_WALK_Z_MAX_TOUCH,
+  WALK_SPEED,
+} from '@/lib/constants'
 
 /** The player's body radius for collision push-out. */
 const AVATAR_RADIUS = 0.28
@@ -82,6 +88,8 @@ interface AvatarAnim {
 
 export function Avatar() {
   const camera = useThree((s) => s.camera)
+  /** Phones frame the plaza far more tightly — see the walk clamp below. */
+  const touch = useCoarsePointer()
 
   const placed = useRef<Group>(null)
   const bodyGroup = useRef<Group>(null)
@@ -149,7 +157,11 @@ export function Avatar() {
 
     // ----- Movement input ----------------------------------------------
     const input = getMoveInput()
-    const inputActive = input.x !== 0 || input.z !== 0
+    // Magnitude is the touch stick's tilt (keyboard always returns
+    // exactly 1). The epsilon is a deadzone against float noise — a
+    // stick resting a hair off centre must not park us in 'exploring'.
+    const inputMag = Math.hypot(input.x, input.z)
+    const inputActive = inputMag > 1e-3
     if (phase === 'idle' && inputActive) store.setPhase('exploring')
 
     let moveTarget = 0
@@ -167,8 +179,13 @@ export function Avatar() {
           .addScaledVector(_camFlat, input.z)
           .addScaledVector(_camRight, input.x)
         if (_moveDir.lengthSq() > 1e-8) {
+          // Direction and speed are separated on purpose: _moveDir only
+          // steers, while HOW HARD the stick is pushed sets the pace.
+          // A gentle thumb ambles, a full tilt walks. Keyboard yields a
+          // magnitude of exactly 1 either way (single key, or a diagonal
+          // already normalized upstream), so WASD is unchanged.
           _moveDir.normalize()
-          moveTarget = 1
+          moveTarget = Math.min(1, inputMag)
           steering = true
         }
       }
@@ -204,6 +221,15 @@ export function Avatar() {
         const scale = TABLEAU_WALK_RADIUS / dist
         pose.position.x *= scale
         pose.position.z *= scale
+      }
+
+      // Touch only: don't let the visitor walk forward out of the bottom
+      // of a phone's much narrower frame. The radius above is untouched,
+      // so every pod is still reachable — this only fences off the strip
+      // of empty plaza nearest the camera. See constants for the
+      // measured numbers.
+      if (touch && pose.position.z > TABLEAU_WALK_Z_MAX_TOUCH) {
+        pose.position.z = TABLEAU_WALK_Z_MAX_TOUCH
       }
 
       // Solid props: slide along island/planter/prop boundaries instead

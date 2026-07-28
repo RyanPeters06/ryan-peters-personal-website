@@ -24,7 +24,11 @@ export function TitleSequence() {
       {phase === 'title' && (
         <motion.div
           key="title"
-          className="pointer-events-auto absolute inset-0 z-20 flex cursor-pointer select-none flex-col items-center justify-center gap-5 px-6 text-center"
+          // `fixed`, not `absolute`: the overlay above is inset by the
+          // phone's safe areas, and "click anywhere to explore" has to
+          // mean the whole screen — including the notch strip and the
+          // band by the home indicator.
+          className="pointer-events-auto fixed inset-0 z-20 flex cursor-pointer select-none flex-col items-center justify-center gap-5 px-6 text-center"
           exit={{ opacity: 0, transition: { duration: 0.7, ease: 'easeIn' } }}
           onClick={() => setPhase('arriving')}
         >
