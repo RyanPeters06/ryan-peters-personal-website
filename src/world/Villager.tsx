@@ -34,7 +34,8 @@ import { avatarPose } from '@/systems/movement/avatarPose'
 // black/blonde/browns; shirts are deeper and warmer (orange/gold/teal/
 // coral join the pastels); pants gain variety so no one is uniform grey.
 // Still soft, never neon (ART_BIBLE).
-export const VILLAGER_HAIR = ['#4a3728', '#2a2521', '#7c5a38', '#d8ad5b', '#b06a3a']
+// All DARK (Peter, 2026-07-27): dark browns through black, no blonde/light.
+export const VILLAGER_HAIR = ['#3a2a1e', '#221d18', '#4a3626', '#2c2119', '#191512']
 export const VILLAGER_SHIRTS = [
   '#ef9455', '#f2c94c', '#7ec98a', '#4fbfc4',
   '#ee8fb0', '#a97fd6', '#e0705f', '#5b93d6',
@@ -83,9 +84,14 @@ export interface VillagerSpec {
 
 const WALK_SPEED = 0.5 // slow and peaceful — a third of the player's pace
 const VILLAGER_RADIUS = 0.24 // body radius for collision push-out
-// The player's personal space: villagers keep at least this + their own
-// radius clear of the player, stepping fully aside so the crowd parts.
-const PLAYER_CLEAR = 0.34
+// The player's personal-space BUBBLE. A villager inside PLAYER_AWARE
+// actively WALKS away (legs animating, facing its travel) to clear out;
+// it is never allowed closer than PLAYER_BUBBLE (a hard backstop so the
+// player can't shove through). FLEE_SPEED matches the player's pace so a
+// fleeing villager stays ahead instead of being caught and slid.
+const PLAYER_AWARE = 1.75
+const PLAYER_BUBBLE = 1.2
+const FLEE_SPEED = 1.6
 
 // Scratch (safe: used synchronously within one callback)
 const _dir = new Vector3()
@@ -163,60 +169,83 @@ export function Villager({ spec }: { spec: VillagerSpec }) {
     const dt = Math.min(rawDt, 0.1) * getAmbientScale()
     s.t += dt
 
-    // ---- decide -------------------------------------------------------
-    // Everyone strolls. Wanderers roam POI to POI forever; chat-circle
-    // members occasionally walk out somewhere, pause, then walk home and
-    // rejoin the conversation — circles dissolve and reform.
-    if (s.mode === 'idle' && s.t >= s.nextWalkAt) {
-      if (!spec.wanderer && s.away) {
-        s.target.set(spec.x, 0, spec.z)
-        s.goingHome = true
-      } else {
-        const poi = spec.pois[Math.floor((s.t * 7.31 + spec.seed * 13) % spec.pois.length)]
-        // Small deterministic jitter so villagers don't stack on a point
-        // (kept modest so targets rarely land inside a solid footprint).
-        s.target.set(
-          poi.x + Math.sin(spec.seed * 12.9 + s.t) * 1.5,
-          0,
-          poi.z + Math.cos(spec.seed * 7.7 + s.t) * 1.5,
-        )
-        s.away = true
-        s.goingHome = false
-      }
-      s.mode = 'walk'
-      s.walkStartT = s.t
-    }
-
-    // ---- act ----------------------------------------------------------
     let moveTarget = 0
-    if (s.mode === 'walk') {
-      _dir.copy(s.target).sub(s.pos)
-      _dir.y = 0
-      const remaining = _dir.length()
-      // Give up if arrived OR blocked too long (a solid prop between us
-      // and the target, so we can never close the last stretch).
-      if (remaining < 0.45 || s.t - s.walkStartT > 14) {
-        s.mode = 'idle'
-        if (s.goingHome) {
-          // Back with the group — settle in and chat a good while.
-          s.away = false
-          s.goingHome = false
-          s.nextWalkAt = s.t + 18 + ((spec.seed * 53) % 22)
+
+    // ---- player bubble: WALK away if the visitor is close -------------
+    // Highest priority — overrides strolling/chatting. The villager turns
+    // to face away and steps off briskly (legs animate, so it reads as
+    // walking out of the way, not being shoved), keeping the player's
+    // personal space clear.
+    const pdx = s.pos.x - avatarPose.position.x
+    const pdz = s.pos.z - avatarPose.position.z
+    const pd = Math.hypot(pdx, pdz)
+    if (pd < PLAYER_AWARE) {
+      const nx = pd > 1e-3 ? pdx / pd : 1
+      const nz = pd > 1e-3 ? pdz / pd : 0
+      _dir.set(nx, 0, nz)
+      s.fwd.lerp(_dir, 1 - Math.exp(-9 * dt)).normalize()
+      s.pos.x += nx * FLEE_SPEED * dt
+      s.pos.z += nz * FLEE_SPEED * dt
+      moveTarget = 1
+      // Abandon the current errand; pause a beat before strolling again.
+      s.mode = 'idle'
+      s.away = true
+      s.nextWalkAt = s.t + 1.5
+    } else {
+      // ---- decide -----------------------------------------------------
+      // Everyone strolls. Wanderers roam POI to POI forever; chat-circle
+      // members occasionally walk out somewhere, pause, then walk home
+      // and rejoin the conversation — circles dissolve and reform.
+      if (s.mode === 'idle' && s.t >= s.nextWalkAt) {
+        if (!spec.wanderer && s.away) {
+          s.target.set(spec.x, 0, spec.z)
+          s.goingHome = true
         } else {
-          s.nextWalkAt = s.t + 6 + ((spec.seed * 31) % 12)
+          const poi = spec.pois[Math.floor((s.t * 7.31 + spec.seed * 13) % spec.pois.length)]
+          // Small deterministic jitter so villagers don't stack on a point
+          // (kept modest so targets rarely land inside a solid footprint).
+          s.target.set(
+            poi.x + Math.sin(spec.seed * 12.9 + s.t) * 1.5,
+            0,
+            poi.z + Math.cos(spec.seed * 7.7 + s.t) * 1.5,
+          )
+          s.away = true
+          s.goingHome = false
         }
-      } else {
-        _dir.divideScalar(remaining)
-        s.fwd.lerp(_dir, 1 - Math.exp(-4 * dt)).normalize()
-        moveTarget = 1
-        s.pos.addScaledVector(s.fwd, WALK_SPEED * dt)
+        s.mode = 'walk'
+        s.walkStartT = s.t
       }
-    } else if (spec.chatCenter && !s.away) {
-      // Chat posture: at home, keep facing the group's center.
-      _dir.copy(spec.chatCenter).sub(s.pos)
-      _dir.y = 0
-      if (_dir.lengthSq() > 1e-6) {
-        s.fwd.lerp(_dir.normalize(), 1 - Math.exp(-2 * dt))
+
+      // ---- act --------------------------------------------------------
+      if (s.mode === 'walk') {
+        _dir.copy(s.target).sub(s.pos)
+        _dir.y = 0
+        const remaining = _dir.length()
+        // Give up if arrived OR blocked too long (a solid prop between us
+        // and the target, so we can never close the last stretch).
+        if (remaining < 0.45 || s.t - s.walkStartT > 14) {
+          s.mode = 'idle'
+          if (s.goingHome) {
+            // Back with the group — settle in and chat a good while.
+            s.away = false
+            s.goingHome = false
+            s.nextWalkAt = s.t + 18 + ((spec.seed * 53) % 22)
+          } else {
+            s.nextWalkAt = s.t + 6 + ((spec.seed * 31) % 12)
+          }
+        } else {
+          _dir.divideScalar(remaining)
+          s.fwd.lerp(_dir, 1 - Math.exp(-4 * dt)).normalize()
+          moveTarget = 1
+          s.pos.addScaledVector(s.fwd, WALK_SPEED * dt)
+        }
+      } else if (spec.chatCenter && !s.away) {
+        // Chat posture: at home, keep facing the group's center.
+        _dir.copy(spec.chatCenter).sub(s.pos)
+        _dir.y = 0
+        if (_dir.lengthSq() > 1e-6) {
+          s.fwd.lerp(_dir.normalize(), 1 - Math.exp(-2 * dt))
+        }
       }
     }
     s.fwd.y = 0
@@ -237,7 +266,7 @@ export function Villager({ spec }: { spec: VillagerSpec }) {
       if (a.id === spec.id) continue
       separate(s.pos, a.pos.x, a.pos.z, VILLAGER_RADIUS + a.radius, 0.5)
     }
-    separate(s.pos, avatarPose.position.x, avatarPose.position.z, VILLAGER_RADIUS + PLAYER_CLEAR, 1)
+    separate(s.pos, avatarPose.position.x, avatarPose.position.z, PLAYER_BUBBLE, 1)
     // Re-resolve static props so a crowd shove can't push us into one.
     resolveCollision(s.pos, VILLAGER_RADIUS)
 

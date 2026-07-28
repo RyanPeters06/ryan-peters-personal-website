@@ -5,6 +5,25 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-27 — Title as HTML, crowd bubble, denser dark crowd, beacon fixes
+
+- **Title is now a screen-space HTML overlay** (`ui/TitleSequence.tsx`),
+  and the 3D `TitleWorld` was deleted (it kept getting clipped/occluded
+  by the low-headroom camera). Framer Motion keeps the choreography:
+  staggered reveal (name → subtitle → prompt), a breathing prompt, and a
+  release-upward blur/drift on click. Always fully visible now.
+- **Personal-space bubble** (`Villager.tsx`): villagers no longer get
+  shoved. A villager inside `PLAYER_AWARE` (1.75) now WALKS away (facing
+  its travel, legs animating) and is never let closer than `PLAYER_BUBBLE`
+  (1.2). Reads as the crowd parting, not a slide.
+- **Crowd** (`Crowd.tsx`, `Villager.tsx`): ~+33% villagers (15→20) and
+  `VILLAGER_HAIR` is now all-dark (dark browns → black, no blonde/light).
+- **Beacon fixes** (`Beacon.tsx`): (1) measures its OWN proximity to the
+  pod centre instead of the shared `activeLocation`, fixing the bug where
+  leaving to a neighbour and returning wouldn't re-show the light. (2) Its
+  footprint is an ELLIPSE driven by `POD.base` (`rx`/`rz`), so it sits on
+  the oval curb and resizes with the island.
+
 ## 2026-07-27 — Proximity beacon at landmarks
 
 New `world/Beacon.tsx`, rendered per-pod in `LocationPod` and gated on

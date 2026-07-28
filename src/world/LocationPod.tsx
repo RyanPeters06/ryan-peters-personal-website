@@ -356,12 +356,10 @@ varying vec3 vFaceLocal;`,
         ))}
 
         {/* Proximity beacon: a soft column of light rising from the pod
-            while the visitor stands at it (see world/Beacon.tsx). Placed
-            just in front of the panel so the column reads cleanly instead
-            of being sliced by the opaque body. */}
-        <group position={[0, 0, 0.7]}>
-          <Beacon locationId={location.id} />
-        </group>
+            while the visitor stands at it (see world/Beacon.tsx). Centred
+            on the island with an oval footprint matching the base curb
+            (POD.base) — resizing the island resizes the beacon. */}
+        <Beacon center={position} rx={POD.base.rx} rz={POD.base.rz} />
 
         {/* The monument, toward the back of the grass so the visitor
             reads its face across the greenery. */}

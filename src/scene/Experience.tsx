@@ -25,7 +25,6 @@ import { Avatar } from '@/avatar/Avatar'
 import { Locations } from '@/world/Locations'
 import { PlazaDressing } from '@/world/PlazaDressing'
 import { Crowd } from '@/world/Crowd'
-import { TitleWorld } from '@/scene/TitleWorld'
 import { CinematicCamera } from '@/camera/CinematicCamera'
 import { setAmbientScale, useAmbientDriver } from '@/hooks/useAmbientLoop'
 import { useMovementKeys } from '@/systems/movement/useMovementInput'
@@ -96,7 +95,6 @@ export function Experience() {
         <Fountain />
         <Crowd />
         <Avatar />
-        <TitleWorld />
         <CinematicCamera />
         {/* multisampling 0: SMAA (below) is the anti-aliaser now. Leaving
             MSAA on caused a per-frame glBlitFramebuffer depth/stencil

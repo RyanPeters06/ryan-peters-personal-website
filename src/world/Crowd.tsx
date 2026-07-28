@@ -27,10 +27,10 @@ function makeRng(seed: number): () => number {
  *  and the player's spawn (0, 2.6) stay open so the crowd never piles
  *  on the hero. Matches the reference's scattered, un-clustered plaza. */
 const GROUPS: { x: number; z: number; size: number }[] = [
-  { x: -4.6, z: 1.6, size: 3 },
-  { x: 4.7, z: 2.0, size: 2 },
+  { x: -4.6, z: 1.6, size: 4 },
+  { x: 4.7, z: 2.0, size: 3 },
   { x: -3.0, z: 4.2, size: 2 },
-  { x: 3.4, z: 4.4, size: 2 },
+  { x: 3.4, z: 4.4, size: 3 },
   { x: 6.0, z: -1.2, size: 2 },
 ]
 
@@ -95,6 +95,8 @@ function createCrowd(): VillagerSpec[] {
     { x: 5.4, z: -3.4 },
     { x: -1.8, z: 4.9 },
     { x: 2.4, z: 4.9 },
+    { x: 6.0, z: 1.2 },
+    { x: -0.3, z: 5.8 },
   ]
   for (const w of wanderSpots) {
     specs.push(make(w.x + (rng() - 0.5) * 1.5, w.z + (rng() - 0.5) * 1.5, null, true))
