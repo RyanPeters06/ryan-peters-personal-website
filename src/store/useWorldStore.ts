@@ -16,6 +16,11 @@ interface WorldState {
   phase: WorldPhase
   setPhase: (phase: WorldPhase) => void
 
+  /** Flipped true by the loading screen once it fades — the cue for the
+   *  title to reveal onto an already-formed world (not behind the loader). */
+  booted: boolean
+  setBooted: () => void
+
   /** Global audio mute. Audio itself arrives in a later milestone, but
    *  the contract exists from day one. */
   muted: boolean
@@ -29,6 +34,9 @@ interface WorldState {
 export const useWorldStore = create<WorldState>()((set) => ({
   phase: 'title',
   setPhase: (phase) => set({ phase }),
+
+  booted: false,
+  setBooted: () => set({ booted: true }),
 
   muted: false,
   toggleMuted: () => set((s) => ({ muted: !s.muted })),

@@ -5,6 +5,20 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-28 — Cute loading screen for a smooth open
+
+New `ui/LoadingScreen.tsx` (mounted top-most in `App`): a plaza-style
+loading card — a bobbing 🪐 mascot over a breathing shadow, "Ryan Land",
+and a rounded pastel progress pill on a sky-gradient wash — that holds for
+`MIN_MS` (2.5s) so the visitor never sees the scene assemble (shader
+compile, HDRI wake, and the panels rendering a beat before their Troika
+labels pop in). It fades out onto a formed world. Adds a `booted` flag to
+`useWorldStore` that the loader flips on fade; `TitleSequence` gates its
+reveal on `booted`, so the name condenses in AFTER the loader washes away
+rather than animating behind it. (Testing note: the dev server's
+Fast-Refresh persists `booted`/`done` across reloads, so the loader is
+hard to catch in automated shots — it's fine on a real first load.)
+
 ## 2026-07-27 — Title as HTML, crowd bubble, denser dark crowd, beacon fixes
 
 - **Title is now a screen-space HTML overlay** (`ui/TitleSequence.tsx`),

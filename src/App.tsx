@@ -1,5 +1,6 @@
 import { Experience } from '@/scene/Experience'
 import { Overlay } from '@/ui/Overlay'
+import { LoadingScreen } from '@/ui/LoadingScreen'
 
 export default function App() {
   return (
@@ -7,6 +8,7 @@ export default function App() {
     <div className="relative h-full w-full overflow-hidden bg-[#d6ecfa]">
       <Experience />
       <Overlay />
+      <LoadingScreen />
     </div>
   )
 }

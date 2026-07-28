@@ -15,6 +15,9 @@ const GLOW = '0 3px 40px rgba(255, 255, 255, 0.8)'
 export function TitleSequence() {
   const phase = useWorldStore((s) => s.phase)
   const setPhase = useWorldStore((s) => s.setPhase)
+  // Hold the reveal until the loading screen has washed away, so the name
+  // condenses onto a finished world rather than animating behind the loader.
+  const booted = useWorldStore((s) => s.booted)
 
   return (
     <AnimatePresence>
@@ -30,9 +33,9 @@ export function TitleSequence() {
             className="font-bold leading-none text-[#5b7286]"
             style={{ fontSize: 'clamp(2.75rem, 9vw, 8rem)', textShadow: GLOW }}
             initial={{ opacity: 0, y: 26, scale: 0.965 }}
-            animate={{ opacity: 0.97, y: 0, scale: 1 }}
+            animate={booted ? { opacity: 0.97, y: 0, scale: 1 } : {}}
             exit={{ opacity: 0, y: -36, filter: 'blur(10px)' }}
-            transition={{ delay: 0.5, duration: 1.4, ease: EASE }}
+            transition={{ delay: 0.4, duration: 1.4, ease: EASE }}
           >
             Ryan Land
           </motion.h1>
@@ -46,9 +49,9 @@ export function TitleSequence() {
               textShadow: '0 2px 24px rgba(255,255,255,0.7)',
             }}
             initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 0.9, y: 0 }}
+            animate={booted ? { opacity: 0.9, y: 0 } : {}}
             exit={{ opacity: 0, y: -22 }}
-            transition={{ delay: 1.1, duration: 1.2, ease: EASE }}
+            transition={{ delay: 1.0, duration: 1.2, ease: EASE }}
           >
             An Interactive Software Engineering Portfolio
           </motion.p>
@@ -56,9 +59,9 @@ export function TitleSequence() {
           {/* Call to action — reveals, then breathes */}
           <motion.div
             initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={booted ? { opacity: 1, y: 0 } : {}}
             exit={{ opacity: 0, y: -14 }}
-            transition={{ delay: 1.8, duration: 1.0, ease: EASE }}
+            transition={{ delay: 1.6, duration: 1.0, ease: EASE }}
           >
             <motion.p
               className="font-semibold text-[#a7b4be]"
