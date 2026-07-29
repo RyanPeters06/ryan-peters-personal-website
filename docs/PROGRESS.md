@@ -66,6 +66,19 @@ of them turned out to be covering real bugs.
   the plaza's own rim, which they already overhang. Canopies now tint 45%
   toward each panel's accent. Dressing that sat *inside* the panel (three
   bushes, both rocks, half the grass tufts) was relocated.
+- **Trees rebuilt as leaf-lobe shells** (Peter: too uniform, blobby, and
+  they should flow). The canopy is no longer five spheres — it is ~20
+  soft almond lobes turned to point outward from the canopy centre, so
+  the silhouette is scalloped and clustered instead of round, with four
+  fatter core lobes so you can't see through the shell. Every tree is an
+  individual: a `seed` drives lobe placement, height, girth, lean and
+  per-lobe colour, so no two of the twelve match while all stay one
+  species. The sway is a **vertex shader** keyed to each lobe's own
+  position and driven by the shared ambient clock, so the canopy ripples
+  from the inside out rather than swinging as one mass — and costs
+  nothing per frame on the CPU. Instanced, so the whole canopy is ONE
+  draw call: **72 → ~24 draw calls** for all twelve trees, i.e. leafier
+  AND cheaper than what it replaced.
 - **Crowd**: four hairstyles (cap, bowl, ponytail, bun) from the shared
   cap plus scaled unit spheres, drawn from a SEPARATE rng stream so the
   existing layout isn't reshuffled; hair widened to naturals kept ≥60%

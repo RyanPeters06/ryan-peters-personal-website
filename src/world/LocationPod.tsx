@@ -320,6 +320,9 @@ varying vec3 vFaceLocal;`,
               variant={location.treeVariant}
               scale={TREE_SCALE}
               tint={location.accent}
+              // Distinct per tree AND per pod, so no two of the twelve
+              // share a canopy layout, lean or fullness.
+              seed={location.id.charCodeAt(0) * 977 + location.id.length * 31 + i * 101}
             />
           </group>
         ))}
