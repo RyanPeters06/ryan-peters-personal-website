@@ -80,14 +80,17 @@ const WAVE_STRETCH = 0.55
  *                     as he turns rather than chasing him
  *   END               hand over to 'idle'
  * The camera reads these same numbers via `avatarPose.greetT`. */
-export const GREET_CAM_IN = 0.35
-export const GREET_CAM_IN_DUR = 0.7
-export const GREET_WAVE_AT = 1.05
-const GREET_WAVE_DUR = 2.6
+/** How long he takes to spin round. Starts the instant the title is
+ *  clicked — there is no hold before it. */
+const GREET_TURN_TIME = 0.4
+export const GREET_CAM_IN = 0.12
+export const GREET_CAM_IN_DUR = 0.5
+export const GREET_WAVE_AT = 0.58
+const GREET_WAVE_DUR = 1.9
 export const GREET_CAM_OUT = GREET_WAVE_AT + GREET_WAVE_DUR
-export const GREET_CAM_OUT_DUR = 1.1
-const GREET_TURN_AWAY = GREET_CAM_OUT + 0.3
-const GREET_END = GREET_TURN_AWAY + 1.0
+export const GREET_CAM_OUT_DUR = 0.85
+const GREET_TURN_AWAY = GREET_CAM_OUT + 0.2
+const GREET_END = GREET_TURN_AWAY + 0.65
 
 const smoothstep = (a: number, b: number, x: number): number => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)))
@@ -189,7 +192,7 @@ export function Avatar() {
     // wait on the greeting clock that starts when this hands over.
     if (phase === 'arriving') {
       if (a.arriveT0 < 0) a.arriveT0 = a.t
-      if (a.t - a.arriveT0 > 0.9) {
+      if (a.t - a.arriveT0 > GREET_TURN_TIME) {
         store.setPhase('greeting')
         a.greetT = 0
         a.waveT = -1
@@ -273,7 +276,7 @@ export function Avatar() {
       // backwards, forever. That is not hypothetical, it is the spawn
       // case: he starts facing (0,0,-1) and the camera sits at (0,0,13),
       // dead behind him, so the hello was played with his back turned.
-      const lambda = phase === 'exploring' ? 10 : 4
+      const lambda = phase === 'exploring' ? 10 : 8
       const cur = Math.atan2(pose.forward.x, pose.forward.z)
       const tgt = Math.atan2(_moveDir.x, _moveDir.z)
       let d = tgt - cur
@@ -411,11 +414,11 @@ export function Avatar() {
         a.waveT += dt
         // Raise the right arm up beside the head, wave the hand a few
         // times side to side, then lower with follow-through.
-        raise = smoothstep(0, 0.4, a.waveT) * (1 - smoothstep(2.0, 2.5, a.waveT))
-        wag = Math.sin(a.waveT * 9) * 0.38 * smoothstep(0.35, 0.5, a.waveT) * raise
+        raise = smoothstep(0, 0.28, a.waveT) * (1 - smoothstep(1.4, 1.8, a.waveT))
+        wag = Math.sin(a.waveT * 11) * 0.38 * smoothstep(0.24, 0.36, a.waveT) * raise
         // Just ends the arm motion — the greeting itself runs on to
         // GREET_END so the camera can pull out before he turns away.
-        if (a.waveT > 2.6) a.waveT = -1
+        if (a.waveT > GREET_WAVE_DUR) a.waveT = -1
       }
       const armSwing = Math.sin(a.stride + Math.PI) * 0.4 * a.move
       const idleSway = Math.sin(a.t * 2.0 + 1.2) * 0.03 * (1 - a.move)

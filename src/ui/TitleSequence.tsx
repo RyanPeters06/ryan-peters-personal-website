@@ -59,7 +59,10 @@ export function TitleSequence() {
           // mean the whole screen — including the notch strip and the
           // band by the home indicator.
           className="pointer-events-auto fixed inset-0 z-20 cursor-pointer select-none"
-          exit={{ opacity: 0, transition: { duration: 0.7, ease: 'easeIn' } }}
+          // Quick. The world starts moving the instant this is clicked,
+          // so a long dissolve here just sits on top of the arrival and
+          // reads as a delay before anything happens.
+          exit={{ opacity: 0, transition: { duration: 0.38, ease: 'easeIn' } }}
           onClick={() => setPhase('arriving')}
         >
           {/* The veil — calms the world without hiding it. */}

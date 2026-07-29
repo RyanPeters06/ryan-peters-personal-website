@@ -34,6 +34,11 @@ of them turned out to be covering real bugs.
   a stale-read bug building it: `phase` is read once per frame, so
   resetting the clock on `phase !== 'greeting'` wiped it on the very
   frame `arriving` handed over, freezing the greeting forever.
+  Tightened the same day (Peter: faster, and no delay after the click):
+  he now starts turning on the click itself and the whole sequence runs
+  **3.96s from click to control, down from 5.85s** — measured through a
+  real click, not a forced phase. The arm envelope had to shorten with
+  it, or the greeting would move on while the hand was still up.
 - **Two beacons were genuinely lit at once**, not fade residue. Pods sit
   4.75u apart against a 3.4 enter radius, so the midpoint is inside BOTH
   — and each `Beacon` measured its own distance, ignoring the store. New
