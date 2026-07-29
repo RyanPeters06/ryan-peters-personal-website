@@ -39,6 +39,16 @@ of them turned out to be covering real bugs.
   **3.96s from click to control, down from 5.85s** — measured through a
   real click, not a forced phase. The arm envelope had to shorten with
   it, or the greeting would move on while the hand was still up.
+  Then: **he now looks UP at the lens** while waving. Facing the camera
+  in yaw alone still had him greeting the floor in front of the viewer —
+  the rig sits well above him. The pitch is derived from the camera's
+  live position each frame (gain 0.72, capped 0.5 rad) so it stays right
+  through the whole close-up instead of being a guessed constant.
+  **He also wears a suit now** — charcoal `#2f333a` rather than true
+  black, since ART_BIBLE forbids black and a flat #000 kills the
+  soft-plastic shading the world reads three-dimensionally by. White
+  shirt front and a blue tie, both proud of the jacket surface so they
+  layer instead of looking like decals; the hood bump became a collar.
 - **Two beacons were genuinely lit at once**, not fade residue. Pods sit
   4.75u apart against a 3.4 enter radius, so the midpoint is inside BOTH
   — and each `Beacon` measured its own distance, ignoring the store. New

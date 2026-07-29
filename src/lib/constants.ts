@@ -135,6 +135,15 @@ export const PALETTE = {
    *  little person in a blue hoodie, soft navy pants, white sneakers. */
   skin: '#f6cfae',
   hair: '#584639',
+  /** The resident wears a suit (Peter, 2026-07-29). Charcoal rather
+   *  than true black — ART_BIBLE forbids black outright, and a pure
+   *  #000 also kills the soft-plastic shading the whole world relies on
+   *  to read as three-dimensional. This reads as black in frame while
+   *  still catching the key light. */
+  suit: '#2f333a',
+  suitTrousers: '#26292f',
+  dressShirt: '#f3f6f9',
+  tie: '#4a79b8',
   shirt: '#a9c9e8',
   pants: '#707c8d',
   shoe: '#f2f5f7',

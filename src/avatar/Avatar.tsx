@@ -63,6 +63,12 @@ const REST_ARM_Z = 0.12 // arms hang slightly away from the body
  *  it pokes out sideways at jaw height and reads as a stub. Extending it
  *  to 1.55x puts the hand 0.42 out, clearly beside the head, which is
  *  the only way this silhouette can wave legibly. */
+/** How far he cranes up at the camera during the hello. Gain < 1 so he
+ *  tips his chin rather than snapping his whole head back; the cap stops
+ *  the neck reading as broken if the rig ever sits higher. */
+const HEAD_PITCH_GAIN = 0.72
+const HEAD_PITCH_MAX = 0.5
+
 const WAVE_RAISE = 2.05
 const WAVE_STRETCH = 0.55
 
@@ -149,8 +155,10 @@ export function Avatar() {
         roughness: 0.7,
         side: DoubleSide,
       }),
-      shirt: new MeshStandardMaterial({ color: PALETTE.shirt, roughness: 0.55 }),
-      pants: new MeshStandardMaterial({ color: PALETTE.pants, roughness: 0.65 }),
+      suit: new MeshStandardMaterial({ color: PALETTE.suit, roughness: 0.5 }),
+      dressShirt: new MeshStandardMaterial({ color: PALETTE.dressShirt, roughness: 0.5 }),
+      tie: new MeshStandardMaterial({ color: PALETTE.tie, roughness: 0.4 }),
+      pants: new MeshStandardMaterial({ color: PALETTE.suitTrousers, roughness: 0.65 }),
       shoe: new MeshStandardMaterial({ color: PALETTE.shoe, roughness: 0.55 }),
       face: new MeshStandardMaterial({ color: PALETTE.face, roughness: 0.55 }),
     }),
@@ -392,7 +400,23 @@ export function Avatar() {
       }
       const steady = phase === 'greeting' || a.move >= 0.2
       const yawT = steady ? 0 : a.lookYawTarget
-      const pitchT = phase === 'greeting' ? -0.06 : steady ? 0 : a.lookPitchTarget
+      // During the hello he LOOKS UP at the lens. The camera sits well
+      // above him, so facing it in yaw alone left him greeting the floor
+      // in front of the viewer rather than the viewer. Derived from the
+      // camera's live position, so it stays correct through the whole
+      // close-up instead of being a guessed constant.
+      let pitchT: number
+      if (phase === 'greeting' || phase === 'arriving') {
+        const dy = camera.position.y - (pose.position.y + HEAD_Y)
+        const dxz = Math.hypot(
+          camera.position.x - pose.position.x,
+          camera.position.z - pose.position.z,
+        )
+        // Negative rotation.x tilts the face UP.
+        pitchT = -Math.min(HEAD_PITCH_MAX, Math.atan2(dy, Math.max(dxz, 1e-3)) * HEAD_PITCH_GAIN)
+      } else {
+        pitchT = steady ? 0 : a.lookPitchTarget
+      }
       a.lookYaw = expDamp(a.lookYaw, yawT, 5, dt)
       a.lookPitch = expDamp(a.lookPitch, pitchT, 5, dt)
       head.current.rotation.y = a.lookYaw
@@ -471,23 +495,50 @@ export function Avatar() {
           </mesh>
         </group>
 
-        {/* Body: one plump capsule — the hoodie. Chunky and stable,
+        {/* Body: one plump capsule — the suit jacket. Chunky and stable,
             slightly squashed so it reads soft, not tubular. */}
         <mesh
-          material={materials.shirt}
+          material={materials.suit}
           position={[0, BODY_Y, 0]}
           scale={[1.05, 1, 0.92]}
           castShadow
         >
           <capsuleGeometry args={[BODY_R, BODY_LEN, 6, 18]} />
         </mesh>
-        {/* The hood: a soft bump on the upper back, same pour. */}
+        {/* Collar bump at the back of the neck — what the hood used to
+            be. A suit has no hood, but the silhouette still wants a
+            little mass there or the head reads as balanced on a stick. */}
         <mesh
-          material={materials.shirt}
-          position={[0, BODY_Y + 0.16, -0.1]}
-          scale={[1.25, 0.8, 0.7]}
+          material={materials.suit}
+          position={[0, BODY_Y + 0.16, -0.09]}
+          scale={[1.15, 0.6, 0.55]}
         >
           <sphereGeometry args={[0.105, 16, 12]} />
+        </mesh>
+        {/* Shirt front, then the tie over it. Both sit PROUD of the
+            jacket's front surface (z ≈ 0.143 at this scale) so they read
+            as layers rather than decals sunk into the chest. */}
+        <mesh
+          material={materials.dressShirt}
+          position={[0, BODY_Y + 0.075, 0.108]}
+          scale={[0.052, 0.072, 0.05]}
+        >
+          <sphereGeometry args={[1, 14, 12]} />
+        </mesh>
+        {/* Tie: a small knot at the collar over a tapered blade. */}
+        <mesh
+          material={materials.tie}
+          position={[0, BODY_Y + 0.098, 0.132]}
+          scale={[0.023, 0.023, 0.018]}
+        >
+          <sphereGeometry args={[1, 12, 10]} />
+        </mesh>
+        <mesh
+          material={materials.tie}
+          position={[0, BODY_Y + 0.018, 0.135]}
+          scale={[0.026, 0.062, 0.02]}
+        >
+          <sphereGeometry args={[1, 12, 10]} />
         </mesh>
 
         {/* Arms: thin rounded capsules (groups pivot at the shoulder).
@@ -495,12 +546,12 @@ export function Avatar() {
             these refs were the other way round, which is why he greeted
             you left-handed. */}
         <group ref={armR} position={[-SHOULDER_X, SHOULDER_Y, 0]} rotation={[0, 0, -REST_ARM_Z]}>
-          <mesh material={materials.shirt} position={[0, -ARM_LEN / 2 - ARM_R, 0]} castShadow>
+          <mesh material={materials.suit} position={[0, -ARM_LEN / 2 - ARM_R, 0]} castShadow>
             <capsuleGeometry args={[ARM_R, ARM_LEN, 4, 10]} />
           </mesh>
         </group>
         <group ref={armL} position={[SHOULDER_X, SHOULDER_Y, 0]} rotation={[0, 0, REST_ARM_Z]}>
-          <mesh material={materials.shirt} position={[0, -ARM_LEN / 2 - ARM_R, 0]} castShadow>
+          <mesh material={materials.suit} position={[0, -ARM_LEN / 2 - ARM_R, 0]} castShadow>
             <capsuleGeometry args={[ARM_R, ARM_LEN, 4, 10]} />
           </mesh>
         </group>
