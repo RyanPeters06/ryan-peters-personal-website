@@ -6,7 +6,7 @@ import { expDamp } from '@/lib/math/damp'
 import { avatarPose } from '@/systems/movement/avatarPose'
 import { getMoveInput } from '@/systems/movement/useMovementInput'
 import { resolveCollision } from '@/systems/collision'
-import { useCoarsePointer } from '@/hooks/useCoarsePointer'
+import { useIsTouch } from '@/hooks/useInputMode'
 import {
   PALETTE,
   TABLEAU_WALK_RADIUS,
@@ -89,7 +89,7 @@ interface AvatarAnim {
 export function Avatar() {
   const camera = useThree((s) => s.camera)
   /** Phones frame the plaza far more tightly — see the walk clamp below. */
-  const touch = useCoarsePointer()
+  const touch = useIsTouch()
 
   const placed = useRef<Group>(null)
   const bodyGroup = useRef<Group>(null)

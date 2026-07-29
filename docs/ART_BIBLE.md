@@ -371,6 +371,15 @@ Floating, rounded, soft — the world is never blocked by a wall of UI.
   both edges of the screen — don't let that happen again.)
 - **Never:** nav bars, scrolling pages, hero sections, dashboards,
   tables, skill bars, timelines, sharp rectangles, hard borders.
+- **The controls card sits DEAD CENTRE, not along an edge** (Peter,
+  2026-07-29). It was a pill tucked at the bottom, where it read as
+  chrome and got missed. One card serves both inputs and *shows* the
+  control rather than describing it — a WASD cross for a cursor, a knob
+  easing out of its ring for a thumb. It is up only during the idle beat
+  and slips away on the first step, so it covers the plaza for a few
+  seconds at most. Which variant shows is decided by the visitor's
+  actual input events, never by a media query — see
+  `hooks/useInputMode.ts` for why that distinction is load-bearing.
 - **Touch controls (added 2026-07-28).** The thumb stick is **invisible
   at rest** — a phone screen is small and the plaza is the point, so no
   control sits on top of it until a thumb lands, and wherever it lands

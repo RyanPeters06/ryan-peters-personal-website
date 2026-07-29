@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { Fog, Vector3 } from 'three'
-import { useCoarsePointer } from '@/hooks/useCoarsePointer'
+import { useIsTouch } from '@/hooks/useInputMode'
 import { avatarPose } from '@/systems/movement/avatarPose'
 import {
   TABLEAU_CAMERA_POS,
@@ -53,7 +53,7 @@ export function CinematicCamera() {
   // moves — a security camera on a fixed mount, not a chase cam. That
   // keeps ART_BIBLE §8's "the camera never follows" intact in the sense
   // it was written (the frame never travels).
-  const coarse = useCoarsePointer()
+  const touch = useIsTouch()
 
   useFrame((state, rawDt) => {
     const dt = Math.min(rawDt, 0.1)
@@ -67,11 +67,11 @@ export function CinematicCamera() {
 
     // Gentle mouse look-around: eased pan of the look target plus a
     // whisper of camera parallax. The frame never travels.
-    const px = coarse ? 0 : state.pointer.x
-    const py = coarse ? 0 : state.pointer.y
+    const px = touch ? 0 : state.pointer.x
+    const py = touch ? 0 : state.pointer.y
     const k = 1 - Math.exp(-3 * dt)
     // Touch: aim at the avatar. Desktop: aim where the mouse suggests.
-    const aimX = coarse
+    const aimX = touch
       ? avatarPose.position.x * TABLEAU_LOOK_FOLLOW_TOUCH
       : BASE_TARGET.x + px * LOOK_PAN_X
     look.current.x += (aimX - look.current.x) * k

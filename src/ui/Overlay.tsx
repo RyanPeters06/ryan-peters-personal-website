@@ -4,7 +4,6 @@ import { LocationCard } from '@/ui/LocationCard'
 import { MuteButton } from '@/ui/MuteButton'
 import { TitleSequence } from '@/ui/TitleSequence'
 import { TopRightTools } from '@/ui/TopRightTools'
-import { TouchHint } from '@/ui/TouchHint'
 import { TouchJoystick } from '@/ui/TouchJoystick'
 import { WelcomeCard } from '@/ui/WelcomeCard'
 
@@ -40,7 +39,6 @@ export function Overlay() {
       <TopRightTools />
       <WelcomeCard />
       <ControlsHint />
-      <TouchHint />
       <LocationCard />
       <div className="absolute bottom-5 right-5">
         <MuteButton />

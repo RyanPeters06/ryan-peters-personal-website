@@ -1,6 +1,6 @@
 import { AnimatePresence } from 'framer-motion'
 import { useWorldStore } from '@/store/useWorldStore'
-import { useCoarsePointer } from '@/hooks/useCoarsePointer'
+import { useIsTouch } from '@/hooks/useInputMode'
 import { PlazaCard } from '@/ui/PlazaCard'
 
 /**
@@ -14,8 +14,8 @@ import { PlazaCard } from '@/ui/PlazaCard'
  */
 export function WelcomeCard() {
   const phase = useWorldStore((s) => s.phase)
-  const coarse = useCoarsePointer()
-  const visible = !coarse && (phase === 'idle' || phase === 'exploring')
+  const touch = useIsTouch()
+  const visible = !touch && (phase === 'idle' || phase === 'exploring')
 
   return (
     <div className="pointer-events-none absolute bottom-8 left-8">

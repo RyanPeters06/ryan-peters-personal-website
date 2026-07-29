@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { useWorldStore } from '@/store/useWorldStore'
-import { useCoarsePointer } from '@/hooks/useCoarsePointer'
+import { useIsTouch } from '@/hooks/useInputMode'
 import { clearStickInput, setStickInput } from '@/systems/movement/useMovementInput'
 
 /**
@@ -10,8 +10,8 @@ import { clearStickInput, setStickInput } from '@/systems/movement/useMovementIn
  * plaza is the point, so nothing sits on top of it until a thumb
  * actually lands. Wherever that thumb touches down becomes the stick's
  * centre, so there is no target to hunt for and no wrong place to press.
- * Discoverability is carried entirely by `TouchHint`, the centred prompt
- * that teaches the gesture during the idle beat.
+ * Discoverability is carried entirely by `ControlsHint`, the centred
+ * card that teaches the gesture during the idle beat.
  *
  * Nothing here re-renders: the ring and knob are moved by writing
  * transforms straight to their refs, because pointermove fires at
@@ -31,7 +31,7 @@ const RING = 132
 const KNOB = 58
 
 export function TouchJoystick() {
-  const coarse = useCoarsePointer()
+  const touch = useIsTouch()
   const phase = useWorldStore((s) => s.phase)
   const walkable = phase === 'idle' || phase === 'exploring'
 
@@ -73,7 +73,7 @@ export function TouchJoystick() {
   // Move/end live on WINDOW, not the pad: a thumb that slides off the
   // activation zone mid-walk must keep steering, not silently stop.
   useEffect(() => {
-    if (!coarse || !walkable) return
+    if (!touch || !walkable) return
 
     const onMove = (e: PointerEvent) => {
       if (e.pointerId !== pointerId.current) return
@@ -137,9 +137,9 @@ export function TouchJoystick() {
       document.removeEventListener('visibilitychange', onHide)
       release()
     }
-  }, [coarse, walkable, release])
+  }, [touch, walkable, release])
 
-  if (!coarse || !walkable) return null
+  if (!touch || !walkable) return null
 
   return (
     <>

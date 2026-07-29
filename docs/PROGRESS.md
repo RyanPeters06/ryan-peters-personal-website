@@ -5,6 +5,48 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-29 — Input mode is decided by BEHAVIOUR, not media queries
+
+Peter, immediately after the mobile pass shipped: the "drag to walk"
+prompt was showing on his **desktop**. Diagnosed on his actual machine
+rather than guessed — it has an HID-compliant touch screen, and Chrome
+there reports:
+
+```
+pointer: coarse   true      pointer: fine     false
+hover: none       true      hover: hover      false
+any-pointer: fine false     any-hover: hover  false
+```
+
+Chrome classifies a laptop with two mice attached as a **touch-only
+device**. So `(pointer: coarse)` was true, and even the usual robust
+`(hover: none) and (pointer: coarse)` is true — no media query can tell
+that machine from a phone. `navigator.userAgentData` is unsupported
+there too. **Playwright could not reproduce any of this**: its Chromium
+launches with `hasTouch: false`, which forces `pointer: fine` regardless
+of the hardware, so the original verification passed on the very machine
+that was broken. Input-mode questions have to be checked in the real
+browser (Claude in Chrome), not Playwright.
+
+- **`hooks/useInputMode.ts`** replaces `useCoarsePointer`. Per-EVENT
+  `pointerType` IS reliable on that machine (verified: a real trackpad
+  move reports `pointerType: 'mouse'`, `isTrusted: true`), so the mode is
+  decided by what the visitor actually does — touch pointers say 'touch',
+  mouse/pen pointers and the WASD keys say 'pointer'. The media query
+  survives only as the opening guess, which matters solely for a phone's
+  first moments; the controls card waits for `idle` (~8s in), by which
+  time a real event has long since settled it.
+- **One centred controls card** (Peter: he liked the mobile box, and the
+  WASD pill "is hidden in the bottom"). `TouchHint` is folded back into
+  `ControlsHint`, which now renders the same plaza card dead centre with
+  two variants: a WASD cross for a cursor, the ring/knob demo for a
+  thumb. The bottom pill is gone.
+
+Verified in Peter's real Chrome, where `(hover: none) and (pointer:
+coarse)` still evaluates to touch: the WASD card shows, the drag prompt
+does not, the joystick zone is not mounted, and the welcome card is
+back. `tsc -b` + `npm run build` clean.
+
 ## 2026-07-28 — Mobile: thumb stick, teaching card, and a camera that pans
 
 The site is deploying to Vercel on a real domain, so phones stop being
