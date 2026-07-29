@@ -23,7 +23,9 @@ export interface Obstacle {
 
 // Footprint radii — sized so a mover's BODY doesn't clip onto the raised
 // grass/base (the old 1.7 let bodies overlap the grass edge by ~0.2u).
-const ISLAND_R = 1.9
+// Follows POD.base (2026-07-29: the islands were deepened to fit the
+// trees behind the panels, so the walkable exclusion grew with them).
+const ISLAND_R = 2.05
 const CENTER_R = 1.4
 const LAMP_R = 0.22
 const BENCH_R = 0.55

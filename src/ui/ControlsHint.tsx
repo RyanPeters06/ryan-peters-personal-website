@@ -72,7 +72,10 @@ export function ControlsHint() {
   const reduced = usePrefersReducedMotion()
 
   return (
-    <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-6">
+    // Sits in the upper band, NOT dead centre: the avatar rides ~62%
+    // down the frame, and a centred card covered him completely during
+    // the greeting — only his shoes showed below it.
+    <div className="pointer-events-none absolute inset-0 flex items-start justify-center px-6 pt-[15vh]">
       <AnimatePresence>
         {phase === 'idle' && (
           <motion.div

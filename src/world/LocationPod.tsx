@@ -4,8 +4,7 @@ import { RoundedBox, Text } from '@react-three/drei'
 import { Color, ExtrudeGeometry, MeshStandardMaterial, Shape } from 'three'
 import type { WorldLocation } from '@/content/locations'
 import { useFlatPosition } from '@/hooks/useFlatPosition'
-import { useWorldStore } from '@/store/useWorldStore'
-import { avatarPose } from '@/systems/movement/avatarPose'
+import { proximity } from '@/systems/proximity'
 import { expDamp } from '@/lib/math/damp'
 import { clay } from '@/lib/clay'
 import { PALETTE } from '@/lib/constants'
@@ -80,6 +79,12 @@ function panelGeo(
 // back to the old fountain-facing, edge-on look.
 const PANEL_FOCUS_Z = 4.25
 
+/** Small and tidy, per the reference — roughly 45% of the panel's height
+ *  rather than the two-thirds they used to be at scale 2.0, which is
+ *  what made them crowd and intersect the panel. See POD.trees for the
+ *  clearance arithmetic that pairs with this number. */
+const TREE_SCALE = 1.1
+
 // Both geometries are identical across every pod, so build them once.
 const BODY_GEO = panelGeo(
   LANDMARK.body.width,
@@ -132,7 +137,6 @@ export function LocationPod({
   children?: React.ReactNode
 }) {
   const { position, quaternion } = useFlatPosition(location.x, location.z)
-  const near = useRef(false)
   const glow = useRef<number>(GLOW.bodyIdle)
 
   // Angle the monument to face a focus point out in front of the plaza
@@ -253,23 +257,16 @@ varying vec3 vFaceLocal;`,
 
   useFrame((_, rawDt) => {
     const dt = Math.min(rawDt, 0.1)
-    const store = useWorldStore.getState()
-
-    // --- proximity (only while the visitor is in control) -------------
-    const roaming = store.phase === 'idle' || store.phase === 'exploring'
-    const d = avatarPose.position.distanceTo(position)
-    if (roaming && !near.current && d < LANDMARK.enterDistance) {
-      near.current = true
-      store.setActiveLocation(location.id)
-    } else if (near.current && (d > LANDMARK.exitDistance || !roaming)) {
-      near.current = false
-      if (store.activeLocation === location.id) store.setActiveLocation(null)
-    }
 
     // --- the accent breathes brighter as you approach -----------------
+    // Whether this pod is the one being visited is decided centrally by
+    // the proximity director — a per-pod latch here is what let two
+    // neighbouring pods both believe they were active (see
+    // systems/proximity.ts).
+    const near = proximity.active === location.id
     glow.current = expDamp(
       glow.current,
-      near.current ? GLOW.bodyNear : GLOW.bodyIdle,
+      near ? GLOW.bodyNear : GLOW.bodyIdle,
       GLOW.lambda,
       dt,
     )
@@ -319,7 +316,11 @@ varying vec3 vFaceLocal;`,
         {/* Trees, bushes, flowers, and grass tufts planted ON the dome. */}
         {POD.trees.map((t, i) => (
           <group key={i} position={[t.x, domeY(t.x, t.z) - 0.05, t.z]}>
-            <Tree variant={location.treeVariant} scale={2.0} />
+            <Tree
+              variant={location.treeVariant}
+              scale={TREE_SCALE}
+              tint={location.accent}
+            />
           </group>
         ))}
         {POD.bushes.map((b, i) => (
@@ -359,7 +360,7 @@ varying vec3 vFaceLocal;`,
             while the visitor stands at it (see world/Beacon.tsx). Centred
             on the island with an oval footprint matching the base curb
             (POD.base) — resizing the island resizes the beacon. */}
-        <Beacon center={position} rx={POD.base.rx} rz={POD.base.rz} />
+        <Beacon id={location.id} rx={POD.base.rx} rz={POD.base.rz} />
 
         {/* The monument, toward the back of the grass so the visitor
             reads its face across the greenery. */}

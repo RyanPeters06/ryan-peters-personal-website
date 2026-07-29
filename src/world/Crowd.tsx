@@ -1,6 +1,12 @@
 import { useMemo } from 'react'
 import { Vector3 } from 'three'
-import { Villager, VILLAGER_HAIR, VILLAGER_SHIRTS, VILLAGER_PANTS } from '@/world/Villager'
+import {
+  Villager,
+  HAIR_STYLES,
+  VILLAGER_HAIR,
+  VILLAGER_SHIRTS,
+  VILLAGER_PANTS,
+} from '@/world/Villager'
 import type { VillagerSpec } from '@/world/Villager'
 import { LOCATIONS } from '@/content/locations'
 
@@ -39,6 +45,11 @@ const CHAT_RADIUS = 0.75
 
 function createCrowd(): VillagerSpec[] {
   const rng = makeRng(31415926)
+  // A SEPARATE stream for the hairstyle. Drawing it from `rng` would
+  // consume an extra value per villager and reshuffle every downstream
+  // position, colour and seed — the whole crowd would rearrange, not
+  // just its hair.
+  const styleRng = makeRng(2718281)
   const specs: VillagerSpec[] = []
   let id = 0
 
@@ -68,6 +79,7 @@ function createCrowd(): VillagerSpec[] {
     // Same height as the player, with a whisper of natural variation.
     scale: 0.96 + rng() * 0.08,
     hair: Math.floor(rng() * VILLAGER_HAIR.length),
+    hairStyle: Math.floor(styleRng() * HAIR_STYLES),
     shirt: Math.floor(rng() * VILLAGER_SHIRTS.length),
     pants: Math.floor(rng() * VILLAGER_PANTS.length),
     chatCenter,

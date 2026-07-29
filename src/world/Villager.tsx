@@ -34,8 +34,30 @@ import { avatarPose } from '@/systems/movement/avatarPose'
 // black/blonde/browns; shirts are deeper and warmer (orange/gold/teal/
 // coral join the pastels); pants gain variety so no one is uniform grey.
 // Still soft, never neon (ART_BIBLE).
-// All DARK (Peter, 2026-07-27): dark browns through black, no blonde/light.
-export const VILLAGER_HAIR = ['#3a2a1e', '#221d18', '#4a3626', '#2c2119', '#191512']
+// Natural hair only, weighted DARK (Peter, 2026-07-29): the array IS the
+// distribution — a style/colour is picked uniformly from it — so the
+// first six entries are browns-through-black and the last four are
+// lighter naturals. 6/10 = 60% dark, which is the floor Peter asked for.
+export const VILLAGER_HAIR = [
+  '#221d18', // near-black
+  '#191512', // black
+  '#3a2a1e', // dark brown
+  '#2c2119', // darkest brown
+  '#4a3626', // deep brown
+  '#33261c', // cool dark brown
+  '#6b4a2f', // mid brown
+  '#8a5a3b', // warm chestnut
+  '#a9713f', // auburn
+  '#b99a6b', // ash / dark blonde
+]
+
+/** Four silhouettes. The crowd read as clones with a single shared cap;
+ *  these give it real variety without leaving the house language —
+ *  ellipsoids only, nothing pointy, every part overlapping the cap so
+ *  the hair reads as one mass (the rule Avatar's own hair follows).
+ *  Only the cap casts a shadow; the rest sit inside its outline, so a
+ *  style costs 0–2 extra draw calls rather than doubling. */
+export const HAIR_STYLES = 4
 export const VILLAGER_SHIRTS = [
   '#ef9455', '#f2c94c', '#7ec98a', '#4fbfc4',
   '#ee8fb0', '#a97fd6', '#e0705f', '#5b93d6',
@@ -51,6 +73,9 @@ const GEO = {
   leg: new CapsuleGeometry(0.04, 0.07, 4, 8),
   shoe: new SphereGeometry(1, 10, 8),
   eye: new SphereGeometry(0.026, 8, 8),
+  /** Unit sphere reused at many per-mesh scales for every hair part —
+   *  same trick as `shoe`, so four hairstyles cost no extra geometry. */
+  hairBlob: new SphereGeometry(1, 12, 10),
 }
 
 const MAT = {
@@ -63,6 +88,75 @@ const MAT = {
   pants: VILLAGER_PANTS.map((c) => new MeshStandardMaterial({ color: c, roughness: 0.65 })),
 }
 
+/**
+ * One of four hairstyles, all built from the shared cap plus a couple of
+ * scaled unit spheres. Parented to the animated head group, so an
+ * asymmetric style inherits the nod and glance for free.
+ *
+ * Only the cap casts a shadow — every other part sits inside its
+ * outline, so it would cost fill rate and change nothing (the same call
+ * the player's hair makes in Avatar.tsx).
+ */
+function Hair({ style, mat }: { style: number; mat: MeshStandardMaterial }) {
+  return (
+    <>
+      <mesh
+        geometry={GEO.hood}
+        material={mat}
+        position={[0, style === 0 ? 0.004 : 0.012, -0.015]}
+        rotation={[-0.55, 0, 0]}
+        scale={style === 3 ? 1.0 : 1.02}
+        castShadow
+      />
+      {/* 1 — bowl cut: two soft swooshes off an open centre part */}
+      {style === 1 && (
+        <>
+          <mesh
+            geometry={GEO.hairBlob}
+            material={mat}
+            position={[-0.12, 0.12, 0.17]}
+            rotation={[-0.12, 0, 0.5]}
+            scale={[0.12, 0.068, 0.052]}
+          />
+          <mesh
+            geometry={GEO.hairBlob}
+            material={mat}
+            position={[0.12, 0.12, 0.17]}
+            rotation={[-0.12, 0, -0.5]}
+            scale={[0.12, 0.068, 0.052]}
+          />
+        </>
+      )}
+      {/* 2 — ponytail: a tie at the crown and a tail down the back */}
+      {style === 2 && (
+        <>
+          <mesh
+            geometry={GEO.hairBlob}
+            material={mat}
+            position={[0, 0.05, -0.24]}
+            scale={[0.05, 0.05, 0.05]}
+          />
+          <mesh
+            geometry={GEO.hairBlob}
+            material={mat}
+            position={[0, -0.08, -0.27]}
+            scale={[0.07, 0.13, 0.07]}
+          />
+        </>
+      )}
+      {/* 3 — top bun */}
+      {style === 3 && (
+        <mesh
+          geometry={GEO.hairBlob}
+          material={mat}
+          position={[0, 0.26, -0.03]}
+          scale={[0.1, 0.09, 0.1]}
+        />
+      )}
+    </>
+  )
+}
+
 export interface VillagerSpec {
   id: number
   x: number
@@ -70,6 +164,8 @@ export interface VillagerSpec {
   /** ~1.0 — villagers stand the same height as the player. */
   scale: number
   hair: number
+  /** Which of the four silhouettes — see `Hair`. */
+  hairStyle: number
   shirt: number
   pants: number
   /** Point to face while chatting (group center), or null for wanderers. */
@@ -385,14 +481,7 @@ export function Villager({ spec }: { spec: VillagerSpec }) {
         {/* head */}
         <group ref={head} position={[0, 0.69, 0]}>
           <mesh geometry={GEO.head} material={MAT.skin} castShadow receiveShadow />
-          <mesh
-            geometry={GEO.hood}
-            material={hairMat}
-            position={[0, 0.012, -0.015]}
-            rotation={[-0.55, 0, 0]}
-            scale={[1.02, 1.02, 1.02]}
-            castShadow
-          />
+          <Hair style={spec.hairStyle % HAIR_STYLES} mat={hairMat} />
           <mesh
             geometry={GEO.eye}
             material={MAT.face}

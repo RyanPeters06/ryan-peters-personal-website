@@ -53,6 +53,41 @@ const EYE_Y = -0.02 // below head center — the face sits low
 const MOUTH_Y = -0.115
 
 const REST_ARM_Z = 0.12 // arms hang slightly away from the body
+/** How far the greeting arm swings up from hanging, in radians, and how
+ *  much it STRETCHES while up.
+ *
+ *  The stretch is not a flourish, it is load-bearing. This arm is 0.2
+ *  long against a 0.56-wide head, so a raised hand lands ~0.30 from the
+ *  head's centre — inside its 0.28 radius. Raise alone therefore buries
+ *  the whole arm in the head and the wave is invisible; raise less and
+ *  it pokes out sideways at jaw height and reads as a stub. Extending it
+ *  to 1.55x puts the hand 0.42 out, clearly beside the head, which is
+ *  the only way this silhouette can wave legibly. */
+const WAVE_RAISE = 2.05
+const WAVE_STRETCH = 0.55
+
+/** ---- The hello, beat by beat (seconds from the greeting's start) ----
+ * Ordered deliberately (Peter, 2026-07-29). Everything used to fire at
+ * once — he turned, the camera moved and the wave started on the same
+ * frame, which read as a jumble.
+ *
+ *   phase 'arriving'  he turns to face the visitor (nothing else moves)
+ *   CAM_IN            a beat later, the camera starts moving in
+ *   WAVE_AT           once it has arrived, he waves
+ *   CAM_OUT           the wave ends and the camera starts pulling back
+ *   TURN_AWAY         a moment AFTER that, he turns his back again — the
+ *                     camera leads, so the frame is already opening up
+ *                     as he turns rather than chasing him
+ *   END               hand over to 'idle'
+ * The camera reads these same numbers via `avatarPose.greetT`. */
+export const GREET_CAM_IN = 0.35
+export const GREET_CAM_IN_DUR = 0.7
+export const GREET_WAVE_AT = 1.05
+const GREET_WAVE_DUR = 2.6
+export const GREET_CAM_OUT = GREET_WAVE_AT + GREET_WAVE_DUR
+export const GREET_CAM_OUT_DUR = 1.1
+const GREET_TURN_AWAY = GREET_CAM_OUT + 0.3
+const GREET_END = GREET_TURN_AWAY + 1.0
 
 const smoothstep = (a: number, b: number, x: number): number => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)))
@@ -79,6 +114,8 @@ interface AvatarAnim {
   lookPitchTarget: number
   nextLookAt: number
   waveT: number
+  /** Seconds into the hello cutscene, or -1. */
+  greetT: number
   move: number
   stride: number
   shiftAt: number
@@ -128,6 +165,7 @@ export function Avatar() {
     lookPitchTarget: 0,
     nextLookAt: 4,
     waveT: -1,
+    greetT: -1,
     move: 0,
     stride: 0,
     shiftAt: 6,
@@ -147,13 +185,34 @@ export function Avatar() {
     // The tableau camera is fixed, so the greeting needs no distance
     // gate: a short beat after the title dissolves, he turns to the
     // visitor and waves.
+    // He turns to face the visitor FIRST — the camera and the wave both
+    // wait on the greeting clock that starts when this hands over.
     if (phase === 'arriving') {
       if (a.arriveT0 < 0) a.arriveT0 = a.t
       if (a.t - a.arriveT0 > 0.9) {
         store.setPhase('greeting')
-        a.waveT = 0
+        a.greetT = 0
+        a.waveT = -1
       }
     }
+    if (phase === 'greeting' && a.greetT >= 0) {
+      a.greetT += dt
+      // The wave holds until the camera has finished moving in.
+      if (a.waveT < 0 && a.greetT >= GREET_WAVE_AT && a.greetT < GREET_CAM_OUT) {
+        a.waveT = 0
+      }
+      if (a.greetT >= GREET_END) {
+        a.greetT = -1
+        store.setPhase('idle')
+      }
+    } else if (phase !== 'greeting' && phase !== 'arriving') {
+      // NOT `phase !== 'greeting'` alone: `phase` is read once at the top
+      // of the frame, so on the very frame the arriving branch hands over
+      // it still says 'arriving' — and this would wipe the clock it just
+      // started, freezing the greeting forever.
+      a.greetT = -1
+    }
+    pose.greetT = a.greetT
 
     // ----- Movement input ----------------------------------------------
     const input = getMoveInput()
@@ -195,16 +254,36 @@ export function Avatar() {
 
     // ----- Facing --------------------------------------------------------
     if (phase === 'arriving' || phase === 'greeting') {
-      // Face the camera for the hello.
+      // Face the camera for the hello — then turn away again at the end,
+      // a beat AFTER the camera has begun pulling back.
+      const turningAway = a.greetT >= 0 && a.greetT >= GREET_TURN_AWAY
       _moveDir.set(camera.position.x - pose.position.x, 0, camera.position.z - pose.position.z)
+      if (turningAway) _moveDir.negate()
       if (_moveDir.lengthSq() > 1e-8) {
         _moveDir.normalize()
         steering = true
       }
     }
     if (steering) {
+      // Turn by ANGLE, not by lerping the vectors.
+      //
+      // `forward.lerp(target)` + `normalize()` cannot turn him 180°: with
+      // both vectors on the same axis the lerp only shortens z, and the
+      // normalize immediately restores it — so he stalls facing exactly
+      // backwards, forever. That is not hypothetical, it is the spawn
+      // case: he starts facing (0,0,-1) and the camera sits at (0,0,13),
+      // dead behind him, so the hello was played with his back turned.
       const lambda = phase === 'exploring' ? 10 : 4
-      pose.forward.lerp(_moveDir, 1 - Math.exp(-lambda * dt))
+      const cur = Math.atan2(pose.forward.x, pose.forward.z)
+      const tgt = Math.atan2(_moveDir.x, _moveDir.z)
+      let d = tgt - cur
+      if (d > Math.PI) d -= Math.PI * 2
+      else if (d < -Math.PI) d += Math.PI * 2
+      // A dead-on 180° has no shorter side; bias it so he commits to one
+      // direction instead of sitting on the knife edge.
+      if (Math.PI - Math.abs(d) < 1e-3) d = Math.PI * 0.999
+      const y = cur + d * (1 - Math.exp(-lambda * dt))
+      pose.forward.set(Math.sin(y), 0, Math.cos(y))
     }
     // Keep forward flat and unit-length regardless of what happened above.
     pose.forward.y = 0
@@ -319,10 +398,12 @@ export function Avatar() {
     }
 
     // ----- Arms: one-arm wave during the greeting, swing while walking --
-    // Rotation sign convention: for the RIGHT arm (at +x), a POSITIVE
-    // z-rotation swings the hanging arm outward/up away from the body;
-    // for the left arm it's negative. (Getting this backwards folds the
-    // arm invisibly *into* the torso — the classic hidden-wave bug.)
+    // Rotation sign convention: this model is authored facing local +Z,
+    // so its anatomical RIGHT is local −X (for a +Z-facing figure with +Y
+    // up, right = forward × up = −X). `armR` therefore sits at −x, and
+    // swinging it OUTWARD/up away from the body is a NEGATIVE z-rotation;
+    // `armL` at +x is the mirror. (Getting this backwards folds the arm
+    // invisibly *into* the torso — the classic hidden-wave bug.)
     if (armR.current && armL.current) {
       let raise = 0
       let wag = 0
@@ -331,22 +412,28 @@ export function Avatar() {
         // Raise the right arm up beside the head, wave the hand a few
         // times side to side, then lower with follow-through.
         raise = smoothstep(0, 0.4, a.waveT) * (1 - smoothstep(2.0, 2.5, a.waveT))
-        wag = Math.sin(a.waveT * 9) * 0.3 * smoothstep(0.35, 0.5, a.waveT) * raise
-        if (a.waveT > 2.6) {
-          a.waveT = -1
-          if (useWorldStore.getState().phase === 'greeting') {
-            store.setPhase('idle')
-          }
-        }
+        wag = Math.sin(a.waveT * 9) * 0.38 * smoothstep(0.35, 0.5, a.waveT) * raise
+        // Just ends the arm motion — the greeting itself runs on to
+        // GREET_END so the camera can pull out before he turns away.
+        if (a.waveT > 2.6) a.waveT = -1
       }
       const armSwing = Math.sin(a.stride + Math.PI) * 0.4 * a.move
       const idleSway = Math.sin(a.t * 2.0 + 1.2) * 0.03 * (1 - a.move)
-      armR.current.rotation.z = REST_ARM_Z + raise * 2.1 + wag
-      armL.current.rotation.z = -(REST_ARM_Z + idleSway)
-      armR.current.rotation.x = a.waveT >= 0 ? 0 : armSwing
-      armL.current.rotation.x = -armSwing
-      // The head tilts happily toward the waving arm.
-      if (head.current) head.current.rotation.z = -raise * 0.12
+      // WAVE_RAISE 2.35 puts the hand beside the head rather than poking
+      // out sideways: the tip lands ~0.30 from the head's centre, just
+      // clear of its 0.28 radius. At the old 2.1 the arm stopped at jaw
+      // height and read as a stiff little stub. It cannot go much higher
+      // — this is a stubby toddler-plush arm (0.2 long against a 0.56
+      // head), so the hand physically cannot clear the top of the head.
+      // Stretch as it lifts, or the hand ends up inside the head.
+      armR.current.scale.y = 1 + WAVE_STRETCH * raise
+      armR.current.rotation.z = -(REST_ARM_Z + raise * WAVE_RAISE + wag)
+      armL.current.rotation.z = REST_ARM_Z + idleSway
+      armR.current.rotation.x = a.waveT >= 0 ? 0 : -armSwing
+      armL.current.rotation.x = armSwing
+      // The head tilts happily TOWARD the waving arm. The arm is at −x,
+      // and a positive z-rotation leans the head's top toward −x.
+      if (head.current) head.current.rotation.z = raise * 0.14
     }
   })
 
@@ -400,13 +487,16 @@ export function Avatar() {
           <sphereGeometry args={[0.105, 16, 12]} />
         </mesh>
 
-        {/* Arms: thin rounded capsules (groups pivot at the shoulder) */}
-        <group ref={armL} position={[-SHOULDER_X, SHOULDER_Y, 0]} rotation={[0, 0, -REST_ARM_Z]}>
+        {/* Arms: thin rounded capsules (groups pivot at the shoulder).
+            The model faces local +Z, so his RIGHT arm is the one at −x —
+            these refs were the other way round, which is why he greeted
+            you left-handed. */}
+        <group ref={armR} position={[-SHOULDER_X, SHOULDER_Y, 0]} rotation={[0, 0, -REST_ARM_Z]}>
           <mesh material={materials.shirt} position={[0, -ARM_LEN / 2 - ARM_R, 0]} castShadow>
             <capsuleGeometry args={[ARM_R, ARM_LEN, 4, 10]} />
           </mesh>
         </group>
-        <group ref={armR} position={[SHOULDER_X, SHOULDER_Y, 0]} rotation={[0, 0, REST_ARM_Z]}>
+        <group ref={armL} position={[SHOULDER_X, SHOULDER_Y, 0]} rotation={[0, 0, REST_ARM_Z]}>
           <mesh material={materials.shirt} position={[0, -ARM_LEN / 2 - ARM_R, 0]} castShadow>
             <capsuleGeometry args={[ARM_R, ARM_LEN, 4, 10]} />
           </mesh>

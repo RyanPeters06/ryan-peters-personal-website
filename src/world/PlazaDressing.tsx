@@ -11,13 +11,17 @@ import { Bench } from '@/world/Bench'
  * The old loose FLOWER_TUFTS sat on bare tile and read as litter — Peter
  * had them removed; the plaza floor stays clean white.
  */
+/** Only in the gaps BETWEEN pods. The front-apron pair that used to sit
+ *  at [±3.4, 2.3] was removed (Peter, 2026-07-29): they flanked the
+ *  avatar's spawn at (0, 2.6) and read as two posts standing guard over
+ *  the visitor the moment the world opened. `OBSTACLES` in
+ *  systems/collision.ts derives from this list, so their collision
+ *  circles went with them. */
 export const LAMPPOSTS: [number, number][] = [
   [-6.95, -3.65], // between About and Projects
   [-4.35, -7.3], // between Projects and Experience
   [4.35, -7.3], // between Skills and Contact
   [6.95, -3.65], // between Contact and Resume
-  [-3.4, 2.3], // front apron, near the avatar's approach
-  [3.4, 2.3],
 ]
 
 /** Bench position + yaw (faces the plaza center, like the pods). */

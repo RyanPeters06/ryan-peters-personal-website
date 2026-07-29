@@ -7,23 +7,21 @@ import {
   Group,
   PointsMaterial,
   ShaderMaterial,
-  Vector3,
 } from 'three'
 import { getAmbientTime } from '@/hooks/useAmbientLoop'
-import { expDamp } from '@/lib/math/damp'
-import { avatarPose } from '@/systems/movement/avatarPose'
-import { LANDMARK } from '@/lib/designSystem'
+import { proximity } from '@/systems/proximity'
 
 /**
  * A beacon of light that rises from a landmark while the visitor stands
  * at it: a SOFT translucent white column (additive, not a solid laser)
  * that fades near the top, gently pulses, and has motes drifting up.
  *
- * Proximity is measured HERE, straight from the player's distance to the
- * pod centre — NOT the shared `activeLocation` — so it always shows
- * whenever the visitor is in range (the old `activeLocation` hand-off
- * left a pod "occupied" after you moved to a neighbour and back, so the
- * light wouldn't re-appear until you walked fully away first).
+ * This measures NOTHING. It reads the shared director in
+ * `systems/proximity.ts`, which picks a single nearest-pod winner and
+ * sequences the fade so the outgoing column is fully dark before the
+ * next opens. Each beacon owning its own proximity latch is exactly what
+ * used to light two columns at once — the pods are 4.75u apart and the
+ * enter radius is 3.4, so both latched in the overlap.
  *
  * The footprint is an ELLIPSE matching the pod's oval curb: `rx`/`rz`
  * come straight from `POD.base`, so resizing the island in code resizes
@@ -33,10 +31,8 @@ const HEIGHT = 6
 const BASE = 0.34 // peak additive intensity of the column
 const PARTICLES = 40
 
-export function Beacon({ center, rx, rz }: { center: Vector3; rx: number; rz: number }) {
+export function Beacon({ id, rx, rz }: { id: string; rx: number; rz: number }) {
   const group = useRef<Group>(null)
-  const prox = useRef(0)
-  const near = useRef(false)
 
   const column = useMemo(
     () =>
@@ -97,18 +93,15 @@ export function Beacon({ center, rx, rz }: { center: Vector3; rx: number; rz: nu
 
   useFrame((_, rawDt) => {
     const dt = Math.min(rawDt, 0.1)
-    // Own proximity, with the pod's enter/exit hysteresis.
-    const d = avatarPose.position.distanceTo(center)
-    if (!near.current && d < LANDMARK.enterDistance) near.current = true
-    else if (near.current && d > LANDMARK.exitDistance) near.current = false
-
-    prox.current = expDamp(prox.current, near.current ? 1 : 0, 4, dt)
-    if (group.current) group.current.visible = prox.current > 0.005
-    if (prox.current <= 0.005) return
+    // The director owns both WHICH pod is lit and the fade, so this is
+    // simply "am I the one, and how far up am I".
+    const prox = proximity.lit === id ? proximity.level : 0
+    if (group.current) group.current.visible = prox > 0.005
+    if (prox <= 0.005) return
 
     const pulse = 0.72 + 0.28 * Math.sin(getAmbientTime() * 2.2)
-    column.uniforms.uOpacity.value = prox.current * pulse * BASE
-    moteMat.opacity = prox.current * pulse * 0.9
+    column.uniforms.uOpacity.value = prox * pulse * BASE
+    moteMat.opacity = prox * pulse * 0.9
 
     const pos = motes.getAttribute('position') as Float32BufferAttribute
     for (let i = 0; i < PARTICLES; i++) {

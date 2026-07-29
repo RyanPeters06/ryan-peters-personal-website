@@ -23,6 +23,7 @@ import { Lighting } from '@/scene/lighting/Lighting'
 import { PerfProbe } from '@/scene/PerfProbe'
 import { Avatar } from '@/avatar/Avatar'
 import { Locations } from '@/world/Locations'
+import { ProximityDirector } from '@/world/ProximityDirector'
 import { PlazaDressing } from '@/world/PlazaDressing'
 import { Crowd } from '@/world/Crowd'
 import { CinematicCamera } from '@/camera/CinematicCamera'
@@ -90,6 +91,10 @@ export function Experience() {
         <Ground />
         <IslandShadow />
         <Clouds />
+        {/* Picks the one landmark the visitor is at, and sequences its
+            light. Must run before nothing in particular — it only writes
+            a module channel that pods and beacons read. */}
+        <ProximityDirector />
         <Locations />
         <PlazaDressing />
         <Fountain />
@@ -121,7 +126,11 @@ export function Experience() {
               the near foreground soften. A tight range focused on the
               avatar (12u) left the back panels blurred, which read as
               see-through frosted glass over the trees behind them. */}
-          <DepthOfField worldFocusDistance={16} worldFocusRange={20} bokehScale={1.1} />
+          {/* Range widened 2026-07-29 for the arrival close-up: the rig
+              dollies to ~5.6u from the avatar, and at the old range of 20
+              the sharp band started at 6 — he went soft exactly when he
+              is the subject. The far end is unchanged in character. */}
+          <DepthOfField worldFocusDistance={16} worldFocusRange={28} bokehScale={1.1} />
           {/* The reference's "gently emits light" finish: a whisper of
               bloom on only the brightest whites and accent glows. */}
           <Bloom

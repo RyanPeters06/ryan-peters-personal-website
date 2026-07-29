@@ -5,6 +5,64 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-29 — Plaza pass: title, trees, one beacon, crowd, and the hello
+
+Peter's review of the live site against the reference. Six asks, and two
+of them turned out to be covering real bugs.
+
+- **THE HELLO WAS PLAYED WITH HIS BACK TURNED.** This is what "waving in
+  the wrong direction" meant. `pose.forward.lerp(target)` followed by
+  `normalize()` **cannot rotate 180°**: with both vectors on the same
+  axis the lerp only shortens z and the normalize restores it the same
+  frame. That is exactly the spawn case — he faces (0,0,−1) and the
+  camera sits at (0,0,13), dead behind him — so he never turned. Facing
+  is now done by ANGLE (shortest-arc yaw ease, with a bias off the
+  knife-edge at exactly 180°). Two more defects in the same wave: the
+  arm was his anatomical LEFT (the model faces +Z, so its right is −X and
+  the `armR`/`armL` refs were swapped), and raising it buried it INSIDE
+  the head — a 0.2 arm against a 0.28 head radius puts the hand at 0.30,
+  so it either vanished or, raised less, poked out sideways as a stub. It
+  now stretches to 1.55× while up, putting the hand 0.42 out, clearly
+  beside the head.
+- **The hello is now a sequenced cutscene** (`GREET_*` in `Avatar.tsx`,
+  clock published on `avatarPose.greetT`): he turns to face you → beat →
+  camera moves in → he waves → camera pulls back → *then* he turns away.
+  Previously all of it fired on the same frame. The camera move is a
+  scripted one-shot that begins and ends at the solved rig — it restores
+  DESIGN.md's Visitor's Journey beat lost in the 07-18 pivot, and does
+  not weaken ART_BIBLE §8 (the frame never follows during play). Caught
+  a stale-read bug building it: `phase` is read once per frame, so
+  resetting the clock on `phase !== 'greeting'` wiped it on the very
+  frame `arriving` handed over, freezing the greeting forever.
+- **Two beacons were genuinely lit at once**, not fade residue. Pods sit
+  4.75u apart against a 3.4 enter radius, so the midpoint is inside BOTH
+  — and each `Beacon` measured its own distance, ignoring the store. New
+  `systems/proximity.ts` picks ONE nearest winner per frame and owns a
+  single shared fade, swapping `lit` only once `level` hits zero, so the
+  outgoing column is always fully out before the next opens. That also
+  kills two latent bugs: the card followed render order rather than
+  distance, and `activeLocation` could strand at `null` while you stood
+  at a pod.
+- **Trees** shrank 2.0 → 1.1 and moved to the FRONT apron. They used to
+  overlap the panel by 0.92u. Behind the panel was tried first and hid
+  them completely; the front is the only workable region since the
+  ellipse is widest where the panel sits. Islands widened (rx 1.9→2.05)
+  but kept shallow — a deeper `rz` pushes the back islands further past
+  the plaza's own rim, which they already overhang. Canopies now tint 45%
+  toward each panel's accent. Dressing that sat *inside* the panel (three
+  bushes, both rocks, half the grass tufts) was relocated.
+- **Crowd**: four hairstyles (cap, bowl, ponytail, bun) from the shared
+  cap plus scaled unit spheres, drawn from a SEPARATE rng stream so the
+  existing layout isn't reshuffled; hair widened to naturals kept ≥60%
+  dark.
+- **Title** rebuilt for legibility: it had nothing behind it. Now a
+  feathered radial sun-glow plus a light veil that lifts on click, the
+  block moved up into the sky band, deeper ink with a layered halo,
+  subtitle tracking 0.32em → 0.14em, and the prompt promoted to a plaza
+  pill. The controls card also moved out of dead centre — it was covering
+  the avatar completely during the greeting.
+- Removed the two lampposts flanking the spawn.
+
 ## 2026-07-29 — Input mode is decided by BEHAVIOUR, not media queries
 
 Peter, immediately after the mobile pass shipped: the "drag to walk"

@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { MeshStandardMaterial } from 'three'
+import { Color, MeshStandardMaterial } from 'three'
 import { PALETTE } from '@/lib/constants'
 import { ROUGHNESS } from '@/lib/designSystem'
 
@@ -8,28 +8,45 @@ const CANOPY = {
   pink: [PALETTE.blossomDark, PALETTE.blossom, PALETTE.blossomLight],
 } as const
 
+/** How far a tinted canopy is pulled toward its landmark's accent.
+ *  Partway, not all the way (Peter, 2026-07-29): at 1.0 the Projects and
+ *  Resume trees turn literally blue and teal. At this strength each pod's
+ *  trees read as belonging to it while still reading as foliage. */
+const TINT_STRENGTH = 0.45
+
 /**
- * A landmark-pod tree: a short trunk under three overlapping puffs of
+ * A landmark-pod tree: a short trunk under five overlapping puffs of
  * canopy (same "cartoon cloud" construction as Clouds — one big
- * center puff, two smaller flanking it), in either the plaza's grass
- * greens or a soft blossom-pink variant for visual variety pod to pod.
+ * center puff, smaller ones flanking it).
+ *
+ * `tint` pulls the three canopy tones toward a landmark's accent, so the
+ * planting on each island belongs to its panel. The dark/mid/light
+ * relationship is preserved through the lerp, so the crown keeps its
+ * form — a flat single colour would read as a ball.
  */
 export function Tree({
   variant = 'green',
   scale = 1,
+  tint,
 }: {
   variant?: 'green' | 'pink'
   scale?: number
+  tint?: string
 }) {
   const materials = useMemo(() => {
     const [dark, mid, light] = CANOPY[variant]
+    const shade = (hex: string) => {
+      const c = new Color(hex)
+      if (tint) c.lerp(new Color(tint), TINT_STRENGTH)
+      return c
+    }
     return {
       trunk: new MeshStandardMaterial({ color: PALETTE.trunk, roughness: ROUGHNESS.foliage }),
-      dark: new MeshStandardMaterial({ color: dark, roughness: ROUGHNESS.foliage }),
-      mid: new MeshStandardMaterial({ color: mid, roughness: ROUGHNESS.foliage }),
-      light: new MeshStandardMaterial({ color: light, roughness: ROUGHNESS.foliage }),
+      dark: new MeshStandardMaterial({ color: shade(dark), roughness: ROUGHNESS.foliage }),
+      mid: new MeshStandardMaterial({ color: shade(mid), roughness: ROUGHNESS.foliage }),
+      light: new MeshStandardMaterial({ color: shade(light), roughness: ROUGHNESS.foliage }),
     }
-  }, [variant])
+  }, [variant, tint])
 
   return (
     <group scale={scale}>

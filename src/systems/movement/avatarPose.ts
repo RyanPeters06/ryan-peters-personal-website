@@ -17,4 +17,12 @@ export const avatarPose = {
   up: new Vector3(0, 1, 0),
   /** Smoothed 0..1 "how much we are walking right now". */
   moving: 0,
+  /** Seconds into the hello, or −1 when it isn't running.
+   *
+   *  The greeting is a little cutscene whose beats have to land in a set
+   *  order — he turns to face you, THEN the camera moves in, THEN he
+   *  waves, and the camera pulls back out just before he turns away. The
+   *  avatar owns that clock and the camera reads it, so neither has to
+   *  guess what the other is doing. See GREET_* in Avatar.tsx. */
+  greetT: -1,
 }

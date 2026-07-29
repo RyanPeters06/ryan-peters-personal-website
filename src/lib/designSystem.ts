@@ -82,44 +82,54 @@ export const LANDMARK = {
 export const POD = {
   /** White rim island — the low oval base disc under the grass. A thin
    *  (~0.17u) rim around the grass dome. */
-  base: { rx: 2.07, rz: 1.82, height: 0.16 },
+  /** Deepened 2026-07-29 to give the trees ground BEHIND the panel to
+   *  stand on. rx is capped by the neighbours: pods sit 4.75 apart, so
+   *  base.rx must stay under ~2.37 or adjacent islands touch. */
+  base: { rx: 2.22, rz: 2.02, height: 0.16 },
   /** Green grass mound — a low convex DOME (not a flat coin), inset so a
    *  white rim shows around it. `cap` is the dome's peak height above the
-   *  base; dressing sits on the dome surface (see LocationPod's domeY).
-   *  rx gives ~0.42u of grass past each side of the 2.96-wide panel. */
-  grass: { rx: 1.9, rz: 1.65, cap: 0.32 },
+   *  base; dressing sits on the dome surface (see LocationPod's domeY). */
+  grass: { rx: 2.05, rz: 1.85, cap: 0.32 },
   /** Monument offset toward the back of the grass (local -Z; +Z faces
    *  the plaza after the pod's yaw). Held fixed so the panel — and thus
    *  the solved camera framing — doesn't move as the island grows. */
   monumentZ: -0.35,
   /** Two low white steps descending toward the plaza (+Z front). */
   steps: [
-    { y: 0.16, z: 1.55, width: 1.7, depth: 0.32, height: 0.1 },
-    { y: 0.06, z: 1.86, width: 2.05, depth: 0.32, height: 0.1 },
+    { y: 0.16, z: 1.75, width: 1.7, depth: 0.32, height: 0.1 },
+    { y: 0.06, z: 2.06, width: 2.05, depth: 0.32, height: 0.1 },
   ],
-  /** Two flanking trees on the grass, pushed OUT into the widened side
-   *  margins so they frame the panel instead of crowding it. */
+  /** Two trees in the FRONT apron, flanking the panel's lower third
+   *  (revised 2026-07-29 — they used to intersect it at scale 2.0).
+   *
+   *  The panel occupies x ∈ [−1.48, 1.48], z ∈ [−0.915, 0.215]. At
+   *  TREE_SCALE a tree spans ±0.53 in x and [−0.45, +0.39] in z, so at
+   *  z 0.95 its back edge is 0.50 — clear IN FRONT of the panel's face
+   *  by 0.285. The front is the only workable region: the ellipse is
+   *  widest at its middle, which is exactly where the panel sits, and
+   *  there is no grass left behind the panel at these x offsets.
+   *  Behind-the-panel also hid them completely, and deepening the island
+   *  backwards pushed its rim further past the plaza's own edge. */
   trees: [
-    { x: -1.62, z: -0.55 },
-    { x: 1.62, z: -0.55 },
+    { x: -1.24, z: 0.95 },
+    { x: 1.24, z: 0.95 },
   ],
   /** Rounded bushes for foliage volume, in the side/back margins. */
   bushes: [
-    { x: -1.68, z: 0.15 },
-    { x: 1.66, z: 0.2 },
-    { x: -0.5, z: -0.72 },
+    { x: -0.62, z: 1.62 },
+    { x: 0.62, z: 1.62 },
   ],
   /** A couple of little grey pebbles nestled in the grass, like the
    *  reference's rocks. (x, z, r) */
   rocks: [
-    { x: 1.35, z: 0.85, r: 0.14 },
-    { x: -1.2, z: 0.95, r: 0.11 },
+    { x: 0.95, z: 1.45, r: 0.14 },
+    { x: -0.85, z: 1.38, r: 0.11 },
   ],
   /** Proper blooms (daisies/forget-me-nots/pink) scattered on the grass,
    *  spread into the fuller lawn — see world/Flower.tsx. */
   flowers: [
-    { x: -1.15, z: 0.7, kind: 'daisy' },
-    { x: 1.05, z: 0.78, kind: 'daisy' },
+    { x: -0.72, z: 1.28, kind: 'daisy' },
+    { x: 0.68, z: 1.32, kind: 'daisy' },
     { x: 0.05, z: 1.02, kind: 'forgetMeNot' },
     { x: -0.45, z: 0.42, kind: 'pink' },
     { x: 0.55, z: 0.38, kind: 'forgetMeNot' },
@@ -131,20 +141,20 @@ export const POD = {
   ],
   /** Grass-blade tufts scattered densely across the grass mound. */
   grassTufts: [
-    { x: -0.6, z: 0.4 },
-    { x: 0.55, z: 0.35 },
-    { x: -1.35, z: 0.2 },
-    { x: 1.38, z: 0.15 },
-    { x: -0.25, z: 0.75 },
-    { x: 0.35, z: 0.82 },
-    { x: -0.85, z: -0.15 },
-    { x: 0.88, z: -0.2 },
-    { x: 0.0, z: 0.25 },
-    { x: -0.4, z: -0.4 },
-    { x: 0.45, z: -0.35 },
-    { x: -1.15, z: 0.62 },
-    { x: 1.18, z: 0.58 },
-    { x: 0.15, z: -0.18 },
+    { x: -0.62, z: 0.55 },
+    { x: 0.58, z: 0.52 },
+    { x: -1.68, z: 0.4 },
+    { x: 1.68, z: 0.4 },
+    { x: -0.28, z: 0.95 },
+    { x: 0.32, z: 0.98 },
+    { x: -1.02, z: 0.42 },
+    { x: 1.0, z: 0.4 },
+    { x: 0.0, z: 0.62 },
+    { x: -1.55, z: 0.75 },
+    { x: 1.55, z: 0.72 },
+    { x: -0.35, z: 1.42 },
+    { x: 0.38, z: 1.38 },
+    { x: 0.0, z: 1.3 },
   ],
 } as const
 
