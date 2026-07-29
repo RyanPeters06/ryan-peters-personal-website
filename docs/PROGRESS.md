@@ -66,19 +66,29 @@ of them turned out to be covering real bugs.
   the plaza's own rim, which they already overhang. Canopies now tint 45%
   toward each panel's accent. Dressing that sat *inside* the panel (three
   bushes, both rocks, half the grass tufts) was relocated.
-- **Trees rebuilt as leaf-lobe shells** (Peter: too uniform, blobby, and
-  they should flow). The canopy is no longer five spheres — it is ~20
-  soft almond lobes turned to point outward from the canopy centre, so
-  the silhouette is scalloped and clustered instead of round, with four
-  fatter core lobes so you can't see through the shell. Every tree is an
-  individual: a `seed` drives lobe placement, height, girth, lean and
-  per-lobe colour, so no two of the twelve match while all stay one
-  species. The sway is a **vertex shader** keyed to each lobe's own
-  position and driven by the shared ambient clock, so the canopy ripples
-  from the inside out rather than swinging as one mass — and costs
-  nothing per frame on the CPU. Instanced, so the whole canopy is ONE
-  draw call: **72 → ~24 draw calls** for all twelve trees, i.e. leafier
-  AND cheaper than what it replaced.
+- **Trees rebuilt as leaf-lobe shells, then reverted — Peter's read was
+  "smushed up pinecones."** First attempt (Peter: too uniform, blobby,
+  and they should flow) built the canopy from ~20 small almond lobes
+  turned to point outward from the centre. Wrong call: at plaza viewing
+  distance a canopy is ~40px tall, individual lobes can't resolve as
+  leaves, and the scalloped outline just reads as scales — a pinecone,
+  not foliage. **Reverted to the original's construction** (5–7 large,
+  generously overlapping puffs — the same cartoon-cloud language the
+  rest of the world uses) and got the "different + leafy + flowing"
+  asks from three other places instead: a `seed` drives how many puffs
+  a tree has, their spread, and the trunk's lean (no two of the twelve
+  match); upward-facing puffs take the light tone and low ones the dark,
+  which is what actually reads as a leafy crown, not lobe geometry; and
+  the same per-lobe vertex-shader sway carried over from the first
+  attempt, keyed to each puff's position and driven by the shared
+  ambient clock, so the crown ripples from the inside out. Both versions
+  are instanced (one draw call per canopy) — the puff version kept that
+  win: **72 → ~24 draw calls** for all twelve trees, still cheaper than
+  the original despite looking closer to it. The randomized puff spread
+  needed its own clearance check against the panel geometry (same method
+  as the original tree-intersection fix, this time run per-seed): first
+  pass left one tree at 0.04u clearance, tightened until the worst case
+  across all twelve is 0.163u.
 - **Crowd**: four hairstyles (cap, bowl, ponytail, bun) from the shared
   cap plus scaled unit spheres, drawn from a SEPARATE rng stream so the
   existing layout isn't reshuffled; hair widened to naturals kept ≥60%

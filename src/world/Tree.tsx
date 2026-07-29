@@ -19,26 +19,20 @@ const CANOPY = {
   pink: [PALETTE.blossomDark, PALETTE.blossom, PALETTE.blossomLight],
 } as const
 
-/** How far a tinted canopy is pulled toward its landmark's accent.
- *  Partway, not all the way (Peter, 2026-07-29): at 1.0 the Projects and
- *  Resume trees turn literally blue and teal. */
+/** How far a tinted canopy is pulled toward its landmark's accent. */
 const TINT_STRENGTH = 0.45
 
-/** Leaf clusters per canopy. Enough that the shell reads as continuous
- *  foliage — too few and you see between them and it looks spiky. */
-const LOBES = 20
+/** Buffer size. A tree uses 5–7 of these; spares are scaled to nothing. */
+const MAX_PUFFS = 7
 
-/** Shared across every tree: the lobes differ by their INSTANCE matrix,
- *  never by geometry, so twelve varied trees cost two geometries total. */
-const LEAF_GEO = new SphereGeometry(1, 8, 6)
+const PUFF_GEO = new SphereGeometry(1, 14, 10)
 const TRUNK_GEO = new CylinderGeometry(0.05, 0.07, 0.46, 8)
 
 const _q = new Quaternion()
 const _pos = new Vector3()
 const _scl = new Vector3()
-const _dir = new Vector3()
-const _up = new Vector3(0, 0, 1)
 const _col = new Color()
+const _zero = new Vector3(0, 0, 0)
 
 function makeRng(seed: number): () => number {
   let s = seed >>> 0
@@ -49,25 +43,32 @@ function makeRng(seed: number): () => number {
 }
 
 /**
- * A landmark-pod tree.
+ * A landmark-pod tree: a short trunk under a handful of big, soft,
+ * overlapping puffs — the same cartoon-cloud construction the world uses
+ * everywhere, kept deliberately simple.
  *
- * The canopy is a SHELL OF LEAF LOBES, not a pile of spheres. Each lobe
- * is the shared unit sphere squashed into a soft almond and turned to
- * point outward from the canopy's centre, so the silhouette is scalloped
- * and clustered — it reads as foliage rather than as one round blob,
- * without introducing a single sharp edge (ART_BIBLE §4). A few fatter
- * lobes sit in the core so you can never see through the shell.
+ * WHAT MAKES IT READ AS LEAVES at this size is the SILHOUETTE and the
+ * shading, not detail. At ~1.2 units tall seen from 12 units away a
+ * canopy is barely 40px on screen: individual leaves cannot resolve, and
+ * trying to model them backfires. A first attempt built the crown from
+ * ~20 small almond lobes pointing outward and it read as a pinecone —
+ * lots of little scales. So: few, LARGE, generously overlapping puffs
+ * that bulge past one another to give a lobed, clumpy outline, with the
+ * light tone on the upward-facing ones and the dark tone underneath.
+ * That is what says "leafy crown" at plaza distance.
  *
- * Every tree is an INDIVIDUAL: `seed` drives lobe placement, lean, height
- * and fullness, so no two of the twelve match while they all stay one
- * species. `tint` pulls the foliage toward the landmark's accent.
+ * Every tree is still an INDIVIDUAL — `seed` drives how many puffs there
+ * are, where they sit, how big each is, and the trunk's lean — so the
+ * twelve differ by their clustering rather than by any added detail.
  *
- * It also FLOWS. The sway is done in the vertex shader off the shared
- * ambient clock, keyed to each lobe's own position, so the canopy ripples
- * from the inside out instead of swinging as one rigid mass — and it
- * costs nothing per frame on the CPU. Instancing means the whole canopy
- * is ONE draw call: a leafier tree than the old six-sphere version, for
- * a third of the draw calls.
+ * Puffs always overlap the core by a wide margin (centre distance is far
+ * less than the radii sum), which is what keeps the crown one soft mass
+ * instead of a bunch of balls stuck together.
+ *
+ * It also flows: the sway is a vertex shader keyed to each puff's own
+ * position and driven by the shared ambient clock, so the crown ripples
+ * rather than swinging rigidly, at no per-frame CPU cost. Instanced, so
+ * a whole canopy is one draw call.
  */
 export function Tree({
   variant = 'green',
@@ -80,26 +81,29 @@ export function Tree({
   tint?: string
   seed?: number
 }) {
-  const leaves = useRef<InstancedMesh>(null)
+  const puffs = useRef<InstancedMesh>(null)
 
   const material = useMemo(() => {
     const m = new MeshStandardMaterial({ roughness: ROUGHNESS.foliage })
     const uTime = { value: 0 }
-    const uSway = { value: 0.05 }
+    const uSway = { value: 0.035 }
     m.onBeforeCompile = (shader) => {
       shader.uniforms.uTime = uTime
       shader.uniforms.uSway = uSway
       shader.vertexShader = shader.vertexShader
-        .replace('#include <common>', '#include <common>\nuniform float uTime;\nuniform float uSway;')
-        // Sway AFTER the instance transform, so the offset is in the
-        // tree's own space and isn't scaled/rotated by the lobe's matrix.
+        .replace(
+          '#include <common>',
+          '#include <common>\nuniform float uTime;\nuniform float uSway;',
+        )
+        // Applied AFTER the instance transform, so the offset lives in the
+        // tree's own space and isn't scaled by the puff's matrix.
         .replace(
           'mvPosition = instanceMatrix * mvPosition;',
           `mvPosition = instanceMatrix * mvPosition;
-           float ph = instanceMatrix[3].x * 6.1 + instanceMatrix[3].z * 4.3;
-           float amp = uSway * max(instanceMatrix[3].y - 0.25, 0.0);
-           mvPosition.x += sin(uTime * 1.15 + ph) * amp;
-           mvPosition.z += cos(uTime * 0.92 + ph * 1.4) * amp * 0.7;`,
+           float ph = instanceMatrix[3].x * 5.3 + instanceMatrix[3].z * 3.9;
+           float amp = uSway * max(instanceMatrix[3].y - 0.3, 0.0);
+           mvPosition.x += sin(uTime * 1.05 + ph) * amp;
+           mvPosition.z += cos(uTime * 0.86 + ph * 1.3) * amp * 0.7;`,
         )
     }
     m.userData.uTime = uTime
@@ -111,7 +115,6 @@ export function Tree({
     [],
   )
 
-  /** Lobe layout + per-lobe colour, generated once per seed. */
   const layout = useMemo(() => {
     const rng = makeRng(seed * 2654435761 + 12345)
     const [dark, mid, light] = CANOPY[variant].map((hex) => {
@@ -120,49 +123,66 @@ export function Tree({
       return c
     })
 
-    // Per-tree character: some are taller and narrower, some broader.
-    const stretch = 0.85 + rng() * 0.4
-    const girth = 0.92 + rng() * 0.26
-    const cy = 0.62 + rng() * 0.1
-    const rx = 0.34 * girth
-    const ry = 0.3 * stretch
-    const rz = 0.34 * girth
+    const count = 5 + Math.floor(rng() * 3) // 5–7
+    const girth = 0.9 + rng() * 0.3
+    const cy = 0.66 + rng() * 0.1
+    // Capped so the CANOPY'S TOTAL REACH (core + satellite bulge) can
+    // never exceed what was cleared against the panel/grass geometry —
+    // see the reach comment on the satellite loop below.
+    const coreR = 0.33 * girth * (0.94 + rng() * 0.1)
 
     const matrices: Matrix4[] = []
     const colors: Color[] = []
-    for (let i = 0; i < LOBES; i++) {
-      // First few are fat core lobes; the rest form the outer shell.
-      const core = i < 4
-      const u = rng() * Math.PI * 2
-      const v = Math.acos(2 * rng() - 1)
-      _dir.set(Math.sin(v) * Math.cos(u), Math.cos(v) * 0.85 + 0.15, Math.sin(v) * Math.sin(u))
-      _dir.normalize()
 
-      const reach = core ? 0.18 + rng() * 0.1 : 0.72 + rng() * 0.34
-      _pos.set(_dir.x * rx * reach, cy + _dir.y * ry * reach, _dir.z * rz * reach)
+    // The core puff — the mass everything else grows out of.
+    _pos.set(0, cy, 0)
+    _scl.set(coreR, coreR * (0.88 + rng() * 0.14), coreR)
+    matrices.push(new Matrix4().compose(_pos.clone(), _q.identity().clone(), _scl.clone()))
+    colors.push(_col.copy(mid).clone())
 
-      // Almond pointing outward: long along its local +Z, thin across.
-      _q.setFromUnitVectors(_up, _dir)
-      const s = (core ? 1.5 : 1) * (0.82 + rng() * 0.45)
-      _scl.set(0.15 * s * girth, 0.115 * s, 0.25 * s)
+    // Satellites, spread around the core and bulging past it so the
+    // outline goes lobed. Reach (d + r, the farthest a satellite's edge
+    // gets from the trunk) is capped at coreR * 1.58 — verified
+    // numerically against every one of the 12 seeded trees to clear the
+    // panel with real margin (worst case 0.15u+, not the ~0.04u a wider
+    // spread produced). Don't loosen these without re-running that check
+    // (POD.trees's clearance comment has the panel/dome geometry).
+    const spin = rng() * Math.PI * 2
+    for (let i = 1; i < count; i++) {
+      const ang = spin + (i / (count - 1)) * Math.PI * 2 + (rng() - 0.5) * 0.9
+      const r = coreR * (0.48 + rng() * 0.22)
+      const d = coreR * (0.64 + rng() * 0.24)
+      const lift = (rng() - 0.35) * coreR * 1.15
+      _pos.set(Math.cos(ang) * d, cy + lift, Math.sin(ang) * d * 0.9)
+      _scl.set(r, r * (0.86 + rng() * 0.18), r)
+      matrices.push(new Matrix4().compose(_pos.clone(), _q.identity().clone(), _scl.clone()))
 
-      matrices.push(new Matrix4().compose(_pos.clone(), _q.clone(), _scl.clone()))
-
-      // Upward-facing lobes catch more light; a little jitter besides.
-      const lift = Math.max(0, _dir.y)
-      _col.copy(dark).lerp(mid, Math.min(1, lift * 1.3 + rng() * 0.5))
-      if (lift > 0.55 && rng() > 0.45) _col.lerp(light, 0.55)
+      // Higher puffs catch the light; low ones fall into the dark tone.
+      const t = Math.min(1, Math.max(0, lift / (coreR * 0.8) + 0.5))
+      _col.copy(dark).lerp(mid, t)
+      if (t > 0.72) _col.lerp(light, 0.6)
       colors.push(_col.clone())
     }
-    // A whisper of lean, so a row of them never lines up like fenceposts.
-    const lean = (rng() - 0.5) * 0.13
-    return { matrices, colors, lean, trunkTilt: (rng() - 0.5) * 0.08 }
+
+    // Unused slots collapse to nothing.
+    for (let i = count; i < MAX_PUFFS; i++) {
+      matrices.push(new Matrix4().compose(_zero, _q.identity().clone(), _zero))
+      colors.push(new Color(0, 0, 0))
+    }
+
+    return {
+      matrices,
+      colors,
+      lean: (rng() - 0.5) * 0.12,
+      tilt: (rng() - 0.5) * 0.07,
+      trunkH: 0.9 + rng() * 0.22,
+    }
   }, [seed, variant, tint])
 
   useEffect(() => {
-    const mesh = leaves.current
+    const mesh = puffs.current
     if (!mesh) return
-    for (let i = 0; i < layout.matrices.length; i++) {
+    for (let i = 0; i < MAX_PUFFS; i++) {
       mesh.setMatrixAt(i, layout.matrices[i])
       mesh.setColorAt(i, layout.colors[i])
     }
@@ -172,17 +192,21 @@ export function Tree({
   }, [layout])
 
   useFrame(() => {
-    // Reduced motion calms the world rather than freezing it, so the
-    // sway rides the shared ambient clock like everything else.
     material.userData.uTime.value = getAmbientTime()
   })
 
   return (
-    <group scale={scale} rotation={[layout.trunkTilt, 0, layout.lean]}>
-      <mesh geometry={TRUNK_GEO} material={trunkMat} position={[0, 0.22, 0]} castShadow />
+    <group scale={scale} rotation={[layout.tilt, 0, layout.lean]}>
+      <mesh
+        geometry={TRUNK_GEO}
+        material={trunkMat}
+        position={[0, 0.22 * layout.trunkH, 0]}
+        scale={[1, layout.trunkH, 1]}
+        castShadow
+      />
       <instancedMesh
-        ref={leaves}
-        args={[LEAF_GEO, material, LOBES]}
+        ref={puffs}
+        args={[PUFF_GEO, material, MAX_PUFFS]}
         castShadow
         receiveShadow
       />
