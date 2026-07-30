@@ -1,15 +1,6 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import {
-  Color,
-  CylinderGeometry,
-  InstancedMesh,
-  Matrix4,
-  MeshStandardMaterial,
-  Quaternion,
-  SphereGeometry,
-  Vector3,
-} from 'three'
+import { Color, CylinderGeometry, Mesh, MeshStandardMaterial, SphereGeometry, Vector3 } from 'three'
 import { getAmbientTime } from '@/hooks/useAmbientLoop'
 import { PALETTE } from '@/lib/constants'
 import { ROUGHNESS } from '@/lib/designSystem'
@@ -22,17 +13,13 @@ const CANOPY = {
 /** How far a tinted canopy is pulled toward its landmark's accent. */
 const TINT_STRENGTH = 0.45
 
-/** Buffer size. A tree uses 5–7 of these; spares are scaled to nothing. */
-const MAX_PUFFS = 7
+/** How far a puff drifts at the peak of its sway, world units. */
+const SWAY_AMOUNT = 0.028
 
+/** Shared by every puff on every tree — sharing geometry across many
+ *  meshes is the same trick `Clouds.tsx` uses for its puffs. */
 const PUFF_GEO = new SphereGeometry(1, 14, 10)
 const TRUNK_GEO = new CylinderGeometry(0.05, 0.07, 0.46, 8)
-
-const _q = new Quaternion()
-const _pos = new Vector3()
-const _scl = new Vector3()
-const _col = new Color()
-const _zero = new Vector3(0, 0, 0)
 
 function makeRng(seed: number): () => number {
   let s = seed >>> 0
@@ -65,10 +52,34 @@ function makeRng(seed: number): () => number {
  * less than the radii sum), which is what keeps the crown one soft mass
  * instead of a bunch of balls stuck together.
  *
- * It also flows: the sway is a vertex shader keyed to each puff's own
- * position and driven by the shared ambient clock, so the crown ripples
- * rather than swinging rigidly, at no per-frame CPU cost. Instanced, so
- * a whole canopy is one draw call.
+ * It also flows: each puff drifts on its own phase, driven by the shared
+ * ambient clock, so the crown ripples rather than swinging as one rigid
+ * mass — a plain per-frame `position` write on each puff's mesh.
+ *
+ * EACH PUFF IS ITS OWN MESH, not a GPU instance. Two rebuilds got this
+ * component here (2026-07-29 to 2026-07-30):
+ *   1. A vertex-shader `onBeforeCompile` sway on an `InstancedMesh`
+ *      matched raw text against three.js's EXPANDED `project_vertex`
+ *      chunk body. That text doesn't exist yet at the point
+ *      `onBeforeCompile` runs — the shader source still has the
+ *      unexpanded `#include <project_vertex>` token — so the match was
+ *      never reliable. It happened to still link in `npm run dev` but
+ *      failed in the production build, spamming
+ *      `WebGL: useProgram: program not valid` and leaving every canopy
+ *      invisible (reported live on the deployed site, 2026-07-30).
+ *   2. Replacing the shader hack with a plain CPU-side `setMatrixAt`
+ *      loop on the SAME `InstancedMesh` did not fix it — trees were
+ *      STILL invisible in a from-scratch production build, with zero
+ *      shader compile/link failures captured by instrumenting
+ *      `compileShader`/`linkProgram` directly. `InstancedMesh` (the raw
+ *      R3F primitive, `<instancedMesh>`) was, and remains, the only use
+ *      of GPU instancing anywhere in this codebase — no proven track
+ *      record here to fall back on, and no confirmed root cause either.
+ *      So: stop depending on it. Every puff is an ordinary `<mesh>`,
+ *      exactly how `Clouds.tsx` already renders its puffs successfully
+ *      in production. Costs 5–7 draw calls per tree (~80 across all
+ *      twelve) instead of 1 — a rounding error next to the crowd's own
+ *      ~576.
  */
 export function Tree({
   variant = 'green',
@@ -81,34 +92,7 @@ export function Tree({
   tint?: string
   seed?: number
 }) {
-  const puffs = useRef<InstancedMesh>(null)
-
-  const material = useMemo(() => {
-    const m = new MeshStandardMaterial({ roughness: ROUGHNESS.foliage })
-    const uTime = { value: 0 }
-    const uSway = { value: 0.035 }
-    m.onBeforeCompile = (shader) => {
-      shader.uniforms.uTime = uTime
-      shader.uniforms.uSway = uSway
-      shader.vertexShader = shader.vertexShader
-        .replace(
-          '#include <common>',
-          '#include <common>\nuniform float uTime;\nuniform float uSway;',
-        )
-        // Applied AFTER the instance transform, so the offset lives in the
-        // tree's own space and isn't scaled by the puff's matrix.
-        .replace(
-          'mvPosition = instanceMatrix * mvPosition;',
-          `mvPosition = instanceMatrix * mvPosition;
-           float ph = instanceMatrix[3].x * 5.3 + instanceMatrix[3].z * 3.9;
-           float amp = uSway * max(instanceMatrix[3].y - 0.3, 0.0);
-           mvPosition.x += sin(uTime * 1.05 + ph) * amp;
-           mvPosition.z += cos(uTime * 0.86 + ph * 1.3) * amp * 0.7;`,
-        )
-    }
-    m.userData.uTime = uTime
-    return m
-  }, [])
+  const puffRefs = useRef<(Mesh | null)[]>([])
 
   const trunkMat = useMemo(
     () => new MeshStandardMaterial({ color: PALETTE.trunk, roughness: ROUGHNESS.foliage }),
@@ -131,14 +115,17 @@ export function Tree({
     // see the reach comment on the satellite loop below.
     const coreR = 0.33 * girth * (0.94 + rng() * 0.1)
 
-    const matrices: Matrix4[] = []
-    const colors: Color[] = []
+    const parts: { basePos: Vector3; scl: Vector3; phase: number; mat: MeshStandardMaterial }[] =
+      []
 
-    // The core puff — the mass everything else grows out of.
-    _pos.set(0, cy, 0)
-    _scl.set(coreR, coreR * (0.88 + rng() * 0.14), coreR)
-    matrices.push(new Matrix4().compose(_pos.clone(), _q.identity().clone(), _scl.clone()))
-    colors.push(_col.copy(mid).clone())
+    // The core puff — the mass everything else grows out of. Phase 0 so
+    // the trunk-adjacent mass barely drifts; it anchors the crown.
+    parts.push({
+      basePos: new Vector3(0, cy, 0),
+      scl: new Vector3(coreR, coreR * (0.88 + rng() * 0.14), coreR),
+      phase: 0,
+      mat: new MeshStandardMaterial({ color: mid, roughness: ROUGHNESS.foliage }),
+    })
 
     // Satellites, spread around the core and bulging past it so the
     // outline goes lobed. Reach (d + r, the farthest a satellite's edge
@@ -153,46 +140,46 @@ export function Tree({
       const r = coreR * (0.48 + rng() * 0.22)
       const d = coreR * (0.64 + rng() * 0.24)
       const lift = (rng() - 0.35) * coreR * 1.15
-      _pos.set(Math.cos(ang) * d, cy + lift, Math.sin(ang) * d * 0.9)
-      _scl.set(r, r * (0.86 + rng() * 0.18), r)
-      matrices.push(new Matrix4().compose(_pos.clone(), _q.identity().clone(), _scl.clone()))
+      const x = Math.cos(ang) * d
+      const z = Math.sin(ang) * d * 0.9
 
       // Higher puffs catch the light; low ones fall into the dark tone.
       const t = Math.min(1, Math.max(0, lift / (coreR * 0.8) + 0.5))
-      _col.copy(dark).lerp(mid, t)
-      if (t > 0.72) _col.lerp(light, 0.6)
-      colors.push(_col.clone())
-    }
+      const col = dark.clone().lerp(mid, t)
+      if (t > 0.72) col.lerp(light, 0.6)
 
-    // Unused slots collapse to nothing.
-    for (let i = count; i < MAX_PUFFS; i++) {
-      matrices.push(new Matrix4().compose(_zero, _q.identity().clone(), _zero))
-      colors.push(new Color(0, 0, 0))
+      parts.push({
+        basePos: new Vector3(x, cy + lift, z),
+        scl: new Vector3(r, r * (0.86 + rng() * 0.18), r),
+        // Each puff's own drift phase, so the crown ripples rather than
+        // moving as one mass — derived from position so it's stable
+        // across re-renders without storing an extra random draw.
+        phase: x * 5.3 + z * 3.9 + rng() * 0.001,
+        mat: new MeshStandardMaterial({ color: col, roughness: ROUGHNESS.foliage }),
+      })
     }
 
     return {
-      matrices,
-      colors,
+      parts,
       lean: (rng() - 0.5) * 0.12,
       tilt: (rng() - 0.5) * 0.07,
       trunkH: 0.9 + rng() * 0.22,
     }
   }, [seed, variant, tint])
 
-  useEffect(() => {
-    const mesh = puffs.current
-    if (!mesh) return
-    for (let i = 0; i < MAX_PUFFS; i++) {
-      mesh.setMatrixAt(i, layout.matrices[i])
-      mesh.setColorAt(i, layout.colors[i])
-    }
-    mesh.instanceMatrix.needsUpdate = true
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true
-    mesh.computeBoundingSphere()
-  }, [layout])
-
   useFrame(() => {
-    material.userData.uTime.value = getAmbientTime()
+    const time = getAmbientTime()
+    for (let i = 0; i < layout.parts.length; i++) {
+      const mesh = puffRefs.current[i]
+      const p = layout.parts[i]
+      if (!mesh) continue
+      const amp = SWAY_AMOUNT * Math.max(p.basePos.y - 0.3, 0)
+      mesh.position.set(
+        p.basePos.x + Math.sin(time * 1.05 + p.phase) * amp,
+        p.basePos.y,
+        p.basePos.z + Math.cos(time * 0.86 + p.phase * 1.3) * amp * 0.7,
+      )
+    }
   })
 
   return (
@@ -204,12 +191,20 @@ export function Tree({
         scale={[1, layout.trunkH, 1]}
         castShadow
       />
-      <instancedMesh
-        ref={puffs}
-        args={[PUFF_GEO, material, MAX_PUFFS]}
-        castShadow
-        receiveShadow
-      />
+      {layout.parts.map((p, i) => (
+        <mesh
+          key={i}
+          ref={(el) => {
+            puffRefs.current[i] = el
+          }}
+          geometry={PUFF_GEO}
+          material={p.mat}
+          position={p.basePos}
+          scale={p.scl}
+          castShadow
+          receiveShadow
+        />
+      ))}
     </group>
   )
 }

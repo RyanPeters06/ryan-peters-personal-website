@@ -5,6 +5,57 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-30 — Trees invisible in production; InstancedMesh abandoned
+
+Peter, on the live deployed site: no trees anywhere. Confirmed directly
+on ryanpeters.dev — every island's grass was bare, exactly as reported.
+`npm run dev` had shown trees correctly all session; the gap was
+dev-vs-production only.
+
+**First theory, and it was real but not the whole story.** The puff
+canopy's sway used `onBeforeCompile` on an `InstancedMesh`, matching raw
+text against three.js's EXPANDED `project_vertex` chunk body
+(`'mvPosition = instanceMatrix * mvPosition;'`). That text doesn't exist
+yet at the point `onBeforeCompile` fires — the shader source still has
+the unexpanded `#include <project_vertex>` token then — so the match was
+never reliable. It happened to still link in `npm run dev` but the
+production build spammed `WebGL: useProgram: program not valid` on every
+frame, reproduced locally via `npm run build && npx serve dist`
+(~190 warnings/frame; confirmed via `Ground.tsx` and `LocationPod.tsx`'s
+own `onBeforeCompile` uses, which correctly match `#include <tag>`
+tokens rather than expanded text — the documented, safe pattern).
+
+**Removed the shader hack, replaced with a plain CPU-side
+`setMatrixAt` loop on the same `InstancedMesh`. Trees were STILL
+invisible in a from-scratch production build.** Instrumented
+`WebGLRenderingContext.prototype.compileShader`/`linkProgram` directly
+to capture any real failure — zero shader compile/link errors captured,
+despite the warnings persisting. `Tree.tsx` turned out to be the ONLY
+place in the entire codebase using the raw `<instancedMesh>` R3F
+primitive (`Clouds.tsx`, `Crowd.tsx`, `GrassTuft.tsx` all render
+repeated geometry as individual `<mesh>` elements sharing geometry/
+material references — real GPU instancing was never actually
+established or proven in this build pipeline).
+
+**Fix: stopped using `InstancedMesh` entirely.** Every puff is now its
+own `<mesh>`, positioned and coloured individually, swayed by writing
+`mesh.position` directly each frame — exactly the pattern `Clouds.tsx`
+already uses successfully in production. Verified in a fresh
+`npm run build` + `serve dist`: warnings dropped from ~190/frame to the
+two pre-existing, unrelated three.js deprecation notices (`THREE.Clock`,
+`PCFSoftShadowMap`), and trees render correctly. Costs 5–7 draw calls
+per tree (~80 total across twelve) instead of 1 — negligible next to the
+crowd's own ~576.
+
+**Root cause of the InstancedMesh failure itself is still not
+confirmed** — the shader theory explained the warning spam but not why
+removing it wasn't sufficient. Flagged here rather than asserted: don't
+reach for raw `<instancedMesh>` in this codebase again without
+budgeting time to actually get it working in a production build, not
+just `npm run dev`.
+
+---
+
 ## 2026-07-29 — Plaza pass: title, trees, one beacon, crowd, and the hello
 
 Peter's review of the live site against the reference. Six asks, and two
