@@ -54,49 +54,46 @@ reach for raw `<instancedMesh>` in this codebase again without
 budgeting time to actually get it working in a production build, not
 just `npm run dev`.
 
-## 2026-07-30 — The loading screen waits for the world, not for a clock
+## 2026-07-30 — Loading screen: two rewrites, both reverted. Back to 2500ms.
 
-Peter saw the title "flicker... you can't see it for a few seconds" on
-the real deploy. My first pass at it bumped `LoadingScreen`'s blind
-`setTimeout` from 2500ms to 3200ms as a safety margin — which Peter
-rightly rejected: *"so you are purposefully delaying the loading even
-if it doesn't need to? please do not do that."* He was right. The
-loader had ALWAYS been a pure timer, holding the full duration whether
-or not anything still needed doing, and padding it made every fast
-visit worse to paper over a slow one.
+**Current state: exactly what it was before this session** — a blind
+`setTimeout` at `MIN_MS = 2500`, filling progress bar, no readiness
+signal. Byte-identical to `c225690`. Two attempts to improve it were
+made and both are gone; recorded here so neither gets retried blind.
 
-**Now it releases on actual readiness.** New `scene/SceneReady.tsx`
-sits as the last child inside `Experience`'s `<Suspense>`, directly
-after `<Preload all />`. That position is load-bearing: inside Suspense
-it cannot mount until every suspending resource has resolved; after
-`Preload` it runs once drei's `gl.compile()` effect has (sibling
-effects fire in tree order); and it then counts two real presented
-frames before flipping `sceneReady` on the store. `LoadingScreen`
-releases on `sceneReady`, with `MIN_MS` cut 3200 -> **450** purely so
-the card can't flash past in two frames and read as a glitch, plus a
-`MAX_MS` 12s safety net so a failed WebGL context can never strand a
-visitor behind an infinite loader.
+The trigger was Peter seeing the title "flicker... you can't see it for
+a few seconds" on the real deploy.
 
-Measured on a production build (`npm run build` + `serve dist`), with
-the timestamp recorded *inside* the app — earlier attempts measured
-from a Playwright `evaluate` that didn't start until seconds after
-navigation, which is why those numbers were nonsense (one read 13s when
-the loader had long since gone): **cold 2198ms, warm reload 1838ms**,
-against the old blind 3200ms. Screenshot at the moment of release
-confirms a fully assembled world — trees, crowd, panels, title — so it
-is releasing early because the work is genuinely done, not by skipping
-ahead of it.
+**Attempt 1 — bump the timer 2500 -> 3200ms.** Rejected by Peter, and
+rightly: *"so you are purposefully delaying the loading even if it
+doesn't need to? please do not do that."* Padding a blind timer
+penalises every fast visit to paper over a slow one.
 
-The progress bar became indeterminate (a bead cycling through the
-track) rather than a fill animating over `MIN_MS`. A fake percentage
-tied to a timer would now either complete long before the world does or
-snap away half-drawn.
+**Attempt 2 — release on actual readiness.** A `SceneReady` component
+placed last inside `Experience`'s `<Suspense>`, after `<Preload all />`,
+counting two presented frames before flipping a `sceneReady` store flag;
+`LoadingScreen` released on that with a short 450ms anti-flash floor and
+a 12s ceiling. It measured well on a production build (cold 2198ms, warm
+1838ms vs the blind 3200ms, with a screenshot at release confirming a
+fully assembled world). Peter asked for it reverted anyway — reverted in
+full: component deleted, store flags removed, `Experience` wiring undone.
 
-Also rejected along the way, and worth recording so it isn't retried:
-gating on `useProgress` (drei's `THREE.LoadingManager` hook). Measured
-at ~8s even on localhost, because the manager also tracks
-`troika-three-text`'s blob-worker font-atlas setup for the six panel
-labels — work unrelated to the world being visible.
+**Also tried and rejected inside attempt 2:** gating on `useProgress`
+(drei's `THREE.LoadingManager` hook). Measured ~8s even on localhost,
+because the manager also tracks `troika-three-text`'s blob-worker
+font-atlas setup for the six panel labels — work unrelated to the world
+being visible. Do not reach for that hook here.
+
+**Known and accepted:** the loader still holds 2500ms regardless of
+whether anything needs loading, and the original flicker report is
+therefore still unaddressed. Both are deliberate, per Peter's call.
+
+**Method note worth keeping:** boot timings measured from a Playwright
+`evaluate` are worthless — the call doesn't start until seconds after
+navigation, and produced readings of 7.9s, 10.4s and 13s for a loader
+that had long since gone. Record the timestamp *inside* the app
+(`performance.now()` is `timeOrigin`-relative) and read it out
+afterwards.
 
 ---
 

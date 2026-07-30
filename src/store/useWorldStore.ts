@@ -21,14 +21,6 @@ interface WorldState {
   booted: boolean
   setBooted: () => void
 
-  /** Flipped true once the 3D scene has actually finished assembling:
-   *  Suspense resolved, `<Preload all />` has compiled every shader, and
-   *  a couple of real frames have rendered. This is what releases the
-   *  loading screen — it used to hold on a blind timer regardless of
-   *  whether anything still needed doing. See scene/SceneReady.tsx. */
-  sceneReady: boolean
-  setSceneReady: () => void
-
   /** Global audio mute. Audio itself arrives in a later milestone, but
    *  the contract exists from day one. */
   muted: boolean
@@ -45,9 +37,6 @@ export const useWorldStore = create<WorldState>()((set) => ({
 
   booted: false,
   setBooted: () => set({ booted: true }),
-
-  sceneReady: false,
-  setSceneReady: () => set({ sceneReady: true }),
 
   muted: false,
   toggleMuted: () => set((s) => ({ muted: !s.muted })),
