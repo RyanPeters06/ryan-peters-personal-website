@@ -21,6 +21,7 @@ import { IslandShadow } from '@/scene/IslandShadow'
 import { Clouds } from '@/scene/Clouds'
 import { Lighting } from '@/scene/lighting/Lighting'
 import { PerfProbe } from '@/scene/PerfProbe'
+import { SceneReady } from '@/scene/SceneReady'
 import { Avatar } from '@/avatar/Avatar'
 import { Locations } from '@/world/Locations'
 import { ProximityDirector } from '@/world/ProximityDirector'
@@ -159,6 +160,10 @@ export function Experience() {
             first PRESENTED frame is already fully built — first-frame
             shader compilation was part of the startup flash/stutter. */}
         <Preload all />
+        {/* LAST, and inside Suspense on purpose — it can only mount once
+            everything above has resolved and Preload's compile has run.
+            This is what releases the loading screen. */}
+        <SceneReady />
       </Suspense>
     </Canvas>
   )

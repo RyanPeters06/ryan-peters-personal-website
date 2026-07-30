@@ -54,32 +54,49 @@ reach for raw `<instancedMesh>` in this codebase again without
 budgeting time to actually get it working in a production build, not
 just `npm run dev`.
 
-## 2026-07-30 — Title flicker: partially addressed, not confirmed fixed
+## 2026-07-30 — The loading screen waits for the world, not for a clock
 
-Same report as above: Peter saw the title "flicker... you can't see it
-for a few seconds" on the real deploy. Unlike the trees, this one is
-**not verified fixed** — recorded honestly rather than claimed.
+Peter saw the title "flicker... you can't see it for a few seconds" on
+the real deploy. My first pass at it bumped `LoadingScreen`'s blind
+`setTimeout` from 2500ms to 3200ms as a safety margin — which Peter
+rightly rejected: *"so you are purposefully delaying the loading even
+if it doesn't need to? please do not do that."* He was right. The
+loader had ALWAYS been a pure timer, holding the full duration whether
+or not anything still needed doing, and padding it made every fast
+visit worse to paper over a slow one.
 
-The natural, "correct" fix — gate the loading screen's release on
-`useProgress` (drei), which tracks the real `THREE.LoadingManager` all
-`useLoader` calls report to, instead of a blind `setTimeout` — was
-built and MEASURED before shipping. It made things worse: the hold went
-from 2.5s to **7.9s, even on localhost**. The loading manager is
-tracking ~13 `blob:` requests that aren't the HDRI or cloud sprites
-(both inlined data URIs — no network or blob involved); almost
-certainly `troika-three-text`'s internal SDF worker setup for the six
-panel labels, which spins up via a blob-URL worker and does one-time
-font-atlas generation. Gating on it with no evidence THAT specific work
-was the actual cause of the flicker risked turning a real user's slower
-connection into a 15-20s+ stall — a worse bug than the one being
-chased. Reverted.
+**Now it releases on actual readiness.** New `scene/SceneReady.tsx`
+sits as the last child inside `Experience`'s `<Suspense>`, directly
+after `<Preload all />`. That position is load-bearing: inside Suspense
+it cannot mount until every suspending resource has resolved; after
+`Preload` it runs once drei's `gl.compile()` effect has (sibling
+effects fire in tree order); and it then counts two real presented
+frames before flipping `sceneReady` on the store. `LoadingScreen`
+releases on `sceneReady`, with `MIN_MS` cut 3200 -> **450** purely so
+the card can't flash past in two frames and read as a glitch, plus a
+`MAX_MS` 12s safety net so a failed WebGL context can never strand a
+visitor behind an infinite loader.
 
-**Shipped instead:** `LoadingScreen.tsx`'s `MIN_MS` 2500 -> 3200 — a
-modest, low-risk, unconditional safety-margin bump. This is a blind
-guess at the margin, not a diagnosis; if the flicker persists, the
-`troika-three-text` timing needs real profiling (a real device, a real
-connection, or Chrome DevTools' network throttling against the actual
-deploy) rather than further guessing in a local sandbox.
+Measured on a production build (`npm run build` + `serve dist`), with
+the timestamp recorded *inside* the app — earlier attempts measured
+from a Playwright `evaluate` that didn't start until seconds after
+navigation, which is why those numbers were nonsense (one read 13s when
+the loader had long since gone): **cold 2198ms, warm reload 1838ms**,
+against the old blind 3200ms. Screenshot at the moment of release
+confirms a fully assembled world — trees, crowd, panels, title — so it
+is releasing early because the work is genuinely done, not by skipping
+ahead of it.
+
+The progress bar became indeterminate (a bead cycling through the
+track) rather than a fill animating over `MIN_MS`. A fake percentage
+tied to a timer would now either complete long before the world does or
+snap away half-drawn.
+
+Also rejected along the way, and worth recording so it isn't retried:
+gating on `useProgress` (drei's `THREE.LoadingManager` hook). Measured
+at ~8s even on localhost, because the manager also tracks
+`troika-three-text`'s blob-worker font-atlas setup for the six panel
+labels — work unrelated to the world being visible.
 
 ---
 
