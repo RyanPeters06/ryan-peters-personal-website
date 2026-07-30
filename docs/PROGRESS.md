@@ -54,6 +54,54 @@ reach for raw `<instancedMesh>` in this codebase again without
 budgeting time to actually get it working in a production build, not
 just `npm run dev`.
 
+## 2026-07-30 — Title screen revamped: cross-fades the loader, then holds
+
+Peter, scoped explicitly to the title screen only: revamp it, fade in
+right after the loading screen, and then stay fixed on screen until a
+click or a key starts the experience. One file changed
+(`ui/TitleSequence.tsx`) — nothing else touched.
+
+**The flicker was a queueing bug, not a rendering one.** Every element
+waited for `booted` and then staggered 0.4s / 1.0s / 1.6s apart on
+1.0–1.4s durations. The loader is gone by ~3.1s but the prompt wasn't
+readable until ~5.1s, leaving ~2s of bare world under a barely-there
+title — exactly "flickers when opening so you can't see it for a few
+seconds".
+
+`booted` is set the instant the loader BEGINS its 0.6s fade, so the
+reveal now starts at delay ~0 and finishes inside ~0.75s, overlapping
+that fade instead of queueing behind it. Rebuilt on Framer variants with
+`delayChildren: 0.06` / `staggerChildren: 0.07` so it reads as one
+gesture rather than three separate reveals; the wordmark keeps a small
+scale overshoot as the "channel opening" beat.
+
+Measured on a production build with a page-parse-time sampler recording
+loader and wordmark opacity together (the only reliable way here — a
+Playwright `evaluate` doesn't start until ~12s after navigation in this
+environment, and even a foregrounded automated tab is rAF-throttled to
+~7fps, so absolute times are inflated and only the ORDERING is
+meaningful). The handoff:
+
+```
+5355ms  loader=0.99  title=0.00
+5440ms  loader=0.91  title=0.23
+5518ms  loader=0.75  title=0.99   <- title fully in, loader still 3/4 up
+5902ms  loader=0.00
+```
+
+The title reaches full opacity while the loader is still at 0.75 — the
+gap is gone.
+
+**It holds.** Verified sitting untouched for 24.4s: still mounted,
+opacity 1. There is no auto-advance. (An earlier trace appeared to show
+it fading out on its own — that was Playwright's own snapshot pass
+clicking the full-screen catcher, not a timeout.)
+
+**Dismissal:** click anywhere (unchanged), plus any key now works —
+Peter's "or press a button". `Tab` and bare modifier presses are ignored
+so keyboard navigation and shortcuts aren't hijacked. Both paths
+verified dismissing to the world.
+
 ## 2026-07-30 — Loading screen: two rewrites, both reverted. Back to 2500ms.
 
 **Current state: exactly what it was before this session** — a blind
