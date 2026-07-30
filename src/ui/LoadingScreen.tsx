@@ -6,11 +6,28 @@ import { useWorldStore } from '@/store/useWorldStore'
  * A cute plaza-style loading card that holds over the first moments so the
  * visitor never sees the scene assemble: shaders compile, the HDRI wakes
  * up, and — the choppy bit — the panels render a beat before their Troika
- * text labels pop in. We stay up for a minimum beat AND until the loader
- * reports idle, then fade out onto a fully-formed world. The gradient
- * matches the sky so the reveal is a wash, not a cut.
+ * text labels pop in. We stay up for a minimum beat, then fade out onto a
+ * fully-formed world. The gradient matches the sky so the reveal is a
+ * wash, not a cut.
+ *
+ * Peter saw the title "flicker... you can't see it for a few seconds" on
+ * the real deploy (not on localhost, where everything is already warm).
+ * The natural fix — gate release on `useProgress` (drei), which tracks
+ * the real `THREE.LoadingManager` — was tried and MEASURED, not shipped:
+ * it pushed the hold from 2.5s to **7.9s, even on localhost**. The
+ * loading manager is tracking ~13 `blob:` requests that aren't the HDRI
+ * or the cloud sprites (those are inlined data URIs, no network/blob
+ * involved) — almost certainly `troika-three-text`'s internal SDF worker
+ * setup for the six panel labels, which spins up via a blob-URL worker
+ * and does one-time font-atlas generation. Gating on it made the FAST
+ * path much slower without any evidence the flicker was actually about
+ * that work finishing late, so it would very plausibly turn a real
+ * user's slow connection into a 15–20s+ stall — a worse bug than the one
+ * being chased. Reverted; MIN_MS bumped for a bigger blind safety margin
+ * instead. The `troika-three-text` timing is flagged, not fixed — needs
+ * profiling on a real device/connection, not guessed at further.
  */
-const MIN_MS = 2500
+const MIN_MS = 3200
 
 export function LoadingScreen() {
   const [done, setDone] = useState(false)
