@@ -31,3 +31,145 @@ canvas {
   -webkit-user-select: none;
   touch-action: none;
 }
+
+/* ---- Title screen ---------------------------------------------------
+ * Entrance and idle motion are CSS animations, NOT JS. The compositor
+ * keeps opacity/transform running even while the main thread is busy
+ * with the scene's first heavy frames — which is exactly the moment the
+ * title used to blank out. Framer Motion drives only the root's fade and
+ * its AnimatePresence exit; everything below is hands-off from JS.
+ *
+ * Only `opacity` and `transform` are animated anywhere here. Nothing
+ * touches layout or paint, and NOTHING uses backdrop-filter: snapshotting
+ * a backdrop that contains a per-frame-repainting WebGL canvas is what
+ * caused the layer churn in the first place.
+ */
+/* The keyframes describe ONLY the `from`; the base style below IS the
+   final state. That ordering is deliberate — if the animation never runs
+   (a stall, a missed class, an error), everything lands rendered and
+   visible rather than stuck at opacity 0. Given the bug being fixed here
+   is "the title doesn't show", a hidden-by-default base is exactly the
+   failure mode not to build in. */
+@keyframes title-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+
+/* A whisper of overshoot — the "channel opening" beat. Reserved for the
+   SMALL elements: scaling a large, filtered text texture makes the
+   compositor resample it and the wordmark goes momentarily soft. */
+@keyframes title-pop {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.92);
+  }
+}
+
+@keyframes title-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes title-twinkle {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.82);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.14);
+  }
+}
+
+@keyframes title-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.045);
+  }
+}
+
+/* `backwards`, never `forwards`: it holds the `from` state through the
+   animation-delay (which is what makes the stagger work) but does NOT
+   pin the end state afterwards. A `forwards` fill sits in the animation
+   origin, which outranks inline styles — so it would silently swallow
+   any inline opacity Framer sets on the same element later. */
+.t-item {
+  will-change: opacity, transform;
+}
+.is-shown .t-item {
+  animation: title-rise 0.52s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+.is-shown .t-item--pop {
+  animation: title-pop 0.56s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+/* Idle life. Each sits on its OWN element, nested inside the entrance
+   element, so a looping transform never fights the entrance transform. */
+.t-bob {
+  animation: title-bob 4.2s ease-in-out infinite;
+  will-change: transform;
+}
+.t-pulse {
+  animation: title-pulse 2.4s ease-in-out infinite;
+  will-change: transform;
+}
+/* SVG needs an explicit box + origin or transforms resolve against the
+   whole viewBox and the sparkles fly off across the canvas. */
+.t-twinkle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: title-twinkle 2.6s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+
+/* The die-cut sticker outline. Two stacked copies of the same text: the
+   back one is stroked white, the front one is the clean fill.
+   `-webkit-text-stroke` centres its stroke ON the glyph outline, so half
+   of it eats inward — a single stroked element visibly thins the
+   letterforms at this weight. Stacking keeps the fill pristine.
+   Width is in `em` so it tracks the clamp()'d font size instead of going
+   spindly on a phone and fat on a monitor. */
+.t-sticker {
+  position: relative;
+  display: inline-block;
+}
+.t-sticker__stroke {
+  position: absolute;
+  inset: 0;
+  -webkit-text-stroke: 0.13em #ffffff;
+  color: #ffffff;
+  /* NOT z-index: -1 — that would drop it behind the wrapper entirely. */
+  z-index: 0;
+}
+.t-sticker__fill {
+  position: relative;
+  z-index: 1;
+}
+
+/* The subtitle gets the same treatment at a fraction of the weight. A
+   plain text-shadow glow could not hold it against the plaza — over the
+   pale cobbles it washed out completely. A thin cut does. */
+.t-sticker--thin .t-sticker__stroke {
+  -webkit-text-stroke-width: 0.19em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Calm, never frozen (ART_BIBLE §12): the reveal still happens, the
+     perpetual loops stop. */
+  .t-bob,
+  .t-pulse,
+  .t-twinkle {
+    animation: none;
+  }
+}

@@ -5,6 +5,77 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-07-31 — Title screen rebuilt as a sticker card; the flicker was compositing
+
+Two things at once: the flicker Peter had reported three times, and a
+redesign against his reference mockup. Scope was the title screen.
+
+**The flicker was never a timing problem.** Two earlier attempts treated
+it as scheduling — pad the loader's timer (rejected: it delayed every
+fast load), then re-time the reveal to cross-fade with the loader (real,
+measured, and it still flickered). It was COMPOSITING:
+
+- **`backdrop-filter` over a live WebGL canvas.** The CTA pill carried
+  `backdrop-blur-sm` AND a perpetual `scale` animation on the same node.
+  `backdrop-filter` forces the browser to snapshot everything behind the
+  element — here a canvas repainting every frame under a 7-pass
+  `EffectComposer` — so the layer was promoted and demoted continuously.
+  That is the "paints, blanks, returns" signature. Corroborated by
+  measurement: the boot-trace sampler ran at ~7fps before and **~35fps
+  after** removing it. Treat `backdrop-filter` over the canvas as
+  forbidden; ART_BIBLE §13 already asked for near-solid chrome anyway.
+- **Five full-viewport layers animating at once** on the handoff frame.
+  The 150vw × 90vh radial "sun" is gone (the planet replaces it), and the
+  veil no longer animates itself. Exactly one full-screen element
+  animates opacity now: the root.
+- **Children animate in CSS, not JS**, so the compositor keeps them
+  running through a main-thread stall.
+- **Base style IS the final state; keyframes describe only the `from`,
+  with `backwards` fill.** If the animation never runs, everything lands
+  visible instead of stuck at `opacity: 0` — the one failure mode you do
+  not want in a bug about the title not showing. `forwards` was also
+  actively wrong: a filled animation sits in the animation origin and
+  outranks the inline styles Framer sets on exit.
+
+Verified on a production build with a page-parse-time sampler (a
+Playwright `evaluate` starts ~12s after navigation and is useless for
+boot timing): the wordmark holds `opacity: 1` across the whole trace and
+the root rises monotonically 0 → 0.85 → 0.97 → 1.00 while the loader
+falls 1.00 → 0.00. No dip.
+
+**THE FONT WAS WRONG ON WINDOWS THE ENTIRE TIME.** There was no
+`@font-face` anywhere in the project. The stack is
+`ui-rounded → Hiragino → Quicksand → … → Calibri`; `@fontsource` only
+puts files in `node_modules`, so the `Quicksand` entry never resolved.
+macOS caught it on `ui-rounded` (SF Rounded) and looked fine; **Windows
+fell through to Calibri**, a flat humanist sans — so every UI judgement
+made on that machine was against the wrong typeface. Registering
+`@fontsource/quicksand/latin-500|700.css` fixes it. Side effect worth
+knowing: everything else on Windows/Linux that fell through to Calibri
+now renders in Quicksand too. macOS is unchanged (the stack order was
+left alone deliberately).
+
+**The design**: die-cut sticker treatment. The wordmark is two stacked
+copies — the back one `-webkit-text-stroke` white, the front the clean
+fill — because a single stroked element centres the stroke on the glyph
+outline and visibly thins the letterforms. Stroke width in `em` so it
+tracks the `clamp()` size. With the sun glow gone, that outline is what
+carries legibility over the busy plaza; the subtitle needed a thin
+version of the same cut for the same reason (a white text-shadow washed
+out completely over the pale cobbles). Plus an inline-SVG ringed planet
+with a `feMorphology` sticker outline, three twinkles, leaf sprigs from
+`PALETTE.grass`, a divider, and a solid white pill.
+
+One trap worth recording: **a CSS `transform` on an SVG element REPLACES
+the `transform` presentation attribute** rather than composing with it.
+The first pass put the twinkle animation and the placement transform on
+the same `<path>`, which flung every sparkle to the SVG origin at the
+wrong size. Outer `<g>` places, inner `<g>` animates.
+
+Still open, deliberately: the loading screen's own exit is JS-driven and
+full-screen, and `booted` still fires on a bare timer. Both are outside
+this pass's scope (Peter reverted the readiness gating on 2026-07-30).
+
 ## 2026-07-30 — Trees invisible in production; InstancedMesh abandoned
 
 Peter, on the live deployed site: no trees anywhere. Confirmed directly
