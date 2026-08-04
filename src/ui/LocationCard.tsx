@@ -29,11 +29,15 @@ export function LocationCard() {
           <PlazaCard
             key={location.id}
             accent={location.accent}
-            // Height-capped on touch: an iPhone in landscape is only
-            // ~390px tall, so a card with three items runs off the top
-            // of the frame entirely.
-            className={`pointer-events-auto w-[min(92vw,26rem)] ${
-              touch ? 'max-h-[52vh] overflow-y-auto' : ''
+            // Always height-capped, because the content decides the
+            // height and the frame doesn't grow to match. Touch gets the
+            // tighter cap: an iPhone in landscape is only ~390px tall, so
+            // a card with three items runs off the top entirely. Desktop
+            // caps against the viewport minus the card's own bottom
+            // offset and a matching gap at the top — Projects and
+            // Experience are tall enough to reach it on a laptop.
+            className={`pointer-events-auto w-[min(92vw,26rem)] overflow-y-auto ${
+              touch ? 'max-h-[52vh]' : 'max-h-[calc(100vh-6rem)]'
             }`}
           >
             {/* Icon centered at the top — a miniature pillow tile */}

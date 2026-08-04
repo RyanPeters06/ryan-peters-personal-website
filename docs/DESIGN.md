@@ -56,18 +56,21 @@ Every area is a landmark from ONE monument family (see ART_BIBLE.md
 §11 Landmark Design): a molded monolith grown from its own grass pod,
 identical construction, distinguished only by its pastel accent and
 the original symbol molded into its face — giant app icons become
-buildings. All six exist in content and stand on staged pods; only
-Projects has its molded symbol built so far (see `content/locations.ts`,
-`world/Locations.tsx`).
+buildings. All six stand on staged pods with their molded symbols and
+real content (see `content/locations.ts`, `world/Locations.tsx`).
 
 | Area | Molded symbol | Accent | Status |
 |---|---|---|---|
-| About | Rounded person mark | Lavender `#CDB9EA` | Pod built; symbol + real content pending |
-| Projects | Rounded `</>` mark | Blue `#A9C9E8` | Built (placeholder content) |
-| Experience | Rounded briefcase mark | Green `#B8E6C9` | Pod built; symbol + real content pending |
-| Skills | Rounded spark mark | Gold `#F2D38F` | Pod built; symbol + real content pending |
-| Contact | Rounded chat-bubble mark | Pink `#F2B8C6` | Pod built; symbol + real content pending |
-| Resume | Rounded document mark | Teal `#A8DDE0` | Pod built; symbol + real content pending |
+| About | Rounded person mark | Lavender `#CDB9EA` | Complete |
+| Projects | Rounded `</>` mark | Blue `#A9C9E8` | Complete — 5 linked projects |
+| Experience | Rounded briefcase mark | Green `#B8E6C9` | Complete |
+| Skills | Rounded spark mark | Gold `#F2D38F` | Complete |
+| Contact | Rounded chat-bubble mark | Pink `#F2B8C6` | Complete — email, LinkedIn, GitHub |
+| Resume | Rounded document mark | Teal `#A8DDE0` | Complete — links to LinkedIn; no PDF in the repo yet |
+
+Copy lives **only** in `content/locations.ts`. Two standing decisions
+recorded there and in ROADMAP M6: **no phone number** on a public
+indexed page, and **no resume PDF** until one is added to `public/`.
 
 ## How Visitors Should Feel
 

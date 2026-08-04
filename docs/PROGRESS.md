@@ -5,6 +5,63 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-08-04 — M6 Content Fill: the world carries the real portfolio
+
+All six locations now hold Ryan's actual information, sourced from his
+resume and cross-referenced against the GitHub API (`/users/RyanPeters06/
+repos`) so every project links somewhere live. Two Odin Project learning
+repos were excluded. **LinkedIn could not be read** — it answers
+automated fetches with HTTP 999 — so it is linked, never scraped; the
+resume already covered everything it would have.
+
+Content is in `content/locations.ts` and nowhere else, per CLAUDE.md.
+
+**Two content decisions, recorded so they don't get silently reversed:**
+
+- **The phone number is deliberately omitted.** It is on the resume, but
+  a public page indexed by search engines is a different exposure than a
+  PDF handed to a recruiter. Email and LinkedIn serve the same purpose.
+- **The Resume pod links to LinkedIn rather than offering a download,**
+  because there is no resume PDF in the repo. Put one in `public/` and
+  the last item becomes a real download link.
+
+**The content exposed a latent layout bug.** `LocationCard` capped its
+height only on touch; the desktop path had no cap at all. That was
+invisible with 2–3 short placeholder items and became a real defect the
+moment Projects carried five real ones — the card measured **837px
+inside a 900px viewport**, and on any shorter window it would have run
+off the top of the frame with no way to scroll to it. Both paths now cap
+and both scroll (`max-h-[calc(100vh-6rem)]` desktop, `52vh` touch).
+
+**A cap alone wasn't the whole fix.** A card filling 93% of the frame
+has stopped being the floating card ART_BIBLE describes and become a
+page — capping it would just have added a scrollbar to the wrong shape.
+Descriptions were tightened to a line or two, which brought Projects to
+740px (82%) and left nothing scrolling at 1512×900. The header comment
+in `content/locations.ts` states the constraint for future edits: **~5
+items per location, descriptions of a line or two.**
+
+Verified across all six cards at 1512×900 and 1366×700: every one fits
+the viewport, and the three tall ones (Projects, Experience, Resume)
+scroll internally at 700px rather than clipping.
+
+**Method note:** a production build can't be driven through the store —
+the bundle isn't importable by path — and walking the avatar there is
+unreliable because automated Chromium is rAF-throttled to ~7fps. Card
+layout is not build-dependent, so this was measured on the dev server by
+importing `useWorldStore` directly and setting `activeLocation`.
+`ProximityDirector` only writes when its own winner changes, so a manual
+set holds as long as the avatar is away from every pod. Also worth
+remembering: **Playwright launches with `hasTouch: false`**, so resizing
+to 390×844 does NOT exercise the touch path — `useIsTouch()` stays false
+and you get the desktop layout at phone dimensions. That artifact is
+what surfaced the missing desktop cap, but it means phone-specific
+behaviour still needs a real device or Chrome.
+
+**Status:** M6 complete. M5 closed out with it.
+
+---
+
 ## 2026-07-31 — Title screen rebuilt as a sticker card; the flicker was compositing
 
 Two things at once: the flicker Peter had reported three times, and a

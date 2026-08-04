@@ -67,7 +67,7 @@ Statuses: ✅ done · 🔨 in progress · ⬜ not started
 - **Success:** every camera angle has something charming in it.
   **Deps:** M1 (visual), M5 (placement makes sense around pods).
 
-## M5 — Locations & Interaction System 🔨
+## M5 — Locations & Interaction System ✅
 - **Objective:** portfolio sections exist as places — as architecture.
 - **Done:** typed content layer (content/locations.ts) with all **six**
   locations (About, Projects, Experience, Skills, Contact, Resume);
@@ -79,17 +79,38 @@ Statuses: ✅ done · 🔨 in progress · ⬜ not started
   (2026-07-19: person, `</>`, briefcase, gear, chat bubble, document —
   `world/Locations.tsx`'s `SYMBOLS` map), white/cream against each
   location's saturated accent card.
-- **Remaining:** real content — all six are still placeholders.
+- **Real content landed 2026-08-04** — see M6.
 - **Files:** content/locations.ts, world/*, ui/LocationCard.
 - **Success:** a stranger finds and reads real content unprompted, and
   every landmark is instantly recognizable as one design system.
   **Deps:** M3.
 
-## M6 — Content Fill ⬜
+## M6 — Content Fill ✅ (2026-08-04)
 - **Objective:** every section carries Ryan's real information.
-- **Features:** real projects (repos/links), experience entries,
-  education, skills, contact links, downloadable resume.
-- **Files:** content/* only (that's the point).
+- **Done:** all six locations filled from the resume, cross-referenced
+  against the GitHub API for live repo links. About (bio + Western B.S.
+  CS), Projects (BrainReps, Dr. Maple, RAG Model Comparator, Clearwater
+  Care, Ryan Land — each linked), Experience (RBC incoming, Royal
+  Containers ×2, Citi Early ID), Skills (4 groups), Contact (email,
+  LinkedIn, GitHub), Resume (education, coursework, leadership).
+- **Files:** content/locations.ts — plus one height cap in
+  ui/LocationCard (below), which the content forced.
+- **Two decisions worth keeping:**
+  - **No phone number.** The resume carries one; a public page indexed
+    by search engines is a different exposure than a PDF sent to a
+    recruiter. Email and LinkedIn cover the same need.
+  - **No resume PDF.** There is no PDF in the repo, so the Resume pod
+    links to LinkedIn instead of offering a download. Drop a PDF in
+    `public/` and the last item becomes a real download.
+- **Card height is content-driven, so the card is now capped.**
+  `LocationCard` only capped its height on touch; on desktop it grew
+  unbounded and the first draft of Projects hit 837px inside a 900px
+  viewport, with nothing to scroll. Both paths now cap
+  (`max-h-[calc(100vh-6rem)]` on desktop, `52vh` on touch) and both
+  scroll. Descriptions were also tightened to a line or two — a card
+  filling 93% of the frame is a page, not the floating card ART_BIBLE
+  asks for. **Keep item lists to ~5 and descriptions short**; the header
+  comment in `content/locations.ts` says the same thing.
 - **Success:** the site could be sent to a recruiter. **Deps:** M5.
 
 ## M7 — Ambient Delight ⬜
