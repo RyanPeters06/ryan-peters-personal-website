@@ -5,6 +5,59 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-08-05 — Trees: one mass, one colour (the AC reference)
+
+Peter, with an Animal Crossing reference in hand: *"too many bumps on
+them, and I am not a fan of the texture."* Both complaints had a
+specific cause in `world/Tree.tsx`, and neither was what the previous
+rebuild thought it was fixing.
+
+**The "texture" was per-puff colour.** Every satellite puff got its own
+tone lerped between the palette's dark/mid/light by its height. The
+intent was top-lit shading; the effect was a patchwork painted ACROSS
+the crown that fought the scene lighting already shading those same
+spheres. The reference canopy is one flat green — all of its form comes
+from the light. The whole canopy is now a **single shared material** and
+the renderer does the shading. Per-puff tinting is the thing not to
+reintroduce.
+
+**The "bumps" were depth, not count.** Satellites were sized 0.48–0.70
+of the core and sat 0.64–0.88 out from it, so each cleared the core's
+surface by ~0.22 coreR and read as its own hemisphere stuck on. They now
+run 0.44–0.54 at a distance of 0.66–0.74 — reach 1.10–1.28 against a
+core that is 1.12 wide — so a puff breaks the surface by at most ~0.16
+coreR, sometimes not at all.
+
+Counterintuitively the count went UP (4–5 → 6–7). Once the overlaps are
+shallow, more of them makes the outline *smoother* and more organic;
+three deep ones make three lumps. The first attempt at this pass only
+shrank the puffs and kept them far out, and the zoomed screenshot showed
+the balls were still discrete — shallower, not smaller, was the fix.
+
+Max reach fell from coreR × 1.58 to × 1.28, an analytic bound (both
+terms are independent draws at their maxima), so the panel clearance
+verified across all 12 seeded trees still holds with more margin than
+before — `POD.trees`'s ±0.53 x-span is now ±0.43.
+
+Trunk also rebuilt toward the reference: thicker and more tapered
+(0.062/0.085 vs 0.05/0.07), and a short **root flare** skirt at the
+base, since AC trunks widen into the ground rather than being stuck into
+it. The flare is deliberately NOT scaled by `trunkH`, so a taller trunk
+doesn't grow stilts.
+
+Each tree still varies from its neighbours — the seed picks where that
+tree's one canopy tone falls between dark and light. The variation is
+**tree to tree; never within a crown.**
+
+**Verification note:** judging this needed magnification, and the
+Browser pane's `zoom` region-crop isn't supported. What worked: CSS
+`transform: scale()` on the canvas with a `transform-origin` over the
+tree, overlays hidden, then a normal screenshot. Blurry but more than
+enough to see that puffs were still reading as separate spheres — which
+the full-plaza shot had completely hidden.
+
+---
+
 ## 2026-08-04 — M6 Content Fill: the world carries the real portfolio
 
 All six locations now hold Ryan's actual information, sourced from his

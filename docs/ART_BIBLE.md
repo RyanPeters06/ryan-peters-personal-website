@@ -415,7 +415,16 @@ quiet and optional.
 - **Dressing** (trees, benches, lamps, flowers, fountain): every piece
   must pass the plaza test — rounded, toy-like, pastel, gently animated,
   built from the same plastic. Trees are lollipop/cloud blobs (green +
-  seasonal lavender/pink). Lamps are white posts with a softly glowing
+  seasonal lavender/pink). **A tree is ONE canopy mass in ONE flat
+  colour, lit — not a cluster of individually-tinted puffs** (settled
+  2026-08-04 against Peter's Animal Crossing reference; `world/Tree.tsx`
+  carries the full reasoning). Two rules came out of getting this wrong
+  twice: the satellite puffs may only *scallop* the core's edge, never
+  clear it by enough to read as their own hemispheres — and **per-puff
+  colour is banned**, because painting a light/dark ramp across the
+  crown fights the scene lighting that is already shading it and lands
+  as blotchy texture. Trunks are chunky and tapered with a root flare;
+  the canopy sits ON a tree, not on a stick. Lamps are white posts with a softly glowing
   bulb. A **central fountain** with a slowly spinning little planet is
   the plaza's heart and a self-referential wink. Distribution (revised
   2026-07-19): one tree + a flower tuft is tied to each pod; lampposts,

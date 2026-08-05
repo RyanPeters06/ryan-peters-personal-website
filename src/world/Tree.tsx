@@ -19,7 +19,13 @@ const SWAY_AMOUNT = 0.028
 /** Shared by every puff on every tree — sharing geometry across many
  *  meshes is the same trick `Clouds.tsx` uses for its puffs. */
 const PUFF_GEO = new SphereGeometry(1, 14, 10)
-const TRUNK_GEO = new CylinderGeometry(0.05, 0.07, 0.46, 8)
+/** Thicker and more tapered than a twig: in the reference the trunk is a
+ *  solid, load-bearing shape, not a stick the canopy balances on. */
+const TRUNK_GEO = new CylinderGeometry(0.062, 0.085, 0.46, 10)
+/** The root flare. Animal Crossing trunks widen into the ground rather
+ *  than being stuck into it — a short skirt reads as that at plaza
+ *  distance, where individual root lobes would be a couple of pixels. */
+const ROOT_GEO = new CylinderGeometry(0.088, 0.155, 0.115, 10)
 
 function makeRng(seed: number): () => number {
   let s = seed >>> 0
@@ -39,14 +45,30 @@ function makeRng(seed: number): () => number {
  * canopy is barely 40px on screen: individual leaves cannot resolve, and
  * trying to model them backfires. A first attempt built the crown from
  * ~20 small almond lobes pointing outward and it read as a pinecone —
- * lots of little scales. So: few, LARGE, generously overlapping puffs
- * that bulge past one another to give a lobed, clumpy outline, with the
- * light tone on the upward-facing ones and the dark tone underneath.
- * That is what says "leafy crown" at plaza distance.
+ * lots of little scales.
+ *
+ * ONE MASS, ONE COLOUR (2026-08-04, from Peter's Animal Crossing
+ * reference). The version before this one had two faults he named
+ * directly — "too many bumps" and the "texture":
+ *
+ *   - **The bumps** were satellites sized 0.48–0.70 of the core sitting
+ *     0.64–0.88 out from it. Puffs that big bulging that far don't
+ *     scallop an outline, they compete with it: the crown read as a
+ *     bunch of balls stuck together rather than one tree. They are now
+ *     roughly HALF that size and sit closer in, so they break the
+ *     silhouette just enough to keep it from being a plain sphere.
+ *   - **The texture** was per-puff colour. Each satellite got its own
+ *     tone lerped between dark/mid/light by height, which painted a
+ *     patchwork ACROSS the crown and fought the actual scene lighting
+ *     that was already shading it. The reference canopy is one flat
+ *     green; every bit of its form comes from the light. So the whole
+ *     canopy is now a SINGLE shared material and the renderer does the
+ *     shading. Per-puff tinting is the thing not to reintroduce.
  *
  * Every tree is still an INDIVIDUAL — `seed` drives how many puffs there
- * are, where they sit, how big each is, and the trunk's lean — so the
- * twelve differ by their clustering rather than by any added detail.
+ * are, where they sit, how big each is, the trunk's lean, and where the
+ * tree's one canopy tone falls between the palette's dark and light. The
+ * twelve differ from EACH OTHER; each one is coherent WITHIN itself.
  *
  * Puffs always overlap the core by a wide margin (centre distance is far
  * less than the radii sum), which is what keeps the crown one soft mass
@@ -107,7 +129,7 @@ export function Tree({
       return c
     })
 
-    const count = 5 + Math.floor(rng() * 3) // 5–7
+    const count = 6 + Math.floor(rng() * 2) // 6–7
     const girth = 0.9 + rng() * 0.3
     const cy = 0.66 + rng() * 0.1
     // Capped so the CANOPY'S TOTAL REACH (core + satellite bulge) can
@@ -115,52 +137,66 @@ export function Tree({
     // see the reach comment on the satellite loop below.
     const coreR = 0.33 * girth * (0.94 + rng() * 0.1)
 
-    const parts: { basePos: Vector3; scl: Vector3; phase: number; mat: MeshStandardMaterial }[] =
-      []
-
-    // The core puff — the mass everything else grows out of. Phase 0 so
-    // the trunk-adjacent mass barely drifts; it anchors the crown.
-    parts.push({
-      basePos: new Vector3(0, cy, 0),
-      scl: new Vector3(coreR, coreR * (0.88 + rng() * 0.14), coreR),
-      phase: 0,
-      mat: new MeshStandardMaterial({ color: mid, roughness: ROUGHNESS.foliage }),
+    // ONE tone for the whole tree. Where it falls between the palette's
+    // dark and light is the seed's business, so a stand of trees still
+    // varies — but it varies TREE BY TREE, never within a crown.
+    const canopyCol = dark.clone().lerp(light, 0.28 + rng() * 0.5).lerp(mid, 0.35)
+    const canopyMat = new MeshStandardMaterial({
+      color: canopyCol,
+      roughness: ROUGHNESS.foliage,
     })
 
-    // Satellites, spread around the core and bulging past it so the
-    // outline goes lobed. Reach (d + r, the farthest a satellite's edge
-    // gets from the trunk) is capped at coreR * 1.58 — verified
-    // numerically against every one of the 12 seeded trees to clear the
-    // panel with real margin (worst case 0.15u+, not the ~0.04u a wider
-    // spread produced). Don't loosen these without re-running that check
-    // (POD.trees's clearance comment has the panel/dome geometry).
+    const parts: { basePos: Vector3; scl: Vector3; phase: number }[] = []
+
+    // The core — now the tree, not merely the biggest of several lumps.
+    // Wider than tall (the reference canopy is a broad dome sitting over
+    // the trunk, not a ball), and big enough that the satellites read as
+    // its edge rather than as separate masses.
+    parts.push({
+      basePos: new Vector3(0, cy, 0),
+      scl: new Vector3(coreR * 1.12, coreR * (0.94 + rng() * 0.12), coreR * 1.08),
+      phase: 0,
+    })
+
+    // Satellites, buried in the core so they SCALLOP its edge instead of
+    // sitting on it. This is the whole "too many bumps" fix and it is a
+    // matter of how far each one's edge clears the core, not how many
+    // there are: reach (d + r) runs coreR * 1.10–1.28 against a core
+    // that is already coreR * 1.12 wide, so a satellite breaks the
+    // surface by at most ~0.16 coreR and sometimes not at all. The
+    // previous pass had them clearing it by 0.22 and each one read as
+    // its own hemisphere. Counterintuitively MORE of them helps once
+    // they're this shallow — seven small overlaps make an irregular
+    // outline, three deep ones make three lumps.
+    //
+    // Still inside the coreR * 1.58 reach verified against the panel
+    // across all 12 seeded trees, so that clearance holds. Don't loosen
+    // these without re-running that check (POD.trees's clearance comment
+    // has the panel/dome geometry).
     const spin = rng() * Math.PI * 2
     for (let i = 1; i < count; i++) {
-      const ang = spin + (i / (count - 1)) * Math.PI * 2 + (rng() - 0.5) * 0.9
-      const r = coreR * (0.48 + rng() * 0.22)
-      const d = coreR * (0.64 + rng() * 0.24)
-      const lift = (rng() - 0.35) * coreR * 1.15
+      const ang = spin + (i / (count - 1)) * Math.PI * 2 + (rng() - 0.5) * 0.7
+      const r = coreR * (0.44 + rng() * 0.1)
+      const d = coreR * (0.66 + rng() * 0.08)
+      // Biased upward: satellites crown the dome instead of ringing its
+      // waist, where they used to read as bumps stuck on the sides.
+      const lift = (rng() * 0.55 + 0.12) * coreR
       const x = Math.cos(ang) * d
       const z = Math.sin(ang) * d * 0.9
 
-      // Higher puffs catch the light; low ones fall into the dark tone.
-      const t = Math.min(1, Math.max(0, lift / (coreR * 0.8) + 0.5))
-      const col = dark.clone().lerp(mid, t)
-      if (t > 0.72) col.lerp(light, 0.6)
-
       parts.push({
         basePos: new Vector3(x, cy + lift, z),
-        scl: new Vector3(r, r * (0.86 + rng() * 0.18), r),
+        scl: new Vector3(r, r * (0.9 + rng() * 0.14), r),
         // Each puff's own drift phase, so the crown ripples rather than
         // moving as one mass — derived from position so it's stable
         // across re-renders without storing an extra random draw.
         phase: x * 5.3 + z * 3.9 + rng() * 0.001,
-        mat: new MeshStandardMaterial({ color: col, roughness: ROUGHNESS.foliage }),
       })
     }
 
     return {
       parts,
+      canopyMat,
       lean: (rng() - 0.5) * 0.12,
       tilt: (rng() - 0.5) * 0.07,
       trunkH: 0.9 + rng() * 0.22,
@@ -184,6 +220,9 @@ export function Tree({
 
   return (
     <group scale={scale} rotation={[layout.tilt, 0, layout.lean]}>
+      {/* Root flare first — it sits at the very bottom and is not scaled
+          by trunkH, so a taller trunk doesn't grow stilts. */}
+      <mesh geometry={ROOT_GEO} material={trunkMat} position={[0, 0.048, 0]} castShadow />
       <mesh
         geometry={TRUNK_GEO}
         material={trunkMat}
@@ -198,7 +237,7 @@ export function Tree({
             puffRefs.current[i] = el
           }}
           geometry={PUFF_GEO}
-          material={p.mat}
+          material={layout.canopyMat}
           position={p.basePos}
           scale={p.scl}
           castShadow
