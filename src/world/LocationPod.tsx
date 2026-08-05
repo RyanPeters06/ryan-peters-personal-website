@@ -328,7 +328,9 @@ varying vec3 vFaceLocal;`,
         ))}
         {POD.bushes.map((b, i) => (
           <group key={i} position={[b.x, domeY(b.x, b.z) - 0.04, b.z]}>
-            <Bush />
+            {/* Same shape as the tree seeds: distinct per bush AND per
+                pod, so neighbouring shrubs don't land on one green. */}
+            <Bush seed={location.id.charCodeAt(0) + location.id.length * 7 + i * 5} />
           </group>
         ))}
         {POD.rocks.map((r, i) => (

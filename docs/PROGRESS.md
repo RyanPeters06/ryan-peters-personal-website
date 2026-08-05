@@ -5,6 +5,89 @@ session. This file always reflects the current state of the project.
 
 ---
 
+## 2026-08-05 (later) — Trees again: a lobe cluster, not a dented sphere
+
+Peter: *"the trees currently look pretty bad"*, with a reference photo —
+a canopy of a few LARGE lobes with deep creases, on a slender tapered
+trunk carrying **a little branch**.
+
+The morning's pass was right about the causes it named and still
+over-corrected. Burying the satellites until they cleared the core by
+≤0.16 coreR did stop them reading as balls stuck on — by turning the
+canopy into a smooth ball. Clean, but not a tree.
+
+**The parametrisation was the ceiling, not the tuning.** "One dominant
+core + small satellites" can only ever produce a sphere with dents; no
+amount of adjusting gets a cluster out of it. Replaced with: every lobe
+of radius `r` is placed at distance `R − r` along its direction, i.e.
+**internally tangent to an enclosing sphere of radius `R`**. Three
+consequences, all of which paid:
+
+1. The union is a bumpy ball of radius exactly `R`, so canopy extent is
+   a controlled input rather than an emergent `d + r`. That mattered
+   more than expected — see clearance below.
+2. Crease depth collapses to the single ratio `r/R`. At 0.52 the union
+   dips 25–36% and reads as separate balls; at 0.60 it dips ~22%, which
+   matches the reference. One knob, predictable.
+3. No dominant core, so the crown reads as a cluster.
+
+Layout is 4 near-equatorial lobes (the wide silhouette, and by
+overlapping through the middle, the scalloped underside) plus 2–3 crown
+lobes offset into the equatorial ring's valleys. 6–7 meshes, same cost
+as before.
+
+**Derive anything that has to meet the canopy.** Two bugs had the same
+root — a random draw where a measurement belonged:
+
+- `trunkH` was an independent random draw that *happened* to land near
+  the canopy. Nothing enforced it. It now derives from the canopy
+  underside at the trunk axis, via a support function over the lobes.
+- Branch length, drawn at random, left the branch ending in mid-air on
+  **half the trees** — because how far the foliage is depends on the
+  canopy layout above it. It now marches along the branch until it
+  enters a lobe, then adds penetration. If it can't reach within the
+  march limit the branch is dropped rather than left floating, which is
+  what kills the second branch on most trees (2 of 12 keep one).
+
+**The branch needed open trunk beneath it.** First attempt attached at
+55–70% of trunk height at 30–42° off vertical, and it was invisible: it
+entered the canopy almost immediately and the little that stuck out sat
+inside the crown's own shadow. Moved down to 40–55% at 36–48°, and
+thickened, so it travels before the foliage swallows it.
+
+**Clearance was already breached and nobody knew.** `POD.trees` claimed
+trees span ±0.53 in x; measured across all twelve seeded trees, the
+morning's version reached **±0.565**. Emergent extent is unauditable,
+which is exactly what the tangent construction fixes. Now ±0.536, and
+the constraint that actually matters — the canopy's back edge vs the
+panel face at z 0.215 — sits at 0.450. The comment now records both, and
+which one is hard (panel) vs soft (grass overhang, which is fine).
+
+`ROUGHNESS.foliage` 0.75 → **0.5**, approved by Peter. Finish only, no
+hue change: it was the outlier in a world whose panels are 0.16 and
+accents 0.3, and the highlights are what make a canopy read as a volume.
+Checked that the new speculars don't bloom.
+
+`Bush.tsx` had **all three greens on one bush**, one per lobe — the same
+patchwork removed from canopies, on shrubs sitting right beside them.
+One tone per bush now, seeded from the pod. Same three greens, so
+nothing changes colour; only the blotchiness goes.
+
+**Colour was explicitly out of scope** (Peter: *"they all need to
+maintain the color they have now, this is just for the actual design and
+build"*). The reference's pale yellow-green foliage and cream trunk were
+NOT adopted — `CANOPY`, `TINT_STRENGTH`, the `canopyCol` formula and
+`PALETTE.trunk` are untouched.
+
+**Verification worth reusing:** an offline Node script mirroring the
+layout in rng draw order, sampling the union's support function. It
+checks crease depth, both extents, that the trunk reaches the canopy,
+and that every branch tip lands inside a lobe. It caught the floating
+branches on all six affected trees before a browser was ever opened —
+and rechecking is a one-liner after any layout change.
+
+---
+
 ## 2026-08-05 — Trees: one mass, one colour (the AC reference)
 
 Peter, with an Animal Crossing reference in hand: *"too many bumps on

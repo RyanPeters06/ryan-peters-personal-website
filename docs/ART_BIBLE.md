@@ -415,16 +415,27 @@ quiet and optional.
 - **Dressing** (trees, benches, lamps, flowers, fountain): every piece
   must pass the plaza test — rounded, toy-like, pastel, gently animated,
   built from the same plastic. Trees are lollipop/cloud blobs (green +
-  seasonal lavender/pink). **A tree is ONE canopy mass in ONE flat
-  colour, lit — not a cluster of individually-tinted puffs** (settled
-  2026-08-04 against Peter's Animal Crossing reference; `world/Tree.tsx`
-  carries the full reasoning). Two rules came out of getting this wrong
-  twice: the satellite puffs may only *scallop* the core's edge, never
-  clear it by enough to read as their own hemispheres — and **per-puff
-  colour is banned**, because painting a light/dark ramp across the
-  crown fights the scene lighting that is already shading it and lands
-  as blotchy texture. Trunks are chunky and tapered with a root flare;
-  the canopy sits ON a tree, not on a stick. Lamps are white posts with a softly glowing
+  seasonal lavender/pink). Three rules, each learned by getting it wrong
+  (`world/Tree.tsx` carries the full reasoning):
+    - **ONE colour per canopy, lit.** Per-lobe tinting is **banned**:
+      painting a light/dark ramp across the crown fights the scene
+      lighting already shading those same spheres and lands as blotchy
+      texture. All form comes from the light.
+    - **The crown is a CLUSTER of co-equal lobes, not a core with
+      satellites** (2026-08-05, from Peter's reference photo). Lobes are
+      placed tangent to an enclosing sphere of radius `R` — centre at
+      `R − r` — so the union's reach is bounded by construction and
+      crease depth is the single ratio `r/R`. Aim ~0.6, which dips ~22%
+      between lobes. A dominant core with small satellites can only ever
+      be a sphere with dents, which is why it looked generic.
+    - **Anything that must MEET the canopy is measured against it**, not
+      drawn at random: trunk height and branch length both derive from
+      the canopy's actual underside. A random draw leaves nothing
+      enforcing the join, and it showed — floating crowns and branches
+      ending in open air.
+  Trunks are chunky and tapered with a root flare and carry a little
+  branch; the canopy sits ON a tree, not on a stick. Foliage takes a
+  soft sheen (`ROUGHNESS.foliage`), not a matte finish. Lamps are white posts with a softly glowing
   bulb. A **central fountain** with a slowly spinning little planet is
   the plaza's heart and a self-referential wink. Distribution (revised
   2026-07-19): one tree + a flower tuft is tied to each pod; lampposts,

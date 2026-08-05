@@ -101,15 +101,28 @@ export const POD = {
   ],
   /** Two trees in the FRONT apron, flanking the panel's lower third
    *  (revised 2026-07-29 — they used to intersect it at scale 2.0).
+   *  The front is the only workable region: the ellipse is widest at its
+   *  middle, which is exactly where the panel sits, and there is no
+   *  grass left behind the panel at these x offsets. Behind-the-panel
+   *  also hid them completely, and deepening the island backwards pushed
+   *  its rim further past the plaza's own edge.
    *
-   *  The panel occupies x ∈ [−1.48, 1.48], z ∈ [−0.915, 0.215]. At
-   *  TREE_SCALE a tree spans ±0.53 in x and [−0.45, +0.39] in z, so at
-   *  z 0.95 its back edge is 0.50 — clear IN FRONT of the panel's face
-   *  by 0.285. The front is the only workable region: the ellipse is
-   *  widest at its middle, which is exactly where the panel sits, and
-   *  there is no grass left behind the panel at these x offsets.
-   *  Behind-the-panel also hid them completely, and deepening the island
-   *  backwards pushed its rim further past the plaza's own edge. */
+   *  CLEARANCE, re-measured 2026-08-05 across all twelve seeded trees.
+   *  The figure here used to read "±0.53 in x" and had gone stale — the
+   *  trees of 2026-08-04 actually reached ±0.565, because that canopy's
+   *  extent was an emergent `d + r` rather than a controlled input. The
+   *  current Tree.tsx places lobes tangent to an enclosing sphere, so
+   *  its reach is bounded by construction.
+   *
+   *  The panel occupies x ∈ [−1.48, 1.48], z ∈ [−0.915, 0.215].
+   *  - HARD constraint is z: the deepest tree's back edge sits at 0.450
+   *    — clear IN FRONT of the panel's face by 0.235. Breaking this is
+   *    the bug this comment exists to prevent.
+   *  - SOFT constraint is x: the grass ellipse is 1.759 half-wide at
+   *    z 0.95, so a tree at x 1.24 begins overhanging past ±0.519. The
+   *    widest measures ±0.536, i.e. a canopy overhanging grass by <2cm.
+   *    That is natural and fine — don't "fix" it by shrinking the trees.
+   *  Re-run the offline extent check if the canopy layout changes. */
   trees: [
     { x: -1.24, z: 0.95 },
     { x: 1.24, z: 0.95 },
@@ -176,7 +189,13 @@ export const ROUGHNESS = {
   skin: 0.6,
   shirt: 0.55,
   hair: 0.7,
-  foliage: 0.75,
+  /** Foliage carries a soft sheen, not a matte finish (2026-08-05). It
+   *  sat at 0.75 and was the outlier in a world whose panels are 0.16
+   *  and accents 0.3 — everything here is meant to be the same moulded
+   *  plastic. The highlights are what make a canopy read as a volume
+   *  rather than a flat green shape. If they ever start blooming, ease
+   *  back toward 0.58 rather than touching the Bloom threshold. */
+  foliage: 0.5,
 } as const
 
 /** ---- Glow: light is life (eased at GLOW.lambda) --------------------- */
