@@ -85,6 +85,24 @@ const PANEL_FOCUS_Z = 4.25
  *  clearance arithmetic that pairs with this number. */
 const TREE_SCALE = 1.1
 
+/**
+ * Tree seeds are derived from the pod (below), with hand-picked
+ * overrides for individual draws that came out badly.
+ *
+ * `resume:1` — that tree's two crown lobes landed 159° apart, i.e. very
+ * nearly opposite. Two crown lobes on opposite sides saddle the top
+ * instead of doming it, leaving a seam straight down the middle, and it
+ * read as a sliced bun rather than a canopy (Peter flagged it,
+ * 2026-08-05). This offset lands a three-lobe crown spread 111° apart:
+ * the dip across the top falls 26% → 14%, with the flank creases still
+ * at 23% and reach well inside clearance. Nothing else changes.
+ *
+ * A generator-level fix was the wrong tool here — 9 of the 12 trees draw
+ * a two-lobe crown, so guaranteeing a third would have reshaped almost
+ * every tree to correct one.
+ */
+const TREE_SEED_NUDGE: Record<string, number> = { 'resume:1': 11 }
+
 // Both geometries are identical across every pod, so build them once.
 const BODY_GEO = panelGeo(
   LANDMARK.body.width,
@@ -322,7 +340,12 @@ varying vec3 vFaceLocal;`,
               tint={location.accent}
               // Distinct per tree AND per pod, so no two of the twelve
               // share a canopy layout, lean or fullness.
-              seed={location.id.charCodeAt(0) * 977 + location.id.length * 31 + i * 101}
+              seed={
+                location.id.charCodeAt(0) * 977 +
+                location.id.length * 31 +
+                i * 101 +
+                (TREE_SEED_NUDGE[`${location.id}:${i}`] ?? 0)
+              }
             />
           </group>
         ))}

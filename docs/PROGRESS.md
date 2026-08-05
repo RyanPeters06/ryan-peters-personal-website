@@ -79,6 +79,22 @@ build"*). The reference's pale yellow-green foliage and cream trunk were
 NOT adopted — `CANOPY`, `TINT_STRENGTH`, the `canopyCol` formula and
 `PALETTE.trunk` are untouched.
 
+**Follow-up, same day:** Peter flagged the far-right (Resume) tree's leaf
+structure as off. Measured: its two crown lobes drew 159° apart, i.e.
+nearly opposite. Two crown lobes on opposite sides **saddle** the top
+rather than doming it, leaving a seam straight down the middle — it read
+as a sliced bun. Fixed with a per-tree seed override
+(`TREE_SEED_NUDGE` in `LocationPod.tsx`) that lands a three-lobe crown
+spread 111°: the dip across the top falls 26% → 14%, flank creases stay
+at 23%, reach stays inside clearance.
+
+Deliberately NOT a generator fix. Nine of the twelve trees draw a
+two-lobe crown, so forcing a third would have reshaped nearly every tree
+to correct one — and Peter asked for that tree only. The override table
+is the honest way to express "this particular draw came out badly".
+Its sibling `resume:0` has the same shape (170° gap, 28% dip) and was
+left alone for the same reason.
+
 **Verification worth reusing:** an offline Node script mirroring the
 layout in rng draw order, sampling the union's support function. It
 checks crease depth, both extents, that the trunk reaches the canopy,
